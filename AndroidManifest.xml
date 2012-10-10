@@ -30,6 +30,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ConversationListActivity" />
         </activity>
+        <activity android:name=".NewContactActivity"></activity>
+        <activity android:name=".KeyGenerationActivity"></activity>
     </application>
 
 </manifest>

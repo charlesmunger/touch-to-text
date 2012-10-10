@@ -3,5 +3,7 @@
     <string name="app_name">Touch to Chat</string>
     <string name="title_conversation_detail">Conversation Detail</string>
     <string name="title_conversation_list">Conversations</string>
+    <string name="done">Done</string>
+    <string name="discard">Discard</string>
 
 </resources>
