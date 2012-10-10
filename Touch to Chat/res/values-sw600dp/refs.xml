@@ -1,3 +1,0 @@
-<resources>
-    <item type="layout" name="activity_conversation_list">@layout/activity_conversation_twopane</item>
-</resources>
