@@ -18,6 +18,8 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,8 +27,9 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class KeyGenerationActivity extends Activity {
-
-    public void onCreate(Bundle savedInstanceState) {
+	public static final String PREFS_NAME = "KeyGenPrefs";
+	
+	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Inflate a "Done" custom action bar view to serve as the "Up" affordance.
@@ -42,7 +45,6 @@ public class KeyGenerationActivity extends Activity {
                         finish(); // TODO: don't just finish()!
                     }
                 });
-
         // Show the custom action bar view and hide the normal Home icon and title.
         final ActionBar actionBar = getActionBar();
         actionBar.setDisplayOptions(
@@ -64,7 +66,7 @@ public class KeyGenerationActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.discard:
                 // "Discard"
-                finish(); // TODO: don't just finish()!
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
