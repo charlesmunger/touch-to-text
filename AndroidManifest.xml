@@ -41,6 +41,19 @@
             android:name=".AuthActivity"
             android:label="@string/title_activity_auth" >
         </activity>
+
+        <provider
+            android:name="edu.ucsb.cs290.touch.to.chat.MessagesProvider"
+            android:authorities="edu.ucsb.cs290.touch.to.chat"
+            android:exported="false"
+            android:multiprocess="false" >
+        </provider>
+        <provider
+            android:name="edu.ucsb.cs290.touch.to.chat.ContactsProvider"
+            android:authorities="edu.ucsb.cs290.touch.to.chat"
+            android:exported="false"
+            android:multiprocess="false" >
+        </provider>
     </application>
 
 </manifest>
