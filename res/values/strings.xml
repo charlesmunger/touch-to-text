@@ -9,5 +9,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_auth">Application Locked</string>
+    <string name="title_activity_begin_key_exchange">BeginKeyExchangeActivity</string>
 
 </resources>
