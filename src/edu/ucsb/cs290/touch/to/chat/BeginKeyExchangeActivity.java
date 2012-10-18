@@ -44,7 +44,6 @@ public class BeginKeyExchangeActivity extends Activity {
         intentFiltersArray = new IntentFilter[] {ndef, };
         mTechLists = new String[][] { new String[] { Ndef.class.getName() } };
         mAdapter = NfcAdapter.getDefaultAdapter(this);
-        mAdapter.enableForegroundDispatch(this, pendingIntent, intentFiltersArray, mTechLists);
     }
 
     @Override
