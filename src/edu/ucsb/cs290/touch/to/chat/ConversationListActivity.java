@@ -3,6 +3,10 @@ package edu.ucsb.cs290.touch.to.chat;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 
 public class ConversationListActivity extends FragmentActivity
         implements ConversationListFragment.Callbacks {
@@ -24,7 +28,18 @@ public class ConversationListActivity extends FragmentActivity
                     .setActivateOnItemClick(true);
         }
     }
-
+    
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_conversation_view, menu);
+        return true;
+    }
+    
+    public boolean addContact(MenuItem item) {
+    	startActivityForResult(new Intent(getApplicationContext(),NewContactActivity.class),100);
+    	return true;
+    }
+    
     @Override
     public void onItemSelected(String id) {
         if (mTwoPane) {

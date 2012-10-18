@@ -18,6 +18,7 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +28,6 @@ public class NewContactActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Inflate a "Done/Discard" custom action bar view.
         LayoutInflater inflater = (LayoutInflater) getActionBar().getThemedContext()
                 .getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -38,6 +38,9 @@ public class NewContactActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         // "Done"
+                    	Intent i = new Intent();
+                    	i.putExtra("contact", true);
+                    	setResult(RESULT_OK,i);//TODO fill in values
                         finish(); // TODO: don't just finish()!
                     }
                 });
@@ -46,6 +49,7 @@ public class NewContactActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         // "Discard"
+                    	setResult(RESULT_CANCELED);
                         finish(); // TODO: don't just finish()!
                     }
                 });

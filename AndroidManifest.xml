@@ -5,7 +5,7 @@
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="15" />
+        android:targetSdkVersion="16" />
 
     <uses-feature android:name="android.hardware.nfc" />
 
@@ -46,20 +46,20 @@
             android:label="@string/title_activity_begin_key_exchange" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="edu.ucsb.cs290.touch.to.chat.NewContactActivity" />
+                android:value="edu.ucsb.cs290.touch.to.chat.NewContactActivity2y" />
         </activity>
-        <provider
-            android:name="edu.ucsb.cs290.touch.to.chat.MessagesProvider"
-            android:authorities="edu.ucsb.cs290.touch.to.chat"
-            android:exported="false"
-            android:multiprocess="false" >
-        </provider>
-        <provider
-            android:name="edu.ucsb.cs290.touch.to.chat.ContactsProvider"
-            android:authorities="edu.ucsb.cs290.touch.to.chat"
-            android:exported="false"
-            android:multiprocess="false" >
-        </provider>
+<!--         <provider -->
+<!--             android:name="edu.ucsb.cs290.touch.to.chat.MessagesProvider" -->
+<!--             android:authorities="edu.ucsb.cs290.touch.to.chat" -->
+<!--             android:exported="false" -->
+<!--             android:multiprocess="false" > -->
+<!--         </provider> -->
+<!--         <provider -->
+<!--             android:name="edu.ucsb.cs290.touch.to.chat.ContactsProvider" -->
+<!--             android:authorities="edu.ucsb.cs290.touch.to.chat" -->
+<!--             android:exported="false" -->
+<!--             android:multiprocess="false" > -->
+<!--         </provider> -->
     </application>
 
 </manifest>

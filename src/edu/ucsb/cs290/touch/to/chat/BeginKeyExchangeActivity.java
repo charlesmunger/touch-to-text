@@ -2,6 +2,10 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.util.List;
 
+import javax.crypto.SecretKey;
+
+import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -24,7 +28,7 @@ public class BeginKeyExchangeActivity extends Activity {
 	private PendingIntent pendingIntent;
 	private String[][] mTechLists;
 	private NfcAdapter mAdapter;
-
+	private KeyExchange keyExchange;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,7 +55,6 @@ public class BeginKeyExchangeActivity extends Activity {
         return true;
     }
 
-    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -73,21 +76,23 @@ public class BeginKeyExchangeActivity extends Activity {
     }
 
     public void onNewIntent(Intent intent) {
-        Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-        NdefMessage[] msgs;
-        if (rawMsgs != null && rawMsgs.length > 0) {
-            // stupid java, need to cast one-by-one
-            msgs = new NdefMessage[rawMsgs.length];
-            for (int i=0; i<rawMsgs.length; i++) {
-                msgs[i] = (NdefMessage) rawMsgs[i];
-            }
-        } else {
-            // Unknown tag type
-            byte[] empty = new byte[] {};
-            NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN, empty, empty, empty);
-            NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
-            msgs = new NdefMessage[] { msg };
-        }
+//        Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+//        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+//        NdefMessage[] msgs;
+//        if (rawMsgs != null && rawMsgs.length > 0) {
+//            // stupid java, need to cast one-by-one
+//            msgs = new NdefMessage[rawMsgs.length];
+//            for (int i=0; i<rawMsgs.length; i++) {
+//                msgs[i] = (NdefMessage) rawMsgs[i];
+//            }
+//        } else {
+//            // Unknown tag type
+//            byte[] empty = new byte[] {};
+//            NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN, empty, empty, empty);
+//            NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
+//            msgs = new NdefMessage[] { msg };
+//        }
+//    	SecretKey result = keyExchange.setOtherPublicKey(b, "AES");
+//        setResult(RESULT_OK, new Intent().putExtra("AES Key", result.getEncoded()));
     }
 }
