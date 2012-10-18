@@ -1,26 +1,23 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
-
-import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
 
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
 
 public class BeginKeyExchangeActivity extends Activity {
 
@@ -47,6 +44,7 @@ public class BeginKeyExchangeActivity extends Activity {
         intentFiltersArray = new IntentFilter[] {ndef, };
         mTechLists = new String[][] { new String[] { Ndef.class.getName() } };
         mAdapter = NfcAdapter.getDefaultAdapter(this);
+        mAdapter.enableForegroundDispatch(this, pendingIntent, intentFiltersArray, mTechLists);
     }
 
     @Override
@@ -76,23 +74,16 @@ public class BeginKeyExchangeActivity extends Activity {
     }
 
     public void onNewIntent(Intent intent) {
-//        Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-//        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-//        NdefMessage[] msgs;
-//        if (rawMsgs != null && rawMsgs.length > 0) {
-//            // stupid java, need to cast one-by-one
-//            msgs = new NdefMessage[rawMsgs.length];
-//            for (int i=0; i<rawMsgs.length; i++) {
-//                msgs[i] = (NdefMessage) rawMsgs[i];
-//            }
-//        } else {
-//            // Unknown tag type
-//            byte[] empty = new byte[] {};
-//            NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN, empty, empty, empty);
-//            NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
-//            msgs = new NdefMessage[] { msg };
-//        }
-//    	SecretKey result = keyExchange.setOtherPublicKey(b, "AES");
-//        setResult(RESULT_OK, new Intent().putExtra("AES Key", result.getEncoded()));
+        Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        byte[] b = Ndef.get(tagFromIntent).getCachedNdefMessage().toByteArray();
+        SecretKey result;
+        try {
+        	result = keyExchange.setOtherPublicKey(b, "AES");
+        } catch(Exception e)  {
+        	Logger.getLogger("touch-to-text").log(Level.SEVERE, "Exception in key exchange!", e);
+        	setResult(RESULT_CANCELED, new Intent());
+        	return;
+        }
+        setResult(RESULT_OK, new Intent().putExtra("AES Key", result.getEncoded()));
     }
 }

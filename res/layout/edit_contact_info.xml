@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/edit_contact"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <EditText
+        android:id="@+id/edit_contact_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/edit_contact_key_signature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No key"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <Button
+        android:id="@+id/edit_contact_key_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Exchange public keys"
+        android:onClick="getPublicKey" />
+
+</LinearLayout>

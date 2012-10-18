@@ -20,12 +20,17 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.TextView;
 
 public class NewContactActivity extends Activity {
-
+	private byte[] key;
+	private EditText contactName;
+	private byte[] secret;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Inflate a "Done/Discard" custom action bar view.
@@ -39,7 +44,10 @@ public class NewContactActivity extends Activity {
                     public void onClick(View v) {
                         // "Done"
                     	Intent i = new Intent();
-                    	i.putExtra("contact", true);
+                    	i.putExtra("name", contactName.getText().toString());
+                    	i.putExtra("date", System.currentTimeMillis());
+                    	i.putExtra("key", key);
+                    	i.putExtra("signedsecret", secret);
                     	setResult(RESULT_OK,i);//TODO fill in values
                         finish(); // TODO: don't just finish()!
                     }
@@ -63,5 +71,26 @@ public class NewContactActivity extends Activity {
         actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+        contactName = (EditText) findViewById(R.id.edit_contact_name);
+        //Now that we've inflated the ActionBar, let's do the content:
+        setContentView(R.layout.edit_contact_info);
+    }
+    
+    public void getPublicKey(View v) {
+    	startActivityForResult(new Intent(this,BeginKeyExchangeActivity.class), 1);
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	super.onActivityResult(requestCode, resultCode, data);
+    	if(resultCode == RESULT_CANCELED) {
+    		return;
+    	}
+    	switch(requestCode) {
+    	case 1: 
+    		secret = data.getByteArrayExtra("signedsecret");
+    		key = data.getByteArrayExtra("key");
+    		TextView t = (TextView) findViewById(R.id.edit_contact_key_signature);
+    			t.setText(Base64.encodeToString(key, Base64.DEFAULT));
+    	}
     }
 }
