@@ -1,14 +1,19 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -69,6 +74,20 @@ public class BeginKeyExchangeActivity extends Activity {
 
     public void onNewIntent(Intent intent) {
         Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        //do something with tagFromIntent
+        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+        NdefMessage[] msgs;
+        if (rawMsgs != null && rawMsgs.length > 0) {
+            // stupid java, need to cast one-by-one
+            msgs = new NdefMessage[rawMsgs.length];
+            for (int i=0; i<rawMsgs.length; i++) {
+                msgs[i] = (NdefMessage) rawMsgs[i];
+            }
+        } else {
+            // Unknown tag type
+            byte[] empty = new byte[] {};
+            NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN, empty, empty, empty);
+            NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
+            msgs = new NdefMessage[] { msg };
+        }
     }
 }
