@@ -56,7 +56,7 @@ public class ContactsProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
-		Cursor cursor = queryBuilder.query(DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getPassword()),
+		Cursor cursor = queryBuilder.query(DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getInstance(null).getPassword().toString()),
 				projection, selection, selectionArgs, null, null, sortOrder);
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 		return cursor;
@@ -69,7 +69,7 @@ public class ContactsProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues initialValues) {
-		SQLiteDatabase database = DatabaseHelper.getInstance(getContext()).getWritableDatabase(MasterPassword.getPassword());
+		SQLiteDatabase database = DatabaseHelper.getInstance(getContext()).getWritableDatabase(MasterPassword.getInstance(null).getPassword().toString());
 		long value = database.insert(DatabaseHelper.CONTACTS_TABLE, null, initialValues);
 		return Uri.withAppendedPath(CONTENT_URI, String.valueOf(value));
 	}

@@ -16,7 +16,8 @@ public class AuthActivity extends Activity {
     
     public void submitPassword(View view) {
     	EditText e = (EditText) findViewById(R.id.enter_password);
-    	setResult(RESULT_OK, new Intent().putExtra("password", e.getText().toString()));
-    	finish();
+       	setResult(RESULT_OK, new Intent().putExtra("edu.ucsb.cs290.touch.to.chat.password", e.getText().toString()));
+       	e.setText("*******");
+       	finish();
     }
 }

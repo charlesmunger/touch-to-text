@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
@@ -82,7 +83,7 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	@Override
 	public byte[] send() {
 		// somehow acquire an object...
-		SealablePublicKey p = new SealablePublicKey();
+		SealablePublicKey p = DatabaseHelper.getInstance(getApplicationContext()).getPGPPublicKey();
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutput out = null;
 		byte[] yourBytes = null;
