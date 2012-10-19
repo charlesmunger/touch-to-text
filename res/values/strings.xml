@@ -12,5 +12,6 @@
     <string name="title_activity_begin_key_exchange">BeginKeyExchangeActivity</string>
     <string name="menu_add_contact">Add Contact</string>
     <string name="title_activity_end_key_exchange">EndKeyExchangeActivity</string>
+    <string name="title_activity_abstract_nfcexchange">AbstractNFCExchangeActivity</string>
 
 </resources>

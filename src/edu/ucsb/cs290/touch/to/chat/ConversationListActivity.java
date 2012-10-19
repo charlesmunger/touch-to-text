@@ -11,7 +11,6 @@ public class ConversationListActivity extends FragmentActivity implements
 		ConversationListFragment.Callbacks {
 
 	private boolean mTwoPane;
-	private boolean loggedIn = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,7 +65,6 @@ public class ConversationListActivity extends FragmentActivity implements
 		switch (resultCode) {
 		case 100:
 			String derp = data.getExtras().getString("password");
-			loggedIn = true;
 			// TODO danny do something with this data
 			return;
 		case 101:

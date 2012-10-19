@@ -17,6 +17,7 @@
 package edu.ucsb.cs290.touch.to.chat;
 
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
+import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
@@ -31,7 +32,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class NewContactActivity extends Activity {
-	private byte[] key;
+	private SealablePublicKey key;
 	private EditText contactName;
 	private byte[] secret;
     public void onCreate(Bundle savedInstanceState) {
@@ -107,10 +108,9 @@ public class NewContactActivity extends Activity {
     	}
     	switch(requestCode) {
     	case 1: 
-    		secret = data.getByteArrayExtra("signedsecret");
-    		key = data.getByteArrayExtra("key");
+    		key = (SealablePublicKey) data.getSerializableExtra("key_package");
     		TextView t = (TextView) findViewById(R.id.edit_contact_key_signature);
-    			t.setText(Base64.encodeToString(key, Base64.DEFAULT));
+    		t.setText(key.digest());
     	}
     }
 }
