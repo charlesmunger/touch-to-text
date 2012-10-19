@@ -9,6 +9,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -31,8 +32,6 @@ public class KeyExchange implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private KeyPair keypair;
-	private KeyAgreement ka;
-	private KeyFactory keyFact;
 	public KeyExchange() {
 		this(256);
 	}
@@ -40,7 +39,7 @@ public class KeyExchange implements Serializable {
 	public KeyExchange(int keyBits) {
 		try {
 			AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator
-					.getInstance("DH");
+					.getInstance("DH","SC");
 			paramGen.init(keyBits);
 
 			// Generate the parameters
@@ -49,25 +48,26 @@ public class KeyExchange implements Serializable {
 					.getParameterSpec(DHParameterSpec.class);
 
 			// Use the values to generate a key pair
-			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
+			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH","SC");
 			keyGen.initialize(dhSpec);
 			keypair = keyGen.generateKeyPair();
-			ka = KeyAgreement.getInstance("DH", "SC");
-			keyFact = KeyFactory.getInstance("DH", "SC");
-		    ka.init(keypair.getPrivate());
 		} catch (Exception e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Exception in key exchange", e);
 		}
 	}
 	
 	public byte[] getPublicKeyBytes() {
-	    return keypair.getPublic().getEncoded();
+	    PublicKey key = keypair.getPublic();
+	    		return key.getEncoded();
 	}
 	
 	public SecretKey setOtherPublicKey(byte[] b,String algorithm) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException {
 		if(keypair == null) {
 			throw new UnsupportedOperationException("Do not reuse key exchange objects.");
 		}
+		KeyAgreement ka = KeyAgreement.getInstance("DH", "SC");
+		KeyFactory keyFact = KeyFactory.getInstance("DH", "SC");
+	    ka.init(keypair.getPrivate());
 	    // Convert the public key bytes into a PublicKey object
 	    X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(b);
 	    // Prepare to generate the secret key with the private key and public key of the other party
