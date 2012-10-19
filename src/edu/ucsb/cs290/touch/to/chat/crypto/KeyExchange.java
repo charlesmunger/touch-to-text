@@ -1,32 +1,35 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
-import java.math.BigInteger;
+import java.io.Serializable;
 import java.security.AlgorithmParameterGenerator;
 import java.security.AlgorithmParameters;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.DHParameterSpec;
 
-public class KeyExchange {
+public class KeyExchange implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private KeyPair keypair;
-	public KeyExchange() throws InvalidParameterSpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException{
-		this(1024);
+	public KeyExchange() {
+		this(256);
 	}
 	
-	public KeyExchange(int keyBits) throws InvalidParameterSpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+	public KeyExchange(int keyBits) {
+		try {
 		AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
         paramGen.init(keyBits);
 
@@ -39,6 +42,9 @@ public class KeyExchange {
 		    KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
 		    keyGen.initialize(dhSpec);
 		    keypair = keyGen.generateKeyPair();
+		} catch(Exception e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Exception in key exchange", e);
+		}
 	}
 	
 	public byte[] getPublicKeyBytes() {

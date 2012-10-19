@@ -16,14 +16,17 @@
 
 package edu.ucsb.cs290.touch.to.chat;
 
+import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -77,7 +80,24 @@ public class NewContactActivity extends Activity {
     }
     
     public void getPublicKey(View v) {
-    	startActivityForResult(new Intent(this,BeginKeyExchangeActivity.class), 1);
+    	Button b = (Button) v.findViewById(R.id.edit_contact_key_btn);
+    	b.setText("Generating Keys...");
+    	b.setClickable(false);
+    	final Activity current = this;
+    	new AsyncTask<Object, Object, KeyExchange> () {
+
+			@Override
+			protected KeyExchange doInBackground(Object... params) {
+				return new KeyExchange();
+			}
+			
+			@Override
+			protected void onPostExecute(KeyExchange result) {
+				Intent i = new Intent(current,BeginKeyExchangeActivity.class);
+				i.putExtra("keyExchange", result);
+		    	startActivityForResult(i, 1);
+			}
+    	}.execute();
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

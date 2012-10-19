@@ -41,25 +41,34 @@
             android:name=".AuthActivity"
             android:label="@string/title_activity_auth" >
         </activity>
-		<activity
+        <activity
             android:name=".BeginKeyExchangeActivity"
-            android:label="@string/title_activity_begin_key_exchange" >
+            android:label="@string/title_activity_begin_key_exchange" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:excludeFromRecents="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.ucsb.cs290.touch.to.chat.NewContactActivity2y" />
         </activity>
-<!--         <provider -->
-<!--             android:name="edu.ucsb.cs290.touch.to.chat.MessagesProvider" -->
-<!--             android:authorities="edu.ucsb.cs290.touch.to.chat" -->
-<!--             android:exported="false" -->
-<!--             android:multiprocess="false" > -->
-<!--         </provider> -->
-<!--         <provider -->
-<!--             android:name="edu.ucsb.cs290.touch.to.chat.ContactsProvider" -->
-<!--             android:authorities="edu.ucsb.cs290.touch.to.chat" -->
-<!--             android:exported="false" -->
-<!--             android:multiprocess="false" > -->
-<!--         </provider> -->
+        <!-- <provider -->
+        <!-- android:name="edu.ucsb.cs290.touch.to.chat.MessagesProvider" -->
+        <!-- android:authorities="edu.ucsb.cs290.touch.to.chat" -->
+        <!-- android:exported="false" -->
+        <!-- android:multiprocess="false" > -->
+        <!-- </provider> -->
+        <!-- <provider -->
+        <!-- android:name="edu.ucsb.cs290.touch.to.chat.ContactsProvider" -->
+        <!-- android:authorities="edu.ucsb.cs290.touch.to.chat" -->
+        <!-- android:exported="false" -->
+        <!-- android:multiprocess="false" > -->
+        <!-- </provider> -->
+        <activity
+            android:name=".EndKeyExchangeActivity"
+            android:label="@string/title_activity_end_key_exchange" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.ucsb.cs290.touch.to.chat.BeginKeyExchangeActivity" />
+        </activity>
+        <meta-data android:name="android.nfc.disable_beam_default"
+         android:value="true" />
     </application>
 
 </manifest>
