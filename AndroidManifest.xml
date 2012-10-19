@@ -73,16 +73,6 @@
         <meta-data
             android:name="android.nfc.disable_beam_default"
             android:value="true" />
-
-        <activity
-            android:name=".AbstractNFCExchangeActivity"
-            android:label="@string/title_activity_abstract_nfcexchange" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>
