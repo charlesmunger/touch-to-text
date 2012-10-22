@@ -10,7 +10,9 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
+import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private KeyExchange keyExchange;
@@ -61,5 +63,14 @@ public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	
 	public void parseIntent(Intent i) {
 		keyExchange = (KeyExchange) getIntent().getSerializableExtra("keyExchange");
+	}
+	
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		switch(resultCode) {
+		case RESULT_CANCELED: return;
+		case RESULT_OK: setResult(RESULT_OK, data);
+		finish();
+		}
 	}
 }

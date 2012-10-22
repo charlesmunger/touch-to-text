@@ -55,9 +55,11 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 		ByteArrayInputStream bis = new ByteArrayInputStream(b);
 		ObjectInput in = null;
 		try {
+			Cipher c = Cipher.getInstance("AES");
+			c.init(Cipher.DECRYPT_MODE, aesKey);
 			in = new ObjectInputStream(bis);
 			SealedObject o = (SealedObject) in.readObject();
-			p = (SealablePublicKey) o.getObject(aesKey);
+			p = (SealablePublicKey) o.getObject(c);
 		} catch (Exception e) {
 			// TODO handle more gracefully
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
@@ -88,7 +90,9 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 		byte[] yourBytes = null;
 		try {
 			out = new ObjectOutputStream(bos);
-			SealedObject s = new SealedObject(p, Cipher.getInstance("AES"));
+			Cipher c = Cipher.getInstance("AES");
+			c.init(Cipher.ENCRYPT_MODE, aesKey);
+			SealedObject s = new SealedObject(p,c);
 			out.writeObject(s);
 			yourBytes = bos.toByteArray();
 		} catch (Exception e) {
