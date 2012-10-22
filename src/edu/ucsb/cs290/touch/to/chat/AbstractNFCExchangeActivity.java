@@ -1,5 +1,12 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,11 +96,51 @@ public abstract class AbstractNFCExchangeActivity extends Activity {
 				intentFiltersArray, mTechLists);
 	}
 
-	public abstract void recieve(byte[] b);
+	public void recieve(byte[] b) {
+		ByteArrayInputStream bis = new ByteArrayInputStream(b);
+		ObjectInput in = null;
+		try {
+			in = new ObjectInputStream(bis);
+			recieveObject(in.readObject());
+		} catch (Exception e) {
+			// TODO handle more gracefully
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Error decrypting payload", e);
+		} finally {
+			try {
+				bis.close();
+				in.close();
+			} catch (Exception e) {
+			}
+		}
+	}
 
 	public abstract void done();
 	
-	public abstract byte[] send();
+	public byte[] send() {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutput out = null;
+		byte[] yourBytes = null;
+		try {
+			out = new ObjectOutputStream(bos);
+			out.writeObject(sendObject());
+			yourBytes = bos.toByteArray();
+		} catch (Exception e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Error serializing public key", e);
+		} finally {
+			try {
+				out.close();
+				bos.close();
+			} catch (Exception e) {
+			} // TODO handle elegantly
+		}
+		return yourBytes;
+	}
+	
+	public abstract Serializable sendObject() throws Exception;
+	
+	public abstract void recieveObject(Object o) throws Exception;
 	
 	public abstract void parseIntent(Intent i);
 }

@@ -1,7 +1,7 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.Serializable;
+import java.security.interfaces.ECPublicKey;
 
 import javax.crypto.SecretKey;
 
@@ -46,17 +46,8 @@ public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	}
 
 	@Override
-	public void recieve(byte[] b) {
-		try {
-			encodedKey = keyExchange.setOtherPublicKey(b, "AES");
-		} catch (Exception e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Unable to generate shared secret", e);
-		}
-	}
-
-	@Override
-	public byte[] send() {
-		return keyExchange.getPublicKeyBytes();
+	public Serializable sendObject() {
+		return keyExchange.getPublicKey();
 	}
 	
 	public void parseIntent(Intent i) {
@@ -70,5 +61,10 @@ public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 		case RESULT_OK: setResult(RESULT_OK, data);
 		finish();
 		}
+	}
+
+	@Override
+	public void recieveObject(Object o) throws Exception {
+		encodedKey = keyExchange.setOtherPublicKey((ECPublicKey) o, "AES");
 	}
 }
