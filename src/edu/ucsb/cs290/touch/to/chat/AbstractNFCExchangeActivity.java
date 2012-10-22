@@ -3,8 +3,11 @@ package edu.ucsb.cs290.touch.to.chat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
-
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -12,12 +15,6 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
-import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.IntentFilter.MalformedMimeTypeException;
-import android.view.Menu;
 
 public abstract class AbstractNFCExchangeActivity extends Activity {
 	private IntentFilter[] intentFiltersArray;

@@ -64,7 +64,7 @@ public class ConversationListActivity extends FragmentActivity implements
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (resultCode) {
 		case 100:
-			String derp = data.getExtras().getString("password");
+			//String derp = data.getExtras().getString("password");
 			// TODO danny do something with this data
 			return;
 		case 101:

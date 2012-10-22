@@ -10,9 +10,7 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private KeyExchange keyExchange;
