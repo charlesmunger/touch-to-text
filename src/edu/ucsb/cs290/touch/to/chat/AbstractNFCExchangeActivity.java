@@ -69,22 +69,21 @@ public abstract class AbstractNFCExchangeActivity extends Activity {
 	public void onNewIntent(Intent intent) {
 		Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 		NdefMessage m = Ndef.get(tagFromIntent).getCachedNdefMessage();
-		byte[] b = m.toByteArray();
+		byte[] b = m.getRecords()[0].getPayload();
 		try {
 			recieve(b);
+			received = true;
 		} catch (Exception e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Exception in key exchange!", e);
 			setResult(RESULT_CANCELED, new Intent());
-			return;
 		}
-		received = true;
+		checkDone();
 	}
 	
 	public void onPause() {
 		super.onPause();
 		mAdapter.disableForegroundDispatch(this);
-		finish();
 	}
 
 	public void onResume() {
