@@ -3,6 +3,8 @@ package edu.ucsb.cs290.touch.to.chat.crypto;
 import java.security.InvalidKeyException;
 import java.security.KeyStore.PasswordProtection;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -22,7 +24,7 @@ final class MasterPassword {
 	/*
 	 * Package level access to decrypt the database. {
 	 */
-	
+
 	static MasterPassword getInstance(String password) {
 		if(instance == null || passphrase == null || passphrase.isDestroyed()) {
 			instance = new MasterPassword(password);
@@ -30,7 +32,7 @@ final class MasterPassword {
 		return instance;
 
 	}
-	
+
 	char[] getPassword() {
 		return passphrase.getPassword();
 	}
@@ -43,7 +45,7 @@ final class MasterPassword {
 			mac.init(secret);
 			encodedPass = mac.doFinal(userPass.getBytes());
 		} catch (NoSuchAlgorithmException e){
-			
+
 		} catch(InvalidKeyException e) {
 
 		}
@@ -61,18 +63,20 @@ final class MasterPassword {
 		for(int i=0;i<encodedPass.length;i++) {
 			encodedPass[i]=0;
 		}
-		// Should initiate garbage collection here to wipe out
-		// all remaining copies of userPass and zero out any 
-		// Editables or UI elements that produced it.
+
+		// Should wipe out all remaining copies of userPass 
+		// and zero out any Editables or UI elements that produced it.
 		userPass = null;
+		System.gc();
 	}
 
 	public void forgetPassword() {
 		try {
 			passphrase.destroy();
 		} catch (DestroyFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Unable to destroy password in memory!", e);
+
 		}
 	}
 
