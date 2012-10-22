@@ -1,5 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -64,10 +65,13 @@ public class ConversationListActivity extends FragmentActivity implements
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (resultCode) {
 		case 100:
-			//String derp = data.getExtras().getString("password");
-			// TODO danny do something with this data
+			// This should really be a PasswordProtection
+			String derp = data.getExtras().getString("edu.ucsb.cs290.touch.to.chat.password");
+			DatabaseHelper.getInstance(getApplicationContext()).setPassword(derp);
 			return;
 		case 101:
+			System.out.println("Contact added");
+			
 			//Store contact in database
 			return;
 		}

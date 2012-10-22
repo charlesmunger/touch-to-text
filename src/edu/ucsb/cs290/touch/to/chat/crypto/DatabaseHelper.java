@@ -1,10 +1,13 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
 import java.io.File;
-import java.security.MessageDigest;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
+import net.sqlcipher.database.SQLiteQueryBuilder;
+
+import org.spongycastle.openpgp.PGPPublicKey;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -18,10 +21,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// DB Strings
 	public static final String MESSAGES_TABLE = "Messages";
-	private static final String ID = "_id";
 	public static final String MESSAGES_ID = "messages_id";
-
 	public static final String THREAD_ID = "threadId";
+	public static final String CONTACTS_TABLE = "Contacts";
+	public static final String CONTACTS_ID = "_id";
+	public static final String LOCAL_STORAGE = "LocalStorage";
+
+	private static final String ID = "_id";
 	private static final String NICKNAME = "nickname";
 	private static final String CONTACT_ID = "contactId";
 	private static final String DATE_TIME = "dateTime";
@@ -32,15 +38,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String ATTACHMENT = "attachmentBlob";
 	private static final String READ = "read"; // 1 if read,  0 for unread
 
-	public static final String CONTACTS_TABLE = "Contacts";
 	// NICKNAME
 	private static final String TOKEN = "token";
 	private static final String CONTACT_NOTE = "note";
 	private static final String VERIFIED_BY = "verifiers";
-	public static final String CONTACTS_ID = "_id";
-
-
-	public static final String LOCAL_STORAGE = "LocalStorage";
 	private static final String PRIVATE_KEY = "privateKey";
 	private static final String PUBLIC_KEY = "publicKey";
 	private static final String KEYPAIR_NAME = "keyName";
@@ -60,15 +61,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// LocalStorage: _id, private key, public key, timestamp (added), name
 	private static final String CREATE_LOCAL_STORAGE_COMMAND = "CREATE TABLE " + LOCAL_STORAGE + " (" + ID + " integer PRIMARY KEY, " +
-			PRIVATE_KEY + " TEXT, " + CONTACT_ID + " TEXT, " + DATE_TIME  + " INTEGER, " + KEYPAIR_NAME + " TEXT);";
+			PRIVATE_KEY + " TEXT, " + PUBLIC_KEY + " TEXT, " + DATE_TIME  + " INTEGER, " + KEYPAIR_NAME + " TEXT);";
 
 	private static final String DATABASE_NAME = "touchToText.db";
 	private static final int DATABASE_VERSION = 1;
+
 
 	// Databases and Context
 	private  File dbFile=null;
 	private SQLiteDatabase db;
 	private Context context;
+	private MasterPassword passwordInstance = null;
 	// The singleton instance
 	private static DatabaseHelper dbHelperInstance = null;
 
@@ -85,13 +88,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public boolean changePassword(String newPassword) {
 		try {
-			MasterPassword.setPassword(newPassword);
-			db.rawExecSQL(String.format("PRAGMA key = '%s'", MasterPassword.getPassword()));
+			passwordInstance.forgetPassword();
+			passwordInstance = new MasterPassword(newPassword);
+			db.rawExecSQL(String.format("PRAGMA key = '%s'", passwordInstance.getPassword().toString()));
 			return true;
 		} catch( Exception e) {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	void insertKeypair(byte[] privateKeyRing, byte[] publicKeyRing, String name ) {
+		ContentValues cv = new ContentValues();
+		cv.put(PRIVATE_KEY, privateKeyRing);
+		cv.put(PUBLIC_KEY, publicKeyRing);
+		cv.put(KEYPAIR_NAME, name);
+		db.insert(LOCAL_STORAGE,null,cv);	
+	}
+
+	void retrieveKeypair(String name) {
+
+	}
+	public void setPassword(String password) {
+		passwordInstance = MasterPassword.getInstance(password);
 	}
 
 	/** Should use a parameterized query to provide this functionality... 
@@ -136,7 +155,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			dbFile = context.getDatabasePath(DATABASE_NAME);
 			dbFile.mkdirs();
 			try {
-				db = SQLiteDatabase.openOrCreateDatabase(dbFile, MasterPassword.getPassword(), null);
+				db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance.getPassword().toString(), null);
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -173,4 +192,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	}
 
+	public SealablePublicKey getPGPPublicKey() {
+		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+		Cursor cursor = db.query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
+				null, null, null, null, null);
+		String base64PublicKey = cursor.getString(1);
+		String name = cursor.getString(2);
+		SealablePublicKey pub = new SealablePublicKey(base64PublicKey.getBytes(),name);
+		// TODO Auto-generated method stub
+		return pub;
+	}
 }
