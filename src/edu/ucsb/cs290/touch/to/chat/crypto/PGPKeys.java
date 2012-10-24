@@ -1,7 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -26,8 +25,12 @@ import org.spongycastle.openpgp.PGPKeyPair;
 import org.spongycastle.openpgp.PGPKeyRingGenerator;
 import org.spongycastle.openpgp.PGPPublicKey;
 import org.spongycastle.openpgp.PGPPublicKeyRing;
+import org.spongycastle.openpgp.PGPSecretKey;
 import org.spongycastle.openpgp.PGPSecretKeyRing;
 import org.spongycastle.openpgp.PGPSignature;
+
+import android.content.Context;
+import android.util.Base64;
 
 /**
  * Generates a keyring containing public and secret DSA signing
@@ -36,10 +39,12 @@ import org.spongycastle.openpgp.PGPSignature;
  */
 final class PGPKeys {
 
-	private KeyPair dsaKp;
-	private KeyPair elgKp;
+	private static final String PUBLIC_KEY = "publicKey";
 	private PGPSecretKeyRing privateKeyRing;
 	private PGPPublicKeyRing publicKeyRing;
+	private PGPPublicKey publicKey;
+	private PGPSecretKey privateKey;
+	private SecurePreferences encryptedPublicKey;
 
 
 	static {
@@ -47,22 +52,41 @@ final class PGPKeys {
 	}
 
 	/**
-	 * Loads keyrings from the DB into the 
+	 * Recreates a Public and Private keypair from the database.
 	 * @param publicKey
 	 * @param privateKey
 	 * @throws IOException
 	 * @throws PGPException
 	 */
-	public PGPKeys(byte[] publicKey, byte[] privateKey) throws IOException, PGPException {
-		privateKeyRing = new PGPSecretKeyRing(privateKey);
-		publicKeyRing = new PGPPublicKeyRing(publicKey);
-	}
-	
-	public PGPKeys(byte[] publicKey) throws IOException, PGPException {
-		publicKeyRing = new PGPPublicKeyRing(publicKey);
+	public PGPKeys(byte[] publicKeyRingBytes, byte[] privateKeyRingBytes) throws IOException, PGPException {
+		privateKeyRing = new PGPSecretKeyRing(privateKeyRingBytes);
+		privateKey = privateKeyRing.getSecretKey();
+		publicKeyRing = new PGPPublicKeyRing(publicKeyRingBytes);
+		publicKey = publicKeyRing.getPublicKey();
 	}
 
-	// Deprecated PGPKeyPair methods but I can't find a good replacement.
+	/**
+	 * Creates a PGPKey containing only a user's public key
+	 * from the database or any byte array.
+	 * @param publicKeyBytes
+	 * @throws IOException
+	 * @throws PGPException
+	 */
+	public PGPKeys(byte[] publicKeyBytes) throws IOException, PGPException {
+		publicKeyRing = new PGPPublicKeyRing(publicKeyBytes);
+		publicKey = publicKeyRing.getPublicKey();
+	}
+
+	/**
+	 * Creates a public key with the given name and passPhrase, and 
+	 * inserts it into the database.
+	 * @param identity
+	 * @param passPhrase
+	 */
+	public PGPKeys(Context c, String identity,PasswordProtection passPhrase ) {
+		generateDSAElGamal(c, identity, passPhrase);
+	}
+
 	/**
 	 * Returns PGP Public Key as a byte array.
 	 * 
@@ -75,87 +99,100 @@ final class PGPKeys {
 	 * @throws SignatureException
 	 * @throws PGPException
 	 */
+
+
 	@SuppressWarnings("deprecation")
-	byte[] getPublicKey(String identity, PasswordProtection passPhrase) 
+	/**
+	 * Returns the public Key RING! 
+	 */
+	byte[] getPublicKeyRing() 
 			throws IOException, InvalidKeyException, NoSuchProviderException, SignatureException, PGPException {
+		return publicKeyRing.getEncoded();
 
-		if ( publicKeyRing == null || privateKeyRing == null ) {
-			if( dsaKp == null || elgKp == null) {
-				generateDSAElGamal(identity, passPhrase);
-			} else {
-				PGPKeyPair dsaKeyPair = new PGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
-				PGPKeyPair elgKeyPair = new PGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
-
-				PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair,
-						identity, PGPEncryptedData.AES_256, passPhrase.getPassword(), true, null, null, new SecureRandom(), "BC");
-
-				// Now we have our DSA and El Gamal keys in one place
-				keyRingGen.addSubKey(elgKeyPair);
-				publicKeyRing = keyRingGen.generatePublicKeyRing();
-				privateKeyRing = keyRingGen.generateSecretKeyRing();
-			}
-		}
-		Iterator<PGPPublicKey> publicKeyRingIter = publicKeyRing.getPublicKeys();
-		// May need to intelligently pick keys, this just takes the last one.
-		byte[] publicKey = null;
-
-		while(publicKeyRingIter.hasNext()) {
-			PGPPublicKey key = publicKeyRingIter.next();
-			publicKey = key.getEncoded();
-		}
-
-		return publicKey;
 	}
 
+	public byte[] getPublicKey() {
+		byte[] publicKeyBytes = null;
+		if(publicKeyRing != null) {
+			Iterator<PGPPublicKey> publicKeyRingIter = publicKeyRing.getPublicKeys();
+			// How many keys are in the ring? 
+			while(publicKeyRingIter.hasNext()) {
+				PGPPublicKey key = publicKeyRingIter.next();
+				try {
+					publicKeyBytes = key.getEncoded();
+				} catch (IOException e) {
+					Logger.getLogger("touch-to-text").log(Level.SEVERE,
+							"Problem e public key!", e);
+				}
+			}
+		}
+		return publicKeyBytes;
+	}
 
 	// Deprecated PGPKeyPair methods but I can't find a good replacement.
 	@SuppressWarnings("deprecation")
-	private void storeMyKeysInDB(String identity, PasswordProtection passPhrase) 
+	private void storeMyKeysInDB(String identity) 
 			throws IOException, InvalidKeyException, NoSuchProviderException, SignatureException, PGPException {
+		if(privateKey == null) {
+			DatabaseHelper.getInstance(null).insertKeypair(null, publicKey.getEncoded(), identity);
+		} else {
+			DatabaseHelper.getInstance(null).insertKeypair(privateKey.getEncoded(), publicKey.getEncoded(), identity);
 
-
-		PGPKeyPair dsaKeyPair = new PGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
-		PGPKeyPair elgKeyPair = new PGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
-
-		PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair,
-				identity, PGPEncryptedData.AES_256, passPhrase.getPassword(), true, null, null, new SecureRandom(), "BC");
-
-		// Now we have our DSA and El Gamal keys in one place
-		keyRingGen.addSubKey(elgKeyPair);
-		byte[] privateKeyRingBytes = keyRingGen.generateSecretKeyRing().getEncoded();
-		byte[] publicKeyRingBytes = keyRingGen.generatePublicKeyRing().getEncoded();
-		DatabaseHelper.getInstance(null).insertKeypair(privateKeyRingBytes, publicKeyRingBytes, identity);
-		// LocalStorage: _id, private key, public key, timestamp (added), name
-
-		//		Approach #0: Grab only the private key itself instead of the entire ring
-		//		Iterator<PGPSecretKey> privateKeyRing =keyRingGen.generateSecretKeyRing().getSecretKeys();
-		//		while(privateKeyRing.hasNext()) {
-		//			PGPSecretKey key = privateKeyRing.next();
-		//			privateKey = key.getEncoded();
-		//		}
+		}
 	}
 
-	private void generateDSAElGamal(String name, PasswordProtection passphrase) {
+	private void generateDSAElGamal(Context c, String name, PasswordProtection passphrase) {
 		try {
-			KeyPairGenerator dsaKpg = KeyPairGenerator.getInstance("DSA", "BC");
+			KeyPairGenerator dsaKpg = KeyPairGenerator.getInstance("DSA", "SC");
 			dsaKpg.initialize(1024); // Should benchmark vs. 2048 bit  keys
-			dsaKp = dsaKpg.generateKeyPair();
-			KeyPairGenerator elgKpg = KeyPairGenerator.getInstance("ELGAMAL", "BC");
+			KeyPair dsaKp = dsaKpg.generateKeyPair();
+
+			KeyPairGenerator elgKpg = KeyPairGenerator.getInstance("ELGAMAL", "SC");
 			ElGamalParametersGenerator a = new ElGamalParametersGenerator();
+			a.init(1024, 10, new SecureRandom());
 			ElGamalParameters params = a.generateParameters();
 			ElGamalParameterSpec elParams = new ElGamalParameterSpec(params.getP(), params.getG());
 			elgKpg.initialize(elParams);
-			elgKp = elgKpg.generateKeyPair();
+			KeyPair elgKp = elgKpg.generateKeyPair();
+
+			PGPKeyPair dsaKeyPair = new PGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
+			PGPKeyPair elgKeyPair = new PGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
+
+			PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair,
+					name, PGPEncryptedData.AES_256, passphrase.getPassword(), true, null, null, new SecureRandom(), "BC");
+
+			// Now we have our DSA and El Gamal keys in one place
+			keyRingGen.addSubKey(elgKeyPair);
+			publicKeyRing = keyRingGen.generatePublicKeyRing();
+			publicKey = publicKeyRing.getPublicKey();
+
+			privateKeyRing = keyRingGen.generateSecretKeyRing();
+			privateKey = privateKeyRing.getSecretKey();
+			storeMyKeysInDB(name);	
+
+			encryptedPublicKey = new  SecurePreferences(
+					c, "touchToTexPreferences.xml",
+					MasterPassword.getInstance(null).getPassword().toString(),
+					true);
+			encryptedPublicKey.put(PUBLIC_KEY, Base64.encodeToString(publicKey.getEncoded(), Base64.DEFAULT));
+
 		} catch(NoSuchAlgorithmException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Missing DSA or ELGAMAL!", e);
 		} catch(NoSuchProviderException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Bouncy Castle not found!", e);
+					"Spongy Castle not found!", e);
 		} catch(InvalidAlgorithmParameterException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Invalid Algorithm Parameters!", e);
-		}
-	}
+		} catch(PGPException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Unknown PGP Exception!", e);
+		} catch(Exception e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Unknown Exception!", e);
 
+		}
+
+	}
 }

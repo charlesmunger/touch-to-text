@@ -1,6 +1,8 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -11,6 +13,7 @@ import org.spongycastle.openpgp.PGPPublicKey;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Base64;
 
 /**
  *
@@ -70,10 +73,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// Databases and Context
 	private  File dbFile=null;
 	private SQLiteDatabase db;
-	private Context context;
 	private MasterPassword passwordInstance = null;
+	private Context context;
+	private SealablePublicKey publicKey;
 	// The singleton instance
 	private static DatabaseHelper dbHelperInstance = null;
+
+	DatabaseHelper(Context ctx) {
+		// calls the super constructor, requesting the default cursor factory.
+		super(ctx.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
+		context = ctx;
+	}
 
 	public static DatabaseHelper getInstance(Context ctx) {
 		if (dbHelperInstance == null) {
@@ -83,6 +93,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return dbHelperInstance;
 	}
 
+	public void initalizeInstance(String password) {
+		if (dbHelperInstance != null && dbHelperInstance.passwordInstance == null) {
+			// Use global context for the app
+			dbHelperInstance.setPassword(password);
+			createTables(getDatabase(context));
+
+		}
+	}
+
 	/** Will only work if the db is already unlocked with the current password
 	 * Otherwise I think it will fail silently? Should test and see what 'e' is.
 	 */
@@ -90,7 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try {
 			passwordInstance.forgetPassword();
 			passwordInstance = new MasterPassword(newPassword);
-			db.rawExecSQL(String.format("PRAGMA key = '%s'", passwordInstance.getPassword().toString()));
+			getDatabase(context).rawExecSQL(String.format("PRAGMA key = '%s'", passwordInstance.getPassword().toString()));
 			return true;
 		} catch( Exception e) {
 			e.printStackTrace();
@@ -98,20 +117,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
+
 	void insertKeypair(byte[] privateKeyRing, byte[] publicKeyRing, String name ) {
 		ContentValues cv = new ContentValues();
-		cv.put(PRIVATE_KEY, privateKeyRing);
-		cv.put(PUBLIC_KEY, publicKeyRing);
-		cv.put(KEYPAIR_NAME, name);
-		db.insert(LOCAL_STORAGE,null,cv);	
+		if(privateKeyRing == null) {
+			cv.put(PUBLIC_KEY, publicKeyRing);
+			cv.put(DATE_TIME, System.currentTimeMillis());
+			cv.put(NICKNAME, name);
+			db.insert(CONTACTS_TABLE, null, cv);
+		} else {
+			cv.put(PRIVATE_KEY, privateKeyRing);
+			cv.put(PUBLIC_KEY, publicKeyRing);
+			cv.put(DATE_TIME, System.currentTimeMillis());
+			cv.put(KEYPAIR_NAME, name);
+			db.insert(LOCAL_STORAGE,null,cv);	
+		}
 	}
 
-	void retrieveKeypair(String name) {
-
-	}
 	public void setPassword(String password) {
 		passwordInstance = MasterPassword.getInstance(password);
 	}
+
 
 	/** Should use a parameterized query to provide this functionality... 
 	 * this would allow raw SQL injection if misused
@@ -154,31 +180,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			SQLiteDatabase.loadLibs(context);
 			dbFile = context.getDatabasePath(DATABASE_NAME);
 			dbFile.mkdirs();
+			dbFile.delete();
+			File databaseFile=null;
 			try {
+				databaseFile = new File(context.getDatabasePath(DATABASE_NAME).toString()+DATABASE_NAME);
+				databaseFile.mkdirs();
 				db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance.getPassword().toString(), null);
 			} catch(Exception e) {
-				e.printStackTrace();
-			}
-			// Check if this is a new or existing db file. If there are no messages
-			if(!tableExists(MESSAGES_TABLE, context) || !tableExists(CONTACTS_TABLE, context)) {
-				createTables();
+				db = SQLiteDatabase.openOrCreateDatabase(databaseFile, passwordInstance.getPassword().toString(), null);
+
+				Logger.getLogger("touch-to-text").log(Level.SEVERE,
+						"Unable to open database!", e);
 			}
 		}
 		return db;
-
 	}
 
-	private void createTables() {
+	private void createTables(SQLiteDatabase db) {
 		db.execSQL(CREATE_MESSAGES_COMMAND);
 		db.execSQL(CREATE_CONTACTS_COMMAND);
 		db.execSQL(CREATE_LOCAL_STORAGE_COMMAND);
 	}
 
-	DatabaseHelper(Context context) {
-		// calls the super constructor, requesting the default cursor factory.
-		super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
-		this.context = context;
-	}
+
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
@@ -193,13 +217,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public SealablePublicKey getPGPPublicKey() {
-		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-		Cursor cursor = db.query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
-				null, null, null, null, null);
-		String base64PublicKey = cursor.getString(1);
-		String name = cursor.getString(2);
-		SealablePublicKey pub = new SealablePublicKey(base64PublicKey.getBytes(),name);
-		// TODO Auto-generated method stub
-		return pub;
+		String name = "myname";
+		if(publicKey == null) {
+			SecurePreferences encryptedPublicKey = new  SecurePreferences(
+					context, "touchToTexPreferences.xml",
+					passwordInstance.getPassword().toString(),
+					true);
+			String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
+			if(publicKeyString != null) {
+				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT), "myname");
+			} else {
+				Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
+						null, null, null, null, null);
+				if(cursor.getCount()==0) {
+					PGPKeys newKeys = new PGPKeys(context, name, passwordInstance.getPasswordProtection());
+					publicKey = new SealablePublicKey(newKeys.getPublicKey(), name);
+				} else {
+					String base64PublicKey = cursor.getString(1);
+					name = cursor.getString(2);
+					publicKey = new SealablePublicKey(base64PublicKey.getBytes(),name);
+				}
+			}
+		}
+		return publicKey;
 	}
+
+	public void addPublicKey(SealablePublicKey key) {
+		insertKeypair(null, key.publicKey, key.identity);
+	}
+
+	public void addContact(String name, long date, SealablePublicKey key,
+			byte[] signedSecret) {
+
+		ContentValues cv = new ContentValues();
+		cv.put(PUBLIC_KEY, key.publicKey);
+		cv.put(DATE_TIME, System.currentTimeMillis());
+		cv.put(NICKNAME, name);
+		cv.put(TOKEN, signedSecret);
+		db.insert(CONTACTS_TABLE, null, cv);
+	}		
 }

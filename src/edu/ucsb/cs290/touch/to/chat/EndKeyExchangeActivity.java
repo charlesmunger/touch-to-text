@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
@@ -55,9 +56,10 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 
 	@Override
 	public Serializable sendObject() throws Exception {
-		SealablePublicKey p = new SealablePublicKey(new byte[] {1},"CHARLES MUNGER");//TODO when database works DatabaseHelper.getInstance(getApplicationContext()).getPGPPublicKey();
+		SealablePublicKey p = DatabaseHelper.getInstance(getApplicationContext()).getPGPPublicKey();
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, aesKey);
+		// Get Our PGP Public Key
 		return new SealedObject(p,c);
 	}
 
@@ -66,6 +68,7 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.DECRYPT_MODE, aesKey);
 		SealedObject o = (SealedObject) sealed;
+		
 		p = (SealablePublicKey) o.getObject(c);
 	}
 }

@@ -1,15 +1,16 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class ConversationListActivity extends FragmentActivity implements
-		ConversationListFragment.Callbacks {
+ConversationListFragment.Callbacks {
 
 	private boolean mTwoPane;
 
@@ -50,8 +51,8 @@ public class ConversationListActivity extends FragmentActivity implements
 			ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
 			getSupportFragmentManager().beginTransaction()
-					.replace(R.id.conversation_detail_container, fragment)
-					.commit();
+			.replace(R.id.conversation_detail_container, fragment)
+			.commit();
 
 		} else {
 			Intent detailIntent = new Intent(this,
@@ -63,16 +64,21 @@ public class ConversationListActivity extends FragmentActivity implements
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		switch (resultCode) {
+		switch (requestCode) {
 		case 100:
-			// This should really be a PasswordProtection
+			// Set password, initialize db, and generate keypair of doesn't exist.
 			String derp = data.getExtras().getString("edu.ucsb.cs290.touch.to.chat.password");
-			DatabaseHelper.getInstance(getApplicationContext()).setPassword(derp);
+			DatabaseHelper.getInstance(getApplicationContext()).initalizeInstance(derp);
 			return;
 		case 101:
 			System.out.println("Contact added");
-			
-			//Store contact in database
+        	// String long SealablePublicKey byte[]
+			// name time key signedSecret
+			DatabaseHelper.getInstance(getApplicationContext()).addContact(data.getExtras().getString("name"),
+		        	data.getExtras().getLong("date"),
+					(SealablePublicKey)data.getExtras().get("key"),
+					data.getExtras().getByteArray("signedsecret")
+					);
 			return;
 		}
 	}

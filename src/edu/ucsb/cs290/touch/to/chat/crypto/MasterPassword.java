@@ -36,6 +36,10 @@ final class MasterPassword {
 	char[] getPassword() {
 		return passphrase.getPassword();
 	}
+	
+	PasswordProtection getPasswordProtection() {
+		return passphrase;
+	}
 
 	public MasterPassword(String userPass)  {
 		byte[] encodedPass = null;

@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
 import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
@@ -51,8 +52,8 @@ public class NewContactActivity extends Activity {
                     	i.putExtra("date", System.currentTimeMillis());
                     	i.putExtra("key", key);
                     	i.putExtra("signedsecret", secret);
-                    	setResult(RESULT_OK,i);//TODO fill in values
-                        finish(); // TODO: don't just finish()!
+                    	setResult(RESULT_OK,i);
+                        finish();
                     }
                 });
         customActionBarView.findViewById(R.id.actionbar_discard).setOnClickListener(
@@ -110,6 +111,8 @@ public class NewContactActivity extends Activity {
     		key = (SealablePublicKey) data.getSerializableExtra("key_package");
     		TextView t = (TextView) findViewById(R.id.edit_contact_key_signature);
     		t.setText(key.digest());
+    		// Should add user in caller of this Activity
+    		//DatabaseHelper.getInstance(getApplicationContext()).addPublicKey(key);    		
     	}
     }
 }
