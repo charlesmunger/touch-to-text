@@ -1,6 +1,5 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
