@@ -1,7 +1,5 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import edu.ucsb.cs290.touch.to.chat.dummy.DummyContent;
-
 import android.R;
 import android.app.Activity;
 import android.os.Bundle;
@@ -9,6 +7,7 @@ import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import edu.ucsb.cs290.touch.to.chat.dummy.DummyContent;
 
 public class ConversationListFragment extends ListFragment {
 

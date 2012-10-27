@@ -72,13 +72,12 @@ ConversationListFragment.Callbacks {
 			return;
 		case 101:
 			System.out.println("Contact added");
-        	// String long SealablePublicKey byte[]
-			// name time key signedSecret
-			DatabaseHelper.getInstance(getApplicationContext()).addContact(data.getExtras().getString("name"),
+        	// String long SealablePublicKey
+			// name   time key+signedsecret 
+			DatabaseHelper.getInstance(getApplicationContext()).addContact(
+					data.getExtras().getString("name"),
 		        	data.getExtras().getLong("date"),
-					(SealablePublicKey)data.getExtras().get("key"),
-					data.getExtras().getByteArray("signedsecret")
-					);
+					(SealablePublicKey)data.getExtras().get("key"));
 			return;
 		}
 	}

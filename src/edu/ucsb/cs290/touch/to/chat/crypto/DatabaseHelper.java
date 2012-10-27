@@ -6,10 +6,6 @@ import java.util.logging.Logger;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
-import net.sqlcipher.database.SQLiteQueryBuilder;
-
-import org.spongycastle.openpgp.PGPPublicKey;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -138,23 +134,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		passwordInstance = MasterPassword.getInstance(password);
 	}
 
-
-	/** Should use a parameterized query to provide this functionality... 
-	 * this would allow raw SQL injection if misused
-	 */
-	private boolean tableExists(String table_name, Context context) {
-
-		Cursor cursor = getDatabase(context).rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"+table_name+"'", null);
-		if(cursor!=null) {
-			if(cursor.getCount()>0) {
-				cursor.close();
-				return true;
-			}
-			cursor.close();
-		}
-		return false;
-	}
-
 	/**
 	 * Erase the entire database file.
 	 * 
@@ -246,14 +225,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		insertKeypair(null, key.publicKey, key.identity);
 	}
 
-	public void addContact(String name, long date, SealablePublicKey key,
-			byte[] signedSecret) {
+	public void addContact(String name, long date, SealablePublicKey key) {
 
 		ContentValues cv = new ContentValues();
 		cv.put(PUBLIC_KEY, key.publicKey);
 		cv.put(DATE_TIME, System.currentTimeMillis());
 		cv.put(NICKNAME, name);
-		cv.put(TOKEN, signedSecret);
+		cv.put(TOKEN, key.token());
 		db.insert(CONTACTS_TABLE, null, cv);
 	}		
 }
