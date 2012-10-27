@@ -204,7 +204,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					true);
 			String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
 			if(publicKeyString != null) {
-				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT), "myname");
+				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT));
 			} else {
 				Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
 						null, null, null, null, null);
