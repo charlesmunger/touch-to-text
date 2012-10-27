@@ -12,6 +12,7 @@ public final class SealablePublicKey implements Serializable {
 	
 	byte[] publicKey;
 	String identity;
+	byte[] signedToken;
 
 	public SealablePublicKey(byte[] publicKey, String identity) {
 		this.identity = identity;
@@ -30,5 +31,9 @@ public final class SealablePublicKey implements Serializable {
 					"SHA1 is missing!", e);
 			return "Key Verification Error";
 		}
+	}
+
+	public byte[] token() {
+		return signedToken;
 	}
 }

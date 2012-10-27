@@ -1,11 +1,5 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +16,7 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import edu.ucsb.cs290.touch.to.chat.crypto.Helpers;
 
 public abstract class AbstractNFCExchangeActivity extends Activity {
 	private IntentFilter[] intentFiltersArray;
@@ -96,46 +91,19 @@ public abstract class AbstractNFCExchangeActivity extends Activity {
 				intentFiltersArray, mTechLists);
 	}
 
-	public void recieve(byte[] b) {
-		ByteArrayInputStream bis = new ByteArrayInputStream(b);
-		ObjectInput in = null;
-		try {
-			in = new ObjectInputStream(bis);
-			recieveObject(in.readObject());
-		} catch (Exception e) {
-			// TODO handle more gracefully
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Error decrypting payload", e);
-		} finally {
-			try {
-				bis.close();
-				in.close();
-			} catch (Exception e) {
-			}
-		}
+	public void recieve(byte[] b) throws Exception{
+		recieveObject(Helpers.deserialize(b));
 	}
 
 	public abstract void done();
 	
 	public byte[] send() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutput out = null;
-		byte[] yourBytes = null;
 		try {
-			out = new ObjectOutputStream(bos);
-			out.writeObject(sendObject());
-			yourBytes = bos.toByteArray();
+			return Helpers.serialize(sendObject());
 		} catch (Exception e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Error serializing public key", e);
-		} finally {
-			try {
-				out.close();
-				bos.close();
-			} catch (Exception e) {
-			} // TODO handle elegantly
+			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Error serializing object to be sent", e);
 		}
-		return yourBytes;
+		return null;
 	}
 	
 	public abstract Serializable sendObject() throws Exception;
