@@ -197,41 +197,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public SealablePublicKey getPGPPublicKey() {
 		String name = "myname";
-		if(publicKey == null) {
-			SecurePreferences encryptedPublicKey = new  SecurePreferences(
-					context, "touchToTexPreferences.xml",
-					passwordInstance.getPassword().toString(),
-					true);
-			String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-			if(publicKeyString != null) {
-				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT));
-			} else {
-				Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
-						null, null, null, null, null);
-				if(cursor.getCount()==0) {
-					PGPKeys newKeys = new PGPKeys(context, name, passwordInstance.getPasswordProtection());
-					publicKey = new SealablePublicKey(newKeys.getPublicKey(), name);
-				} else {
-					String base64PublicKey = cursor.getString(1);
-					name = cursor.getString(2);
-					publicKey = new SealablePublicKey(base64PublicKey.getBytes(),name);
-				}
-			}
-		}
+//		if(publicKey == null) {
+//			SecurePreferences encryptedPublicKey = new  SecurePreferences(
+//					context, "touchToTexPreferences.xml",
+//					passwordInstance.getPassword().toString(),
+//					true);
+//			String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
+//			if(publicKeyString != null) {
+//				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT));
+//			} else {
+//				Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
+//						null, null, null, null, null);
+//				if(cursor.getCount()==0) {
+//					PGPKeys newKeys = new PGPKeys(context, name, passwordInstance.getPasswordProtection());
+//					publicKey = new SealablePublicKey(newKeys.getPublicKey(), name);
+//				} else {
+//					String base64PublicKey = cursor.getString(1);
+//					name = cursor.getString(2);
+//					publicKey = new SealablePublicKey(base64PublicKey.getBytes(),name);
+//				}
+//			}
+//		}
 		return publicKey;
 	}
 
 	public void addPublicKey(SealablePublicKey key) {
-		insertKeypair(null, key.publicKey, key.identity);
+//		insertKeypair(null, key.publicKey, key.identity);
 	}
 
 	public void addContact(String name, long date, SealablePublicKey key) {
 
-		ContentValues cv = new ContentValues();
-		cv.put(PUBLIC_KEY, key.publicKey);
-		cv.put(DATE_TIME, System.currentTimeMillis());
-		cv.put(NICKNAME, name);
-		cv.put(TOKEN, key.token());
-		db.insert(CONTACTS_TABLE, null, cv);
+//		ContentValues cv = new ContentValues();
+//		cv.put(PUBLIC_KEY, key.publicKey);
+//		cv.put(DATE_TIME, System.currentTimeMillis());
+//		cv.put(NICKNAME, name);
+//		cv.put(TOKEN, key.token());
+//		db.insert(CONTACTS_TABLE, null, cv);
 	}		
 }
