@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.crypto;
+package edu.ucsb.cs290.touch.to.chat.https;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

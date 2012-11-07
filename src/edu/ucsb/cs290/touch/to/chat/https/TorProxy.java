@@ -26,7 +26,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 
 import android.util.Log;
-import edu.ucsb.cs290.touch.to.chat.crypto.MyTrustManager;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.TokenAuthMessage;
 import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
 
