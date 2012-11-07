@@ -1,5 +1,8 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -48,7 +51,16 @@ public class ConversationDetailFragment extends Fragment {
     
     private void sendMessage(View v) {
     	Message m = new Message(((EditText) v.findViewById(R.id.edit_message_text)).getText().toString());
-    	ProtectedMessage pm = new ProtectedMessage(m, mItem.getKey(), null);
+    	ProtectedMessage pm = null;
+		try {
+			pm = new ProtectedMessage(m, mItem.getKey(), null);
+		} catch (GeneralSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getKey(), mItem.getToken());
     	TorProxy.sendMessage(tm);
     }

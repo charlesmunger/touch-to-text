@@ -1,15 +1,11 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import java.util.List;
-
-import android.R;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.dummy.DummyContent;
 
@@ -37,8 +33,8 @@ public class ConversationListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setListAdapter(new ArrayAdapter<CryptoContacts.Contact>(getActivity(),
-                R.layout.simple_list_item_activated_1,
-                R.id.text1,
+                android.R.layout.simple_list_item_activated_1,
+                android.R.id.text1,
                 CryptoContacts.ITEMS));
     }
 
