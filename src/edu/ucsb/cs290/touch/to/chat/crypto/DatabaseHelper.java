@@ -113,24 +113,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	/**
-	 * Will only work if the db is already unlocked with the current password
-	 * Otherwise I think it will fail silently? Should test and see what 'e' is.
-	 */
-//	public boolean changePassword(String newPassword) {
-//		try {
-//			passwordInstance.forgetPassword();
-//			passwordInstance = new MasterPassword(newPassword);
-//			getDatabase(context).rawExecSQL(
-//					String.format("PRAGMA key = '%s'", passwordInstance
-//							.getPassword().toString()));
-//			return true;
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return false;
-//		}
-//	}
-
 	void insertKeypair(byte[] privateKeyRing, byte[] publicKeyRing, String name) {
 		ContentValues cv = new ContentValues();
 		if (privateKeyRing == null) {
@@ -178,31 +160,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 		return dbFile.delete();
 	}
-
-	/**
-	 * Returns a reference to the database object, and creates it if it has not
-	 * yet been used. Context required for initial creations, after that it
-	 * doesn't matter.
-	 * 
-	 * @param context
-	 *            The application context, required on first use.
-	 * @return
-	 */
-//	public SQLiteDatabase getDatabase(Context context) {
-//		if (db == null) {
-//			SQLiteDatabase.loadLibs(context);
-//			String dbPath = context.getDatabasePath(DATABASE_NAME).getPath();
-//			dbFile = new File(dbPath);
-//			if(!dbFile.exists()) {
-//				dbFile.getParentFile().mkdirs();
-//				db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance
-//					.getPassword().toString(), null);
-//			}
-//			// dbFile.delete();
-//			db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance.getPassword().toString(), null);
-//		}
-//		return db;
-//	}
 
 	private void createTables(SQLiteDatabase db) {
 		db.execSQL(CREATE_MESSAGES_COMMAND);
