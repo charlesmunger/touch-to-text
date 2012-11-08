@@ -20,6 +20,7 @@ import android.util.Base64;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+	private static final String TOUCH_TO_TEXT_PREFERENCES_XML = "touchToTextPreferences.xml";
 	// DB Strings
 	public static final String MESSAGES_TABLE = "Messages";
 	public static final String MESSAGES_ID = "messages_id";
@@ -186,9 +187,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		createTables(db);
 		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				"touchToTextPreferences.xml", passwordInstance.getPassword()
+				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPassword()
 						.toString(), true);
-		String publicKeyString = Base64.encodeToString(Helpers.serialize(new KeyPairsProvider()), Base64.DEFAULT);
+		KeyPairsProvider kp = new KeyPairsProvider();
+		byte[] b = Helpers.serialize(kp);
+		String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
 		encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
 	}
 
@@ -201,13 +204,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public SealablePublicKey getPGPPublicKey() {
 		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				"touchToTextPreferences.xml", passwordInstance.getPassword()
+				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPassword()
 						.toString(), true);
 		
 		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-		
-		publicKey = ((KeyPairsProvider) Helpers.deserialize(Base64.decode(
-				publicKeyString, Base64.DEFAULT))).getExternalKey();
+		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64.decode(
+				publicKeyString, Base64.DEFAULT));
+		publicKey = kp.getExternalKey();
 		
 		return publicKey;
 	}
