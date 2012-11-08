@@ -20,10 +20,10 @@ public class KeyPairsProvider implements Serializable {
 	}
 	private KeyPair signingKeyPair;
 	private KeyPair transmissonKeyPair;
-	
+
 	public KeyPairsProvider() {
 		ExecutorService e = Executors.newCachedThreadPool();
-		Future<KeyPair> signingFut = e.submit(new Generate("DSA",1024));
+		Future<KeyPair> signingFut = e.submit(new Generate("DSA", 1024));
 		Future<KeyPair> transFut = e.submit(new Generate("ElGamal", 1024));
 		try {
 			signingKeyPair = signingFut.get();
@@ -32,9 +32,9 @@ public class KeyPairsProvider implements Serializable {
 			Log.wtf("touch-to-text", "Interrupted key generation", e1);
 		}
 	}
-	
+
 	private static KeyPair generate(String algorithm, int bits) {
-		Log.d("touch-to-chat", "starting generation of "+algorithm);
+		Log.d("touch-to-chat", "starting generation of " + algorithm);
 		long time = System.currentTimeMillis();
 		KeyPairGenerator gen = null;
 		try {
@@ -44,26 +44,28 @@ public class KeyPairsProvider implements Serializable {
 		}
 		gen.initialize(bits);
 		KeyPair kp = gen.generateKeyPair();
-		Log.d("touch-to-text", "Done generating "+algorithm + "took "+ (System.currentTimeMillis()-time)/1000);
+		Log.d("touch-to-text", "Done generating " + algorithm + "took "
+				+ (System.currentTimeMillis() - time) / 1000);
 		return kp;
 	}
-	
+
 	private class Generate implements Callable<KeyPair> {
 		private final String algorithm;
 		private final int bits;
-		
+
 		public Generate(String algorithm, int bits) {
 			this.algorithm = algorithm;
 			this.bits = bits;
 		}
-		
+
 		@Override
 		public KeyPair call() throws Exception {
 			return generate(algorithm, bits);
 		}
 	}
-	
+
 	public SealablePublicKey getExternalKey() {
-		return new SealablePublicKey(signingKeyPair,transmissonKeyPair.getPublic());
+		return new SealablePublicKey(signingKeyPair,
+				transmissonKeyPair.getPublic());
 	}
 }

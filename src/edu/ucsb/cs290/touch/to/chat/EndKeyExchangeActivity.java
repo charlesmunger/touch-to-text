@@ -17,7 +17,7 @@ import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private SecretKey aesKey;
 	private SealablePublicKey p;
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
