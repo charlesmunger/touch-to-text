@@ -60,7 +60,7 @@ public class ConversationDetailFragment extends Fragment {
     			messageToSend.getText().toString(), System.currentTimeMillis(),mItem);
 
 		try {
-			pm = new ProtectedMessage(m, mItem.getKey(), null);
+			pm = new ProtectedMessage(m, mItem.getEncryptingKey(), null);
 		} catch (GeneralSecurityException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Problem creating ProtectedMessage!", e);
@@ -68,7 +68,7 @@ public class ConversationDetailFragment extends Fragment {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Problem creating ProtectedMessage!", e);
 		}
-    	TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getKey(), mItem.getToken());
+    	TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getSigningKey(), mItem.getToken());
     	TorProxy.sendMessage(tm);
     }
     

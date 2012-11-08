@@ -12,26 +12,30 @@ import android.database.Cursor;
 
 public class CryptoContacts {
 	public static class Contact {
-		private final PublicKey p;
+		private final PublicKey signingKey;
+		private final PublicKey encryptingKey;
 		private final SignedObject so;
 		private final String name;
 
-		public Contact(String name, PublicKey p, SignedObject so) {
-			this.p = p;
+		public Contact(String name, PublicKey signing, PublicKey encrypting, SignedObject so) {
+			this.signingKey = signing;
+			this.encryptingKey = encrypting;
 			this.name = name;
 			this.so = so;
 		}
 		
 		public Contact(String name, SealablePublicKey spk) {
-			this.name = name;
-			this.p = spk.publicKey;
-			this.so = spk.token();
+			this(name,spk.sign(),spk.encrypt(),spk.token());
 		}
 
-		public PublicKey getKey() {
-			return p;
+		public PublicKey getSigningKey() {
+			return signingKey;
 		}
 
+		public PublicKey getEncryptingKey() {
+			return encryptingKey;
+		}
+		
 		public SignedObject getToken() {
 			return so;
 		}

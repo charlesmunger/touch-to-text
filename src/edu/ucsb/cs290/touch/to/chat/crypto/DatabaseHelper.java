@@ -1,18 +1,8 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
 import java.security.PublicKey;
 import java.security.SignedObject;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -21,6 +11,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Base64;
 
 /**
  * 
@@ -117,10 +108,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (dbHelperInstance != null
 				&& dbHelperInstance.passwordInstance == null) {
 			dbHelperInstance.setPassword(password);
-			if (!tableExists(MESSAGES_TABLE)) {
-				createTables(getDatabase(context));
-			}
-
+			SQLiteDatabase.loadLibs(context);
+			db = this.getWritableDatabase(password);
 		}
 	}
 
@@ -128,19 +117,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * Will only work if the db is already unlocked with the current password
 	 * Otherwise I think it will fail silently? Should test and see what 'e' is.
 	 */
-	public boolean changePassword(String newPassword) {
-		try {
-			passwordInstance.forgetPassword();
-			passwordInstance = new MasterPassword(newPassword);
-			getDatabase(context).rawExecSQL(
-					String.format("PRAGMA key = '%s'", passwordInstance
-							.getPassword().toString()));
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
+//	public boolean changePassword(String newPassword) {
+//		try {
+//			passwordInstance.forgetPassword();
+//			passwordInstance = new MasterPassword(newPassword);
+//			getDatabase(context).rawExecSQL(
+//					String.format("PRAGMA key = '%s'", passwordInstance
+//							.getPassword().toString()));
+//			return true;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//	}
 
 	void insertKeypair(byte[] privateKeyRing, byte[] publicKeyRing, String name) {
 		ContentValues cv = new ContentValues();
@@ -199,18 +188,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 *            The application context, required on first use.
 	 * @return
 	 */
-	public SQLiteDatabase getDatabase(Context context) {
-		if (db == null) {
-			SQLiteDatabase.loadLibs(context);
-			String dbPath = context.getDatabasePath(DATABASE_NAME).getPath();
-			dbFile = new File(dbPath);
-			dbFile.getParentFile().mkdirs();
-			// dbFile.delete();
-			db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance
-					.getPassword().toString(), null);
-		}
-		return db;
-	}
+//	public SQLiteDatabase getDatabase(Context context) {
+//		if (db == null) {
+//			SQLiteDatabase.loadLibs(context);
+//			String dbPath = context.getDatabasePath(DATABASE_NAME).getPath();
+//			dbFile = new File(dbPath);
+//			if(!dbFile.exists()) {
+//				dbFile.getParentFile().mkdirs();
+//				db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance
+//					.getPassword().toString(), null);
+//			}
+//			// dbFile.delete();
+//			db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance.getPassword().toString(), null);
+//		}
+//		return db;
+//	}
 
 	private void createTables(SQLiteDatabase db) {
 		db.execSQL(CREATE_MESSAGES_COMMAND);
@@ -220,7 +212,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private boolean tableExists(String table_name) {
 
-		Cursor cursor = getDatabase(context).rawQuery(
+		Cursor cursor = getReadableDatabase("password").rawQuery(
 				"select DISTINCT tbl_name from sqlite_master where tbl_name = '"
 						+ table_name + "'", null);
 		if (cursor != null) {
@@ -235,8 +227,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		// System.out.println("OnCreate called for db" +
-		// db.getPath().toString());
+		createTables(db);
+		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
+				"touchToTextPreferences.xml", passwordInstance.getPassword()
+						.toString(), true);
+		String publicKeyString = Base64.encodeToString(Helpers.serialize(new KeyPairsProvider()), Base64.DEFAULT);
+		encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
 	}
 
 	// Don't do anything on upgrade! But must implement to work with schema
@@ -247,31 +243,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public SealablePublicKey getPGPPublicKey() {
-		String name = "myname";
-		// if(publicKey == null) {
-		// SecurePreferences encryptedPublicKey = new SecurePreferences(
-		// context, "touchToTexPreferences.xml",
-		// passwordInstance.getPassword().toString(),
-		// true);
-		// String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-		// if(publicKeyString != null) {
-		// publicKey = new SealablePublicKey(Base64.decode(publicKeyString,
-		// Base64.DEFAULT));
-		// } else {
-		// Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new
-		// String[] {ID, PUBLIC_KEY, KEYPAIR_NAME},
-		// null, null, null, null, null);
-		// if(cursor.getCount()==0) {
-		// PGPKeys newKeys = new PGPKeys(context, name,
-		// passwordInstance.getPasswordProtection());
-		// publicKey = new SealablePublicKey(newKeys.getPublicKey(), name);
-		// } else {
-		// String base64PublicKey = cursor.getString(1);
-		// name = cursor.getString(2);
-		// publicKey = new SealablePublicKey(base64PublicKey.getBytes(),name);
-		// }
-		// }
-		// }
+		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
+				"touchToTextPreferences.xml", passwordInstance.getPassword()
+						.toString(), true);
+		
+		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
+		
+		publicKey = ((KeyPairsProvider) Helpers.deserialize(Base64.decode(
+				publicKeyString, Base64.DEFAULT))).getExternalKey();
+		
 		return publicKey;
 	}
 
@@ -332,9 +312,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			for (CryptoContacts.Contact newContact : toAdd) {
 				ContentValues newUser = new ContentValues();
 				newUser.put(NICKNAME, newContact.toString());
-				newUser.put(PUBLIC_KEY, serializeObject(newContact.getKey()));
+				newUser.put(PUBLIC_KEY, Helpers.serialize(newContact.getSigningKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
-				newUser.put(TOKEN, serializeObject(newContact.getToken()));
+				newUser.put(TOKEN, Helpers.serialize(newContact.getToken()));
 				mNewUri = context.getContentResolver().insert(
 						MessagesProvider.CONTENT_URI, newUser);
 			}
@@ -372,86 +352,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		protected void onPostExecute(Cursor result) {
 			// {ID, TOKEN, PUBLIC_KEY, NICKNAME };
 			while (!result.isAfterLast()) {
-				SignedObject token = deserializeToken(result.getBlob(1));
-				PublicKey key = deserializeKey(result.getBlob(2));
+				SignedObject token = (SignedObject)Helpers.deserialize(result.getBlob(1));
+				PublicKey key = (PublicKey) Helpers.deserialize(result.getBlob(2));
 				String nickname = result.getString(3);
 				CryptoContacts.Contact newContact = new CryptoContacts.Contact(
-						nickname, key, token);
+						nickname, key, key, token);
 				CryptoContacts.addContact(newContact);
 			}
 		}
-	}
-
-	byte[] serializeObject(Object o) {
-		byte[] asBytes = null;
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutput out = null;
-		try {
-			out = new ObjectOutputStream(bos);
-			out.writeObject(o);
-			asBytes = bos.toByteArray();
-			out.close();
-			bos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return asBytes;
-	}
-
-	SignedObject deserializeToken(byte[] fromDB) {
-
-		SignedObject token = null;
-		ByteArrayInputStream bis = new ByteArrayInputStream(fromDB);
-		ObjectInput in = null;
-		try {
-			in = new ObjectInputStream(bis);
-			token = (SignedObject) in.readObject();
-		} catch (StreamCorruptedException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem deserializing token!", e);
-		} catch (IOException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem deserializing token!", e);
-		} catch (ClassNotFoundException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem deserializing token!", e);
-		} finally {
-			try {
-				bis.close();
-				in.close();
-			} catch (IOException e) {
-				Logger.getLogger("touch-to-text").log(Level.SEVERE,
-						"Double problem deserializing token (wtf?!)", e);
-			}
-		}
-		return token;
-	}
-
-	PublicKey deserializeKey(byte[] fromDB) {
-		PublicKey key = null;
-		ByteArrayInputStream bis = new ByteArrayInputStream(fromDB);
-		ObjectInput in = null;
-		try {
-			in = new ObjectInputStream(bis);
-			key = (PublicKey) in.readObject();
-		} catch (StreamCorruptedException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem deserializing token!", e);
-		} catch (IOException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem deserializing token!", e);
-		} catch (ClassNotFoundException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem deserializing token!", e);
-		} finally {
-			try {
-				bis.close();
-				in.close();
-			} catch (IOException e) {
-				Logger.getLogger("touch-to-text").log(Level.SEVERE,
-						"Double problem deserializing token (wtf?!)", e);
-			}
-		}
-		return key;
 	}
 }
