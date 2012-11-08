@@ -2,6 +2,8 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
@@ -50,18 +53,23 @@ public class ConversationDetailFragment extends Fragment {
     }
     
     private void sendMessage(View v) {
-    	Message m = new Message(((EditText) v.findViewById(R.id.edit_message_text)).getText().toString());
+    	EditText messageToSend = (EditText) v.findViewById(R.id.edit_message_text);
+    	Message m = new Message(messageToSend.getText().toString());
     	ProtectedMessage pm = null;
+    	DatabaseHelper.getInstance(getActivity()).addOutgoingMessage(
+    			messageToSend.getText().toString(), System.currentTimeMillis(),mItem);
+
 		try {
 			pm = new ProtectedMessage(m, mItem.getKey(), null);
 		} catch (GeneralSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem creating ProtectedMessage!", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem creating ProtectedMessage!", e);
 		}
     	TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getKey(), mItem.getToken());
     	TorProxy.sendMessage(tm);
     }
+    
 }

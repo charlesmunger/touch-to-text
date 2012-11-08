@@ -1,6 +1,16 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
+import java.security.PublicKey;
+import java.security.SignedObject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,7 +19,8 @@ import net.sqlcipher.database.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Base64;
+import android.net.Uri;
+import android.os.AsyncTask;
 
 /**
  *
@@ -53,10 +64,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					HASH_MATCHES + " INTEGER DEFAULT 0, " + READ + " INTEGER DEFAULT 0, " +
 					SIGNATURE_MATCHES + " INTEGER DEFAULT 0, " + SUBJECT + " TEXT, " + MESSAGE_BODY + " TEXT, " + ATTACHMENT + " BLOB);";
 
-	// Contacts: _id, name, CONTACT_ID, timestamp (added), verified_by (_ids), token, note
+	// Contacts: _id, name, CONTACT_ID, timestamp (added), verified_by (_ids), note
 	private static final String CREATE_CONTACTS_COMMAND = "CREATE TABLE " + CONTACTS_TABLE + " (" + CONTACTS_ID + " integer PRIMARY KEY autoincrement, " +
-			NICKNAME + " TEXT, " + PUBLIC_KEY + " TEXT, " + DATE_TIME  + " INTEGER, " +
-			VERIFIED_BY + " TEXT, " + TOKEN + " TEXT, " + CONTACT_NOTE + " TEXT);";
+			NICKNAME + " TEXT, " + PUBLIC_KEY + " BLOB, " + DATE_TIME  + " INTEGER, " +
+			VERIFIED_BY + " TEXT, " + TOKEN + " BLOB, " + CONTACT_NOTE + " TEXT);";
 
 	// LocalStorage: _id, private key, public key, timestamp (added), name
 	private static final String CREATE_LOCAL_STORAGE_COMMAND = "CREATE TABLE " + LOCAL_STORAGE + " (" + ID + " integer PRIMARY KEY, " +
@@ -84,16 +95,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static DatabaseHelper getInstance(Context ctx) {
 		if (dbHelperInstance == null) {
 			// Use global context for the app
-			dbHelperInstance = new DatabaseHelper(ctx.getApplicationContext());
+			dbHelperInstance = new DatabaseHelper(ctx);
 		}
 		return dbHelperInstance;
 	}
 
+	/**
+	 * Create the tables and set a password
+	 * @param password
+	 */
 	public void initalizeInstance(String password) {
 		if (dbHelperInstance != null && dbHelperInstance.passwordInstance == null) {
-			// Use global context for the app
 			dbHelperInstance.setPassword(password);
-			createTables(getDatabase(context));
+			if(!tableExists(MESSAGES_TABLE)) {
+				createTables(getDatabase(context));
+			}
 
 		}
 	}
@@ -130,7 +146,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
+	// Insert a message you just wrote into the database.	
+	void addSentMessage(int threadID, int contactID, String nickname, String body ) {
+		ContentValues cv = new ContentValues();
+		cv.put(THREAD_ID, threadID);
+		cv.put(NICKNAME, nickname);
+		cv.put(CONTACT_ID, contactID);
+		cv.put(MESSAGE_BODY, body);
+		cv.put(DATE_TIME, System.currentTimeMillis());
+		db.insert(MESSAGES_TABLE, null, cv);
+	}
+
 	public void setPassword(String password) {
+		if(passwordInstance != null) {
+			passwordInstance.forgetPassword();
+		}
 		passwordInstance = MasterPassword.getInstance(password);
 	}
 
@@ -159,15 +189,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			SQLiteDatabase.loadLibs(context);
 			dbFile = context.getDatabasePath(DATABASE_NAME);
 			dbFile.mkdirs();
-			dbFile.delete();
+			//dbFile.delete();
 			File databaseFile=null;
 			try {
 				databaseFile = new File(context.getDatabasePath(DATABASE_NAME).toString()+DATABASE_NAME);
 				databaseFile.mkdirs();
+
 				db = SQLiteDatabase.openOrCreateDatabase(dbFile, passwordInstance.getPassword().toString(), null);
 			} catch(Exception e) {
 				db = SQLiteDatabase.openOrCreateDatabase(databaseFile, passwordInstance.getPassword().toString(), null);
-
 				Logger.getLogger("touch-to-text").log(Level.SEVERE,
 						"Unable to open database!", e);
 			}
@@ -181,11 +211,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(CREATE_LOCAL_STORAGE_COMMAND);
 	}
 
+	private boolean tableExists(String table_name) {
 
+		Cursor cursor = getDatabase(context).rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"+table_name+"'", null);
+		if(cursor!=null) {
+			if(cursor.getCount()>0) {
+				cursor.close();
+				return true;
+			}
+			cursor.close();
+		}
+		return false;
+	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		System.out.println("OnCreate called for db" + db.getPath().toString());
+		//System.out.println("OnCreate called for db" + db.getPath().toString());
 	}
 
 
@@ -197,41 +238,202 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public SealablePublicKey getPGPPublicKey() {
 		String name = "myname";
-//		if(publicKey == null) {
-//			SecurePreferences encryptedPublicKey = new  SecurePreferences(
-//					context, "touchToTexPreferences.xml",
-//					passwordInstance.getPassword().toString(),
-//					true);
-//			String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-//			if(publicKeyString != null) {
-//				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT));
-//			} else {
-//				Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
-//						null, null, null, null, null);
-//				if(cursor.getCount()==0) {
-//					PGPKeys newKeys = new PGPKeys(context, name, passwordInstance.getPasswordProtection());
-//					publicKey = new SealablePublicKey(newKeys.getPublicKey(), name);
-//				} else {
-//					String base64PublicKey = cursor.getString(1);
-//					name = cursor.getString(2);
-//					publicKey = new SealablePublicKey(base64PublicKey.getBytes(),name);
-//				}
-//			}
-//		}
+		//		if(publicKey == null) {
+		//			SecurePreferences encryptedPublicKey = new  SecurePreferences(
+		//					context, "touchToTexPreferences.xml",
+		//					passwordInstance.getPassword().toString(),
+		//					true);
+		//			String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
+		//			if(publicKeyString != null) {
+		//				publicKey = new SealablePublicKey(Base64.decode(publicKeyString, Base64.DEFAULT));
+		//			} else {
+		//				Cursor cursor = getDatabase(context).query(LOCAL_STORAGE, new String[] {ID, PUBLIC_KEY, KEYPAIR_NAME}, 
+		//						null, null, null, null, null);
+		//				if(cursor.getCount()==0) {
+		//					PGPKeys newKeys = new PGPKeys(context, name, passwordInstance.getPasswordProtection());
+		//					publicKey = new SealablePublicKey(newKeys.getPublicKey(), name);
+		//				} else {
+		//					String base64PublicKey = cursor.getString(1);
+		//					name = cursor.getString(2);
+		//					publicKey = new SealablePublicKey(base64PublicKey.getBytes(),name);
+		//				}
+		//			}
+		//		}
 		return publicKey;
 	}
 
 	public void addPublicKey(SealablePublicKey key) {
-//		insertKeypair(null, key.publicKey, key.identity);
+		//		insertKeypair(null, key.publicKey, key.identity);
 	}
 
-	public void addContact(String name, long date, SealablePublicKey key) {
+	public void addContact(CryptoContacts.Contact newContact) {
+		AddContactsToDBTask task = new AddContactsToDBTask();
+		task.execute(new CryptoContacts.Contact[] { newContact });
+	}
 
-//		ContentValues cv = new ContentValues();
-//		cv.put(PUBLIC_KEY, key.publicKey);
-//		cv.put(DATE_TIME, System.currentTimeMillis());
-//		cv.put(NICKNAME, name);
-//		cv.put(TOKEN, key.token());
-//		db.insert(CONTACTS_TABLE, null, cv);
-	}		
+	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches, read, signature_matches, subject, body, attachment
+	public void addOutgoingMessage(final String messageToSend, long timeSent, CryptoContacts.Contact contact) {
+		AddMessageToDBTask task = new AddMessageToDBTask();
+		ContentValues newMessage = new ContentValues();
+		newMessage.put(MESSAGE_BODY, messageToSend);
+		newMessage.put(DATE_TIME, timeSent);
+		newMessage.put(NICKNAME, contact.toString());
+		// Need to get CONTACT_ID from contact and add that, nickname is not guaranteed unique.
+		task.execute(new ContentValues[] { newMessage });
+	}	
+
+	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches, read, signature_matches, subject, body, attachment
+
+	private class AddMessageToDBTask extends AsyncTask<ContentValues, Void, Uri> {
+		@Override
+		protected Uri doInBackground(ContentValues... toAdd) {
+			Uri mNewUri=null;
+			for(ContentValues val: toAdd) {
+				mNewUri = context.getContentResolver().insert(
+						MessagesProvider.CONTENT_URI,
+						val);
+			}
+			return mNewUri;
+		}
+
+		@Override
+		protected void onPostExecute(Uri result) {
+			// result is Uri of newly added row
+		}
+	}
+
+	public void getAllContacts() {
+		GetContactsFromDBTask task = new GetContactsFromDBTask();
+		task.execute(new String[] {null});	
+	}
+
+	private class AddContactsToDBTask extends AsyncTask<CryptoContacts.Contact, Void, Uri> {
+		@Override
+		protected Uri doInBackground(CryptoContacts.Contact... toAdd) {
+			Uri mNewUri=null;
+			for(CryptoContacts.Contact newContact: toAdd) {
+				ContentValues newUser = new ContentValues();
+				newUser.put(NICKNAME, newContact.toString());
+				newUser.put(PUBLIC_KEY, serializeObject(newContact.getKey()));
+				newUser.put(DATE_TIME, System.currentTimeMillis());
+				newUser.put(TOKEN, serializeObject(newContact.getToken()));
+				mNewUri = context.getContentResolver().insert(
+						MessagesProvider.CONTENT_URI,
+						newUser);
+			}
+			return mNewUri;
+		}
+
+		@Override
+		protected void onPostExecute(Uri result) {
+			// result is Uri of newly added row
+		}
+	}
+
+	private class GetContactsFromDBTask extends AsyncTask<String, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(String... names) {
+
+			// A "projection" defines the columns that will be returned for each row
+			String[] mProjection =
+				{ID, TOKEN, PUBLIC_KEY, NICKNAME }; 
+
+			// Defines a string to contain the selection clause
+			String mSelectionClause = null;
+			// Initializes an array to contain selection arguments
+			String[] mSelectionArgs = {""};
+			String sortOrder = DATE_TIME + " DESC";
+			Cursor contactsCursor= null;
+			contactsCursor = context.getContentResolver().query(
+					ContactsProvider.CONTENT_URI, mProjection, mSelectionClause, mSelectionArgs, sortOrder);
+
+			return contactsCursor;
+		}
+
+		@Override
+		protected void onPostExecute(Cursor result) {
+			//{ID, TOKEN, PUBLIC_KEY, NICKNAME }; 
+			while(!result.isAfterLast()) {
+				SignedObject token = deserializeToken(result.getBlob(1));
+				PublicKey key = deserializeKey(result.getBlob(2));
+				String nickname = result.getString(3);
+				CryptoContacts.Contact newContact= new CryptoContacts.Contact( nickname, key, token);
+				CryptoContacts.addContact(newContact);
+			}
+		}
+	}
+
+
+	byte[] serializeObject(Object o) {
+		byte[] asBytes=null;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutput out = null;
+		try {
+			out = new ObjectOutputStream(bos);   
+			out.writeObject(o);
+			asBytes = bos.toByteArray();
+			out.close();
+			bos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return asBytes;
+	}
+
+	SignedObject deserializeToken(byte[] fromDB) {
+
+		SignedObject token=null;
+		ByteArrayInputStream bis = new ByteArrayInputStream(fromDB);
+		ObjectInput in = null;
+		try {
+			in = new ObjectInputStream(bis);
+			token = (SignedObject)in.readObject(); 
+		} catch (StreamCorruptedException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem deserializing token!", e);
+		} catch (IOException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem deserializing token!", e);
+		} catch (ClassNotFoundException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem deserializing token!", e);
+		} finally {
+			try {
+				bis.close();
+				in.close();
+			} catch (IOException e) {
+				Logger.getLogger("touch-to-text").log(Level.SEVERE,
+						"Double problem deserializing token (wtf?!)", e);
+			}
+		}
+		return token;
+	}
+
+	PublicKey deserializeKey(byte[] fromDB) {
+		PublicKey key = null;
+		ByteArrayInputStream bis = new ByteArrayInputStream(fromDB);
+		ObjectInput in = null;
+		try {
+			in = new ObjectInputStream(bis);
+			key = (PublicKey)in.readObject(); 
+		} catch (StreamCorruptedException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem deserializing token!", e);
+		} catch (IOException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem deserializing token!", e);
+		} catch (ClassNotFoundException e) {
+			Logger.getLogger("touch-to-text").log(Level.SEVERE,
+					"Problem deserializing token!", e);
+		} finally {
+			try {
+				bis.close();
+				in.close();
+			} catch (IOException e) {
+				Logger.getLogger("touch-to-text").log(Level.SEVERE,
+						"Double problem deserializing token (wtf?!)", e);
+			}
+		}
+		return key;
+	}
 }

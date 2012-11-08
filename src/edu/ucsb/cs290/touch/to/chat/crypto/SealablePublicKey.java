@@ -30,7 +30,7 @@ public final class SealablePublicKey implements Serializable {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Error serializing object", i);
 		}
 	}
-	
+
 	public String digest() {
 		
 		MessageDigest sha1;

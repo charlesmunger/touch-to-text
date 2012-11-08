@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
@@ -78,10 +79,11 @@ ConversationListFragment.Callbacks {
 			System.out.println("Contact added");
         	// String long SealablePublicKey
 			// name   time key+signedsecret 
-			DatabaseHelper.getInstance(getApplicationContext()).addContact(
-					data.getExtras().getString("name"),
-		        	data.getExtras().getLong("date"),
-					(SealablePublicKey)data.getExtras().get("key"));
+			String name = data.getExtras().getString("name");
+        	Long dateTime = data.getExtras().getLong("date");
+        	SealablePublicKey keyAndToken =	(SealablePublicKey)data.getExtras().get("key");
+			CryptoContacts.Contact newContact = new CryptoContacts.Contact(name, keyAndToken);
+			DatabaseHelper.getInstance(getApplicationContext()).addContact(newContact);
 			return;
 		}
 	}
