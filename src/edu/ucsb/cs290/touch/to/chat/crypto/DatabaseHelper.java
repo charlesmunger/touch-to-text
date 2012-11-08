@@ -186,13 +186,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		createTables(db);
-		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPassword()
-						.toString(), true);
-		KeyPairsProvider kp = new KeyPairsProvider();
-		byte[] b = Helpers.serialize(kp);
-		String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
-		encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
+		GenerateKeysTask task = new GenerateKeysTask();
+		task.execute(new String[] { null });
 	}
 
 	// Don't do anything on upgrade! But must implement to work with schema
@@ -319,6 +314,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						nickname, key, key, token);
 				CryptoContacts.addContact(newContact);
 			}
+		}
+	}
+	
+	private class GenerateKeysTask extends AsyncTask<String, Void, Void> {
+		@Override
+		protected Void doInBackground(String... names) {
+			SecurePreferences encryptedPublicKey = new SecurePreferences(context,
+					TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPassword()
+							.toString(), true);
+			KeyPairsProvider kp = new KeyPairsProvider();
+			byte[] b = Helpers.serialize(kp);
+			String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
+			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
+			return null;
 		}
 	}
 }
