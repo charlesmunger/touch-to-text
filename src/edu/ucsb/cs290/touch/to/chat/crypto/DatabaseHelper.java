@@ -199,14 +199,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public SealablePublicKey getPGPPublicKey() {
 		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPassword()
-						.toString(), true);
-		
+				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPasswordString()
+				, true);
+
 		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
 		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64.decode(
 				publicKeyString, Base64.DEFAULT));
 		publicKey = kp.getExternalKey();
-		
+
 		return publicKey;
 	}
 
@@ -237,7 +237,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// read, signature_matches, subject, body, attachment
 
 	private class AddMessageToDBTask extends
-			AsyncTask<ContentValues, Void, Uri> {
+	AsyncTask<ContentValues, Void, Uri> {
 		@Override
 		protected Uri doInBackground(ContentValues... toAdd) {
 			Uri mNewUri = null;
@@ -260,7 +260,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	private class AddContactsToDBTask extends
-			AsyncTask<CryptoContacts.Contact, Void, Uri> {
+	AsyncTask<CryptoContacts.Contact, Void, Uri> {
 		@Override
 		protected Uri doInBackground(CryptoContacts.Contact... toAdd) {
 			Uri mNewUri = null;
@@ -316,13 +316,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			}
 		}
 	}
-	
+
 	private class GenerateKeysTask extends AsyncTask<String, Void, Void> {
 		@Override
 		protected Void doInBackground(String... names) {
 			SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-					TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPassword()
-							.toString(), true);
+					TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPasswordString()
+					, true);
 			KeyPairsProvider kp = new KeyPairsProvider();
 			byte[] b = Helpers.serialize(kp);
 			String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);

@@ -67,7 +67,7 @@ public class MessagesProvider extends ContentProvider {
 	    default:
 	        throw new IllegalArgumentException("Unknown URI");
 	    }
-	    Cursor cursor = queryBuilder.query(DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getInstance(null).getPassword().toString()),
+	    Cursor cursor = queryBuilder.query(DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getInstance(null).getPasswordString()),
 	            projection, selection, selectionArgs, null, null, sortOrder);
 	    cursor.setNotificationUri(getContext().getContentResolver(), uri);
 	    return cursor;
@@ -79,7 +79,7 @@ public class MessagesProvider extends ContentProvider {
 	 * @return
 	 */
 	public int getMessageCountForThread(long threadId) {
-		SQLiteDatabase db = DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getInstance(null).getPassword().toString());
+		SQLiteDatabase db = DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getInstance(null).getPasswordString());
 		Cursor cursor = null;
 
 		try {
@@ -102,7 +102,7 @@ public class MessagesProvider extends ContentProvider {
 
 	@Override
 	 public Uri insert(Uri uri, ContentValues initialValues) {
-	  SQLiteDatabase database = DatabaseHelper.getInstance(getContext()).getWritableDatabase(MasterPassword.getInstance(null).getPassword().toString());
+	  SQLiteDatabase database = DatabaseHelper.getInstance(getContext()).getWritableDatabase(MasterPassword.getInstance(null).getPasswordString());
 	  long value = database.insert(DatabaseHelper.MESSAGES_TABLE, null, initialValues);
 	  return Uri.withAppendedPath(CONTENT_URI, String.valueOf(value));
 	 }

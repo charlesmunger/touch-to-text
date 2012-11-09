@@ -37,6 +37,10 @@ final class MasterPassword {
 		return passphrase.getPassword();
 	}
 	
+	String getPasswordString() {
+		return String.valueOf(passphrase.getPassword());
+	}
+	
 	PasswordProtection getPasswordProtection() {
 		return passphrase;
 	}
