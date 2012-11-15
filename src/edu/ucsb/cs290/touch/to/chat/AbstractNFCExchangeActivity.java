@@ -16,7 +16,7 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
-import edu.ucsb.cs290.touch.to.chat.crypto.Helpers;
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
 public abstract class AbstractNFCExchangeActivity extends Activity {
 	private IntentFilter[] intentFiltersArray;

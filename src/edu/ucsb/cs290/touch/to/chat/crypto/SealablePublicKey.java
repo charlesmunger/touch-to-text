@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.spongycastle.util.encoders.Base64;
+
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 //Class is final to prevent classloader attack
 public final class SealablePublicKey implements Serializable {
 	

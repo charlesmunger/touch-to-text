@@ -4,6 +4,8 @@ import java.io.File;
 import java.security.PublicKey;
 import java.security.SignedObject;
 
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
 import android.content.ContentValues;

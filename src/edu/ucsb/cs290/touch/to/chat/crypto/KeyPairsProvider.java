@@ -45,7 +45,7 @@ public class KeyPairsProvider implements Serializable {
 		gen.initialize(bits);
 		KeyPair kp = gen.generateKeyPair();
 		Log.d("touch-to-text", "Done generating " + algorithm + "took "
-				+ (System.currentTimeMillis() - time) / 1000 + " seconds.");
+				+ (System.currentTimeMillis() - time)  + " ms.");
 		return kp;
 	}
 
