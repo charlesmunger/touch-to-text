@@ -10,6 +10,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,8 +64,9 @@ public class TorProxy {
 	 * touch-to-text.store from the assets directory.
 	 * 
 	 * @return The SSLSocketFactory, or null if something bad happened.
+	 * @throws GeneralSecurityException 
 	 */
-	private SSLSocketFactory getPinnedSSLSocketFactory(Context context) {
+	private SSLSocketFactory getPinnedSSLSocketFactory(Context context) throws GeneralSecurityException {
 		AssetManager assetManager = context.getAssets();
 		try {
 			InputStream keyStoreInputStream = assetManager.open(KEYSTORE);
@@ -79,9 +81,6 @@ public class TorProxy {
 			// TODO Auto-generated catch block
 			Logger.getLogger("touch-to-text").log(Level.SEVERE, 
 					"Error accessing pinned certificate.", e);
-		} catch (GeneralSecurityException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE, 
-					"The server certificate could not be validated.", e);
 		}
 		return null;
 	}
