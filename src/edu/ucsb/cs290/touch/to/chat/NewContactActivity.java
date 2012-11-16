@@ -32,7 +32,6 @@ import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class NewContactActivity extends Activity {
 	private SealablePublicKey key;
-	private EditText contactName;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Inflate a "Done/Discard" custom action bar view.
@@ -46,7 +45,7 @@ public class NewContactActivity extends Activity {
                     public void onClick(View v) {
                         // "Done"
                     	Intent i = new Intent();
-                    	i.putExtra("name", contactName.getText().toString());
+                    	i.putExtra("name", ((EditText) findViewById(R.id.edit_contact_name)).getText().toString());
                     	i.putExtra("date", System.currentTimeMillis());
                     	i.putExtra("key", key);
                     	setResult(RESULT_OK,i);
@@ -72,7 +71,6 @@ public class NewContactActivity extends Activity {
         actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        contactName = (EditText) findViewById(R.id.edit_contact_name);
         //Now that we've inflated the ActionBar, let's do the content:
         setContentView(R.layout.edit_contact_info);
     }

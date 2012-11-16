@@ -35,7 +35,7 @@ public class TorProxy {
 	private static final ExecutorService ex = Executors.newCachedThreadPool();
 	public static String sendMessage(TokenAuthMessage m) {
 		Map<String,Object>tempMap = new HashMap<String, Object>(1);
-		tempMap.put("mesage", m);
+		tempMap.put("message", m);
 		return executeHttpsPost(serverUrl, tempMap, "message");
 	}
 	
