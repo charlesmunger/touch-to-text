@@ -41,6 +41,10 @@ public class CryptoContacts {
 		}
 
 		public String toString() {
+			return getName();
+		}
+
+		public String getName() {
 			return name;
 		}
 	}

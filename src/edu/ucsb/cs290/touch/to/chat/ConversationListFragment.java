@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
-import edu.ucsb.cs290.touch.to.chat.dummy.DummyContent;
 
 public class ConversationListFragment extends ListFragment {
 
@@ -66,7 +65,7 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        mCallbacks.onItemSelected(CryptoContacts.ITEMS.get(position).getName());
     }
 
     @Override

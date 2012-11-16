@@ -69,9 +69,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.ucsb.cs290.touch.to.chat.BeginKeyExchangeActivity" />
         </activity>
+
         <meta-data
             android:name="android.nfc.disable_beam_default"
             android:value="true" />
+
+        <service
+            android:name=".KeyManagementService"
+            android:enabled="true"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>
