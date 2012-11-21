@@ -273,7 +273,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				newUser.put(DATE_TIME, System.currentTimeMillis());
 				newUser.put(TOKEN, Helpers.serialize(newContact.getToken()));
 				mNewUri = context.getContentResolver().insert(
-						MessagesProvider.CONTENT_URI, newUser);
+						ContactsProvider.CONTENT_URI, newUser);
 			}
 			return mNewUri;
 		}
