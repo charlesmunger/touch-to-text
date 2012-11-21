@@ -262,25 +262,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	private class AddContactsToDBTask extends
-	AsyncTask<CryptoContacts.Contact, Void, Uri> {
+	AsyncTask<CryptoContacts.Contact, Void, Void> {
 		@Override
-		protected Uri doInBackground(CryptoContacts.Contact... toAdd) {
-			Uri mNewUri = null;
+		protected Void doInBackground(CryptoContacts.Contact... toAdd) {
 			for (CryptoContacts.Contact newContact : toAdd) {
 				ContentValues newUser = new ContentValues();
 				newUser.put(NICKNAME, newContact.toString());
 				newUser.put(PUBLIC_KEY, Helpers.serialize(newContact.getSigningKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
 				newUser.put(TOKEN, Helpers.serialize(newContact.getToken()));
-				mNewUri = context.getContentResolver().insert(
-						ContactsProvider.CONTENT_URI, newUser);
 			}
-			return mNewUri;
-		}
-
-		@Override
-		protected void onPostExecute(Uri result) {
-			// result is Uri of newly added row
+			return null;
 		}
 	}
 
