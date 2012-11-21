@@ -41,22 +41,9 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 			throw new RuntimeException("fail", e);
 		}
 		setResult(RESULT_CANCELED);
-		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
-				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],
-				send())});
-
 		intentFiltersArray = new IntentFilter[] { ndef, };
 		mTechLists = new String[][] { new String[] { Ndef.class.getName() } };
 		mAdapter = NfcAdapter.getDefaultAdapter(this);
-		mAdapter.setNdefPushMessage(message, this);
-		mAdapter.setOnNdefPushCompleteCallback(new NfcAdapter.OnNdefPushCompleteCallback() {
-			
-			@Override
-			public void onNdefPushComplete(NfcEvent event) {
-				sent = true;
-				checkDone();				
-			}
-		}, this);
 	}
 
 	private void checkDone() {
@@ -111,4 +98,19 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	public abstract void recieveObject(Object o) throws Exception;
 	
 	public abstract void parseIntent(Intent i);
+	
+	public void onServiceConnected() {
+		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
+				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],
+				send())});
+		mAdapter.setNdefPushMessage(message, this);
+		mAdapter.setOnNdefPushCompleteCallback(new NfcAdapter.OnNdefPushCompleteCallback() {
+			
+			@Override
+			public void onNdefPushComplete(NfcEvent event) {
+				sent = true;
+				checkDone();				
+			}
+		}, this);
+	}
 }

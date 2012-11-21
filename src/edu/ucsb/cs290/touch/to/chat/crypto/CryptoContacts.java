@@ -49,11 +49,6 @@ public class CryptoContacts {
 		}
 	}
 
-	public static void getContacts() {
-		DatabaseHelper.getInstance(null).getAllContacts();
-	}
-
-
 	public static List<Contact> ITEMS = new ArrayList<CryptoContacts.Contact>();
 	public static Map<String,CryptoContacts.Contact> ITEM_MAP = new HashMap<String, CryptoContacts.Contact>(); 
 

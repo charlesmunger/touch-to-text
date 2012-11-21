@@ -1,14 +1,13 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
+import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class ConversationListActivity extends KeyActivity implements
 ConversationListFragment.Callbacks {
@@ -17,10 +16,6 @@ ConversationListFragment.Callbacks {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if (savedInstanceState == null) {
-			startActivityForResult(new Intent(getApplicationContext(),
-					AuthActivity.class), 100);
-		}
 		setContentView(R.layout.activity_conversation_list);
 
 		if (findViewById(R.id.conversation_detail_container) != null) {
@@ -64,11 +59,12 @@ ConversationListFragment.Callbacks {
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == Activity.RESULT_CANCELED) {
-			return;
-		}
+		
 		switch (requestCode) {
 		case 101:
+			if (resultCode == Activity.RESULT_CANCELED) {
+				return;
+			}
 			System.out.println("Contact added");
 			// String long SealablePublicKey
 			// name time key+signedsecret

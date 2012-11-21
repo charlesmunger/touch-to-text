@@ -63,7 +63,7 @@ public class KeyManagementService extends Service {
 		Log.i(TAG, "Service creating");
 
 		timer = new Timer("KeyExpirationTimer");
-		timer.schedule(expireTask, 1000L, 60 * 1000L);
+		//timer.schedule(expireTask, 1000L, 60 * 1000L);
 	}
 
 	@Override
@@ -76,6 +76,10 @@ public class KeyManagementService extends Service {
 	}
 
 	public int onStartCommand(Intent intent) {
+		if(!dbHelperInstance.initialized()) {
+			sendBroadcast(new Intent(this,AuthActivity.class));
+		}
+		foregroundService();
 		return START_STICKY;
 	}
 	
@@ -101,4 +105,6 @@ public class KeyManagementService extends Service {
 		stopForeground(true);
 		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
 	}
+	
+	
 }

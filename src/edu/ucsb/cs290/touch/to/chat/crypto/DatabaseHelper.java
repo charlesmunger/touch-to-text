@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Base64;
+import android.util.Log;
 
 /**
  * 
@@ -85,13 +86,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private Context context;
 	private SealablePublicKey publicKey;
 	// The singleton instance
-	private static DatabaseHelper dbHelperInstance = null;
 
 	public DatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
 		super(ctx.getApplicationContext(), DATABASE_NAME, null,
 				DATABASE_VERSION);
 		context = ctx;
+	}
+	
+	public boolean initialized() {
+		return passwordInstance != null;
 	}
 
 	/**
@@ -100,9 +104,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @param password
 	 */
 	public void initalizeInstance(String password) {
-		if (dbHelperInstance != null
-				&& dbHelperInstance.passwordInstance == null) {
-			dbHelperInstance.setPassword(password);
+		Log.i("db","Intializing database");
+		if (passwordInstance == null) {
+			setPassword(password);
 			SQLiteDatabase.loadLibs(context);
 			db = this.getWritableDatabase(password);
 		}
