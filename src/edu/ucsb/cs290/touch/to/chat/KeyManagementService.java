@@ -6,8 +6,10 @@ import java.util.TimerTask;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.Notification.Builder;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
@@ -24,7 +26,7 @@ public class KeyManagementService extends Service {
 	private static final String TAG = KeyManagementService.class
 			.getSimpleName();
 	private final IBinder binder = new KeyCachingBinder();
-	private static final int SERVICE_RUNNING_ID = 6876;
+	private static final int SERVICE_RUNNING_ID = 155296813;
 	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
 
 	public KeyPairsProvider getKeys() {
@@ -70,15 +72,14 @@ public class KeyManagementService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		Log.i(TAG, "Service destroying");
-
+		((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(SERVICE_RUNNING_ID);
 		timer.cancel();
 		timer = null;
 	}
 
-	public int onStartCommand(Intent intent) {
-		if(!dbHelperInstance.initialized()) {
-			sendBroadcast(new Intent(this,AuthActivity.class));
-		}
+	@Override
+	public int onStartCommand(Intent intent, int i, int j) {
+		Log.i("kmg", "On start command called");
 		foregroundService();
 		return START_STICKY;
 	}
@@ -102,9 +103,8 @@ public class KeyManagementService extends Service {
 		Notification statusNotification = builder.build();
 		// Do we need this line, or does setContent do everything we need?
 		statusNotification.contentView = remoteView;
+		((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).notify(SERVICE_RUNNING_ID,statusNotification);
 		stopForeground(true);
 		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
 	}
-	
-	
 }
