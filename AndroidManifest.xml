@@ -52,13 +52,13 @@
         </activity>
 
         <provider
-            android:name="edu.ucsb.cs290.touch.to.chat.MessagesProvider"
+            android:name="edu.ucsb.cs290.touch.to.chat.crypto.MessagesProvider"
             android:authorities="edu.ucsb.cs290.touch.to.chat"
             android:exported="false"
             android:multiprocess="false" >
         </provider>
         <provider
-            android:name="edu.ucsb.cs290.touch.to.chat.ContactsProvider"
+            android:name="edu.ucsb.cs290.touch.to.chat.crypto.ContactsProvider"
             android:authorities="edu.ucsb.cs290.touch.to.chat"
             android:exported="false"
             android:multiprocess="false" >
