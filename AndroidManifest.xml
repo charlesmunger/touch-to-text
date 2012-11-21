@@ -16,7 +16,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:uiOptions="splitActionBarWhenNarrow" >
+        android:uiOptions="splitActionBarWhenNarrow" android:allowBackup="false">
         <activity
             android:name=".ConversationListActivity"
             android:label="@string/title_conversation_list" >
@@ -50,20 +50,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.ucsb.cs290.touch.to.chat.NewContactActivity2y" />
         </activity>
-
-        <provider
-            android:name="edu.ucsb.cs290.touch.to.chat.crypto.MessagesProvider"
-            android:authorities="edu.ucsb.cs290.touch.to.chat"
-            android:exported="false"
-            android:multiprocess="false" >
-        </provider>
-        <provider
-            android:name="edu.ucsb.cs290.touch.to.chat.crypto.ContactsProvider"
-            android:authorities="edu.ucsb.cs290.touch.to.chat"
-            android:exported="false"
-            android:multiprocess="false" >
-        </provider>
-
         <activity
             android:name=".EndKeyExchangeActivity"
             android:label="@string/title_activity_end_key_exchange" >
