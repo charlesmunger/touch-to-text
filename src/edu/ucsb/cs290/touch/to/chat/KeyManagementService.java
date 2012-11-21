@@ -3,20 +3,19 @@ package edu.ucsb.cs290.touch.to.chat;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Activity;
+import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.Notification.Builder;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class KeyManagementService extends Service {
 	private DatabaseHelper dbHelperInstance;
@@ -25,6 +24,8 @@ public class KeyManagementService extends Service {
 	private static final String TAG = KeyManagementService.class
 			.getSimpleName();
 	private final IBinder binder = new KeyCachingBinder();
+	private static final int SERVICE_RUNNING_ID = 6876;
+	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
 
 	public KeyPairsProvider getKeys() {
 		return kp;
@@ -77,10 +78,27 @@ public class KeyManagementService extends Service {
 	public int onStartCommand(Intent intent) {
 		return START_STICKY;
 	}
-
+	
+	@TargetApi(16)
 	private void foregroundService() {
-		// danny shit here
+		RemoteViews remoteView = new RemoteViews(getPackageName(), R.layout.notification_message);
+		Intent clearMemory = new Intent(this, KeyManagementService.class);
+		clearMemory.setAction(CLEAR_MEMORY);
+		PendingIntent clearMemoryIntent = PendingIntent.getService(getApplicationContext(), 0, clearMemory, 0);
+		remoteView.setOnClickPendingIntent(R.id.lock_cache_icon,clearMemoryIntent);
+		Builder builder = new Notification.Builder(this);
+		builder
+		    .setWhen(System.currentTimeMillis())
+		    .setContent(remoteView)
+		    .setOngoing(true);
+		
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			builder.setPriority(Notification.PRIORITY_LOW);
+		}
+		Notification statusNotification = builder.build();
+		// Do we need this line, or does setContent do everything we need?
+		statusNotification.contentView = remoteView;
 		stopForeground(true);
-		startForeground(SERVICE_RUNNING_ID, notification);
+		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
 	}
 }
