@@ -80,7 +80,7 @@ public class KeyManagementService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
 		Log.i("kmg", "On start command called");
-		if (intent.getAction() != null && intent.getAction().equals(CLEAR_MEMORY)) {
+		if(CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
 		}
 		return START_STICKY;
