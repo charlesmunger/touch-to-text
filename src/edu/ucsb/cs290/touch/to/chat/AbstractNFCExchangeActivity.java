@@ -18,7 +18,7 @@ import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
-public abstract class AbstractNFCExchangeActivity extends Activity {
+public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	private IntentFilter[] intentFiltersArray;
 	private PendingIntent pendingIntent;
 	private String[][] mTechLists;

@@ -2,11 +2,10 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
-public class ConversationDetailActivity extends FragmentActivity {
+public class ConversationDetailActivity extends KeyActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,7 +20,7 @@ public class ConversationDetailActivity extends FragmentActivity {
                     getIntent().getStringExtra(ConversationDetailFragment.ARG_ITEM_ID));
             ConversationDetailFragment fragment = new ConversationDetailFragment();
             fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
+            getFragmentManager().beginTransaction()
                     .add(R.id.conversation_detail_container, fragment)
                     .commit();
         }

@@ -1,5 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
+import edu.ucsb.cs290.touch.to.chat.KeyManagementService;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteQueryBuilder;
 import android.content.ContentProvider;
@@ -30,8 +31,10 @@ public class ContactsProvider extends ContentProvider {
 		sURIMatcher.addURI(AUTHORITY, CONTACTS_BASE_PATH, CONTACTS);
 		sURIMatcher.addURI(AUTHORITY, CONTACTS_BASE_PATH + "/#", CONTACTS_ID);
 	}
-	public ContactsProvider() {
 
+	private final KeyManagementService mService;
+	public ContactsProvider(KeyManagementService mService) {
+		this.mService = mService;
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class ContactsProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
-		Cursor cursor = queryBuilder.query(DatabaseHelper.getInstance(getContext()).getReadableDatabase(MasterPassword.getInstance(null).getPasswordString()),
+		Cursor cursor = queryBuilder.query(mService.getInstance().getReadableDatabase(MasterPassword.getInstance(null).getPasswordString()),
 				projection, selection, selectionArgs, null, null, sortOrder);
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 		return cursor;
@@ -69,7 +72,7 @@ public class ContactsProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues initialValues) {
-		SQLiteDatabase database = DatabaseHelper.getInstance(getContext()).getWritableDatabase(MasterPassword.getInstance(null).getPasswordString());
+		SQLiteDatabase database = mService.getInstance().getWritableDatabase(MasterPassword.getInstance(null).getPasswordString());
 		long value = database.insert(DatabaseHelper.CONTACTS_TABLE, null, initialValues);
 		return Uri.withAppendedPath(CONTENT_URI, String.valueOf(value));
 	}

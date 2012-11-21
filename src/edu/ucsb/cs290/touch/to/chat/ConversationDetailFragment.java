@@ -5,8 +5,8 @@ import java.security.GeneralSecurityException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +56,7 @@ public class ConversationDetailFragment extends Fragment {
     	EditText messageToSend = (EditText) v.findViewById(R.id.edit_message_text);
     	Message m = new Message(messageToSend.getText().toString());
     	ProtectedMessage pm = null;
-    	DatabaseHelper.getInstance(getActivity()).addOutgoingMessage(
+    	((KeyActivity) getActivity()).getInstance().addOutgoingMessage(
     			messageToSend.getText().toString(), System.currentTimeMillis(),mItem);
 
 		try {

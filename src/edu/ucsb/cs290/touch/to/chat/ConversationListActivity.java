@@ -1,19 +1,17 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
-public class ConversationListActivity extends FragmentActivity implements
+public class ConversationListActivity extends KeyActivity implements
 ConversationListFragment.Callbacks {
-
 	private boolean mTwoPane;
 
 	@Override
@@ -27,7 +25,7 @@ ConversationListFragment.Callbacks {
 
 		if (findViewById(R.id.conversation_detail_container) != null) {
 			mTwoPane = true;
-			((ConversationListFragment) getSupportFragmentManager()
+			((ConversationListFragment) getFragmentManager()
 					.findFragmentById(R.id.conversation_list))
 					.setActivateOnItemClick(true);
 		}
@@ -52,7 +50,7 @@ ConversationListFragment.Callbacks {
 			arguments.putString(ConversationDetailFragment.ARG_ITEM_ID, id);
 			ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
-			getSupportFragmentManager().beginTransaction()
+			getFragmentManager().beginTransaction()
 			.replace(R.id.conversation_detail_container, fragment)
 			.commit();
 
@@ -61,6 +59,28 @@ ConversationListFragment.Callbacks {
 					ConversationDetailActivity.class);
 			detailIntent.putExtra(ConversationDetailFragment.ARG_ITEM_ID, id);
 			startActivity(detailIntent);
+		}
+	}
+	
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == Activity.RESULT_CANCELED) {
+			return;
+		}
+		switch (requestCode) {
+		case 101:
+			System.out.println("Contact added");
+			// String long SealablePublicKey
+			// name time key+signedsecret
+			String name = data.getExtras().getString("name");
+			Long dateTime = data.getExtras().getLong("date");
+			SealablePublicKey keyAndToken = (SealablePublicKey) data
+					.getExtras().get("key");
+			CryptoContacts.Contact newContact = new CryptoContacts.Contact(
+					name, keyAndToken);
+			getInstance().addContact(
+					newContact);
+			return;
 		}
 	}
 }

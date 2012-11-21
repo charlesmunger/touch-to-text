@@ -83,26 +83,4 @@ public class KeyManagementService extends Service {
 		stopForeground(true);
 		startForeground(SERVICE_RUNNING_ID, notification);
 	}
-
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == Activity.RESULT_CANCELED) {
-			return;
-		}
-		switch (requestCode) {
-		case 101:
-			System.out.println("Contact added");
-			// String long SealablePublicKey
-			// name time key+signedsecret
-			String name = data.getExtras().getString("name");
-			Long dateTime = data.getExtras().getLong("date");
-			SealablePublicKey keyAndToken = (SealablePublicKey) data
-					.getExtras().get("key");
-			CryptoContacts.Contact newContact = new CryptoContacts.Contact(
-					name, keyAndToken);
-			DatabaseHelper.getInstance(getApplicationContext()).addContact(
-					newContact);
-			return;
-		}
-	}
 }
