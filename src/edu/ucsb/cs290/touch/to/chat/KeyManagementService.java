@@ -80,12 +80,20 @@ public class KeyManagementService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
 		Log.i("kmg", "On start command called");
-		foregroundService();
+		if (intent.getAction() != null && intent.getAction().equals(CLEAR_MEMORY)) {
+			clearKey();
+		}
 		return START_STICKY;
 	}
-	
+
+	private void clearKey() {
+		dbHelperInstance.forgetPassword();
+		kp = null;
+		this.stopSelf();
+	}
+
 	@TargetApi(16)
-	private void foregroundService() {
+	public void startNotification() {
 		RemoteViews remoteView = new RemoteViews(getPackageName(), R.layout.notification_message);
 		Intent clearMemory = new Intent(this, KeyManagementService.class);
 		clearMemory.setAction(CLEAR_MEMORY);
@@ -93,18 +101,20 @@ public class KeyManagementService extends Service {
 		remoteView.setOnClickPendingIntent(R.id.lock_cache_icon,clearMemoryIntent);
 		Builder builder = new Notification.Builder(this);
 		builder
-		    .setWhen(System.currentTimeMillis())
-		    .setContent(remoteView)
-		    .setOngoing(true);
-		
+		.setSmallIcon(android.R.drawable.ic_lock_lock)
+		.setContentTitle("Touch to Text is Running")
+		.setContentText("Touch Lock to Clear Memory")
+		.setWhen(System.currentTimeMillis())
+		.setContent(remoteView)
+		.setOngoing(true);
+
+
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			builder.setPriority(Notification.PRIORITY_LOW);
 		}
 		Notification statusNotification = builder.build();
-		// Do we need this line, or does setContent do everything we need?
-		statusNotification.contentView = remoteView;
-		((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).notify(SERVICE_RUNNING_ID,statusNotification);
 		stopForeground(true);
 		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
 	}
+
 }

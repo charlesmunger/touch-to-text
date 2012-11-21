@@ -146,6 +146,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 		passwordInstance = MasterPassword.getInstance(password);
 	}
+	
+	public void forgetPassword() {
+		passwordInstance.forgetPassword();
+	}
 
 	/**
 	 * Erase the entire database file.
