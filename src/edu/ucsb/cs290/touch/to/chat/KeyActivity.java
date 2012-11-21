@@ -59,14 +59,17 @@ public abstract class KeyActivity extends Activity {
 			mService = binder.getService();
 			mBound = true;
 			if (password != null) {
-				Log.i("kmg", "initializing db on service connected");
 				mService.getInstance().initalizeInstance(password);
+				password = null;
+				Log.i("kmg", "initializing db on service connected");
 				mService.startNotification();
-				k.onServiceConnected();
 			} else if (!mService.getInstance().initialized()) {
 				startActivityForResult(new Intent(getApplicationContext(),
 						AuthActivity.class), 100);
+				return;
 			}
+			k.onServiceConnected();
+
 		}
 
 		@Override

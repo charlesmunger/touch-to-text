@@ -16,6 +16,7 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
 public abstract class AbstractNFCExchangeActivity extends KeyActivity {
@@ -88,7 +89,7 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		try {
 			return Helpers.serialize(sendObject());
 		} catch (Exception e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Error serializing object to be sent", e);
+			Log.wtf("wtf", "Error serializing object to be sent", e);
 		}
 		return null;
 	}
@@ -100,6 +101,7 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	public abstract void parseIntent(Intent i);
 	
 	public void onServiceConnected() {
+		Log.i("nfc", "Callbacks and NDEF Push set");
 		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
 				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],
 				send())});
