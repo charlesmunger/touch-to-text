@@ -70,6 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ PUBLIC_KEY + " BLOB, " + DATE_TIME + " INTEGER, " + VERIFIED_BY
 			+ " TEXT, " + TOKEN + " BLOB, " + CONTACT_NOTE + " TEXT);";
 
+
 	// LocalStorage: _id, private key, public key, timestamp (added), name
 	private static final String CREATE_LOCAL_STORAGE_COMMAND = "CREATE TABLE "
 			+ LOCAL_STORAGE + " (" + ID + " integer PRIMARY KEY, "
@@ -93,7 +94,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				DATABASE_VERSION);
 		context = ctx;
 	}
-	
+
 	public boolean initialized() {
 		return passwordInstance != null;
 	}
@@ -146,7 +147,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 		passwordInstance = MasterPassword.getInstance(password);
 	}
-	
+
 	public void forgetPassword() {
 		passwordInstance.forgetPassword();
 	}
@@ -244,8 +245,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		protected Uri doInBackground(ContentValues... toAdd) {
 			Uri mNewUri = null;
 			for (ContentValues val : toAdd) {
-				mNewUri = context.getContentResolver().insert(
-						MessagesProvider.CONTENT_URI, val);
+				getReadableDatabase(passwordInstance.getPasswordString()).insert(MESSAGES_TABLE, null, val);
+
 			}
 			return mNewUri;
 		}
@@ -271,6 +272,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				newUser.put(PUBLIC_KEY, Helpers.serialize(newContact.getSigningKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
 				newUser.put(TOKEN, Helpers.serialize(newContact.getToken()));
+				getReadableDatabase(passwordInstance.getPasswordString()).insert(CONTACTS_TABLE, null, newUser);
 			}
 			return null;
 		}
@@ -279,22 +281,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private class GetContactsFromDBTask extends AsyncTask<String, Void, Cursor> {
 		@Override
 		protected Cursor doInBackground(String... names) {
-
-			// A "projection" defines the columns that will be returned for each
-			// row
-			String[] mProjection = { ID, TOKEN, PUBLIC_KEY, NICKNAME };
-
-			// Defines a string to contain the selection clause
-			String mSelectionClause = null;
-			// Initializes an array to contain selection arguments
-			String[] mSelectionArgs = { "" };
 			String sortOrder = DATE_TIME + " DESC";
-			Cursor contactsCursor = null;
-			contactsCursor = context.getContentResolver().query(
-					ContactsProvider.CONTENT_URI, mProjection,
-					mSelectionClause, mSelectionArgs, sortOrder);
-
-			return contactsCursor;
+			Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
+					CONTACTS_TABLE, 
+					new String[] {	CONTACTS_ID, TOKEN, PUBLIC_KEY, NICKNAME, DATE_TIME}
+					, null, null, null, null, sortOrder);
+			return cursor;
 		}
 
 		@Override
