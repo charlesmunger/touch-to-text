@@ -87,19 +87,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// The singleton instance
 	private static DatabaseHelper dbHelperInstance = null;
 
-	DatabaseHelper(Context ctx) {
+	public DatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
 		super(ctx.getApplicationContext(), DATABASE_NAME, null,
 				DATABASE_VERSION);
 		context = ctx;
-	}
-
-	public static DatabaseHelper getInstance(Context ctx) {
-		if (dbHelperInstance == null) {
-			// Use global context for the app
-			dbHelperInstance = new DatabaseHelper(ctx);
-		}
-		return dbHelperInstance;
 	}
 
 	/**

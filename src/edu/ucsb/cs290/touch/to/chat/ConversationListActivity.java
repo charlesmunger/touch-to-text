@@ -63,29 +63,4 @@ ConversationListFragment.Callbacks {
 			startActivity(detailIntent);
 		}
 	}
-
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if(resultCode == Activity.RESULT_CANCELED) {
-			return;
-		}
-		switch (requestCode) {
-		case 100:
-			// Set password, initialize db, and generate keypair of doesn't exist.
-			String derp = data.getExtras().getString("edu.ucsb.cs290.touch.to.chat.password");
-			DatabaseHelper.getInstance(getApplicationContext()).initalizeInstance(derp);
-			return;
-		case 101:
-			System.out.println("Contact added");
-        	// String long SealablePublicKey
-			// name   time key+signedsecret 
-			String name = data.getExtras().getString("name");
-        	Long dateTime = data.getExtras().getLong("date");
-        	SealablePublicKey keyAndToken =	(SealablePublicKey)data.getExtras().get("key");
-			CryptoContacts.Contact newContact = new CryptoContacts.Contact(name, keyAndToken);
-			DatabaseHelper.getInstance(getApplicationContext()).addContact(newContact);
-			return;
-		}
-	}
-
 }
