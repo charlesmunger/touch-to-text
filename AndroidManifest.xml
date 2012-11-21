@@ -65,7 +65,7 @@
         <service
             android:name=".KeyManagementService"
             android:enabled="true"
-            android:exported="false" android:isolatedProcess="true">
+            android:exported="false">
         </service>
     </application>
 
