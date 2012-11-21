@@ -291,6 +291,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		@Override
 		protected void onPostExecute(Cursor result) {
+			result.moveToFirst();
 			// {ID, TOKEN, PUBLIC_KEY, NICKNAME };
 			while (!result.isAfterLast()) {
 				SignedObject token = (SignedObject)Helpers.deserialize(result.getBlob(1));
@@ -299,7 +300,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				CryptoContacts.Contact newContact = new CryptoContacts.Contact(
 						nickname, key, key, token);
 				CryptoContacts.addContact(newContact);
+				result.moveToNext();
 			}
+			result.close();
 		}
 	}
 

@@ -25,12 +25,6 @@ ConversationListFragment.Callbacks {
 					.setActivateOnItemClick(true);
 		}
 	}
-	
-	@Override
-	public void onStart() {
-		super.onStart();
-		mService.getInstance().getAllContacts();
-	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -84,5 +78,11 @@ ConversationListFragment.Callbacks {
 					newContact);
 			return;
 		}
+	}
+	
+	@Override
+	public void onServiceConnected() {
+		super.onServiceConnected();
+		mService.getInstance().getAllContacts();
 	}
 }

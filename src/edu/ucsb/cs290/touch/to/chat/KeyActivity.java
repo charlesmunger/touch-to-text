@@ -15,6 +15,7 @@ public abstract class KeyActivity extends Activity {
 	KeyManagementService mService;
 	boolean mBound = false;
 	private String password;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -57,15 +58,15 @@ public abstract class KeyActivity extends Activity {
 			KeyCachingBinder binder = (KeyCachingBinder) service;
 			mService = binder.getService();
 			mBound = true;
-			if(password != null) {
-				Log.i("kmg","initializing db on service connected");
+			if (password != null) {
+				Log.i("kmg", "initializing db on service connected");
 				mService.getInstance().initalizeInstance(password);
 				mService.startNotification();
-			} else if(!mService.getInstance().initialized()) {
+				k.onServiceConnected();
+			} else if (!mService.getInstance().initialized()) {
 				startActivityForResult(new Intent(getApplicationContext(),
 						AuthActivity.class), 100);
 			}
-			k.onServiceConnected();
 		}
 
 		@Override
@@ -88,19 +89,20 @@ public abstract class KeyActivity extends Activity {
 			if (resultCode == Activity.RESULT_CANCELED) {
 				return;
 			}
-			if(mBound) {
-			// Set password, initialize db, and generate keypair of doesn't
-			// exist.
+			if (mBound) {
+				// Set password, initialize db, and generate keypair of doesn't
+				// exist.
 				Log.i("kmg", "Initializing instance on activity result");
 				String derp = data.getExtras().getString(
-					"edu.ucsb.cs290.touch.to.chat.password");
-			mService.getInstance().initalizeInstance(derp);
-			mService.startNotification();
+						"edu.ucsb.cs290.touch.to.chat.password");
+				mService.getInstance().initalizeInstance(derp);
+				mService.startNotification();
+				k.onServiceConnected();
 			} else {
 				Log.i("kmg", "Storing password until service starts");
 				password = data.getExtras().getString(
 						"edu.ucsb.cs290.touch.to.chat.password");
-			}	
+			}
 		}
 	}
 }
