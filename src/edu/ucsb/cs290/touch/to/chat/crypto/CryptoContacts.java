@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.database.Cursor;
-
 
 public class CryptoContacts {
 	public static class Contact {
