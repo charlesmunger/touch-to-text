@@ -291,6 +291,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		@Override
 		protected void onPostExecute(Cursor result) {
+			super.onPostExecute(result);
 			result.moveToFirst();
 			// {ID, TOKEN, PUBLIC_KEY, NICKNAME };
 			while (!result.isAfterLast()) {

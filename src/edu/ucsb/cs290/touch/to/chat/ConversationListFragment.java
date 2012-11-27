@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
@@ -31,10 +32,12 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setListAdapter(new ArrayAdapter<CryptoContacts.Contact>(getActivity(),
+        ArrayAdapter<CryptoContacts.Contact> a = new ArrayAdapter<CryptoContacts.Contact>(getActivity(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
-                CryptoContacts.ITEMS));
+                CryptoContacts.ITEMS);
+        a.setNotifyOnChange(true);
+        setListAdapter(a);
     }
 
     @Override

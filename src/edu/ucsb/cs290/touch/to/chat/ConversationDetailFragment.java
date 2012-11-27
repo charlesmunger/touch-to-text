@@ -45,7 +45,7 @@ public class ConversationDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_conversation_detail, container, false);
         messageList = (ListView) rootView.findViewById(R.id.messages_list);
         if (mItem != null) {
-        	String[] stuff = new String[] {"No messages."};    
+        	String[] stuff = new String[] {"No messages."}; //TODO externalize this string
             messageList.setAdapter( new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_2,android.R.id.text1, stuff));
         }
         return rootView;
