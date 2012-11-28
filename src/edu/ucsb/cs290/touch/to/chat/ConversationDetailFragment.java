@@ -43,15 +43,15 @@ public class ConversationDetailFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_conversation_detail,
+		final View rootView = inflater.inflate(R.layout.fragment_conversation_detail,
 				container, false);
 		messageList = (ListView) rootView.findViewById(R.id.messages_list);
-		getActivity().findViewById(R.id.send_message_button)
+		rootView.findViewById(R.id.send_message_button)
 				.setOnClickListener(new View.OnClickListener() {
 
 					@Override
 					public void onClick(View v) {
-						sendMessage(v);
+						sendMessage(rootView);
 
 					}
 				});
@@ -67,6 +67,9 @@ public class ConversationDetailFragment extends Fragment {
 	private void sendMessage(View v) {
 		EditText messageToSend = (EditText) v
 				.findViewById(R.id.edit_message_text);
+		if(messageToSend.getText() == null) {
+			return;
+		}
 		Message m = new Message(messageToSend.getText().toString());
 		ProtectedMessage pm = null;
 		((KeyActivity) getActivity()).getInstance().addOutgoingMessage(
