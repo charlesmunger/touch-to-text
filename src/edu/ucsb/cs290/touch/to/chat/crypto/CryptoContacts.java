@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.util.Log;
+
 import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 
 
@@ -73,6 +75,7 @@ public class CryptoContacts {
 	}
 	
 	public static void addContact(Contact newContact) {
+		Log.i("touch-to-text", "Contact added to list "+newContact.toString());
 		ITEMS.add(newContact);
 		ITEM_MAP.put(newContact.name, newContact);
 	}

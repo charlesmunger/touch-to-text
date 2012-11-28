@@ -38,7 +38,6 @@ public class ConversationDetailActivity extends KeyActivity {
 
 	@Override
 	public void onServiceConnected() {
-		// TODO Auto-generated method stub
 		getFragmentManager().beginTransaction()
                     .add(R.id.conversation_detail_container, fragment)
                     .commit();

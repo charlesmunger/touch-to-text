@@ -83,6 +83,8 @@ ConversationListFragment.Callbacks {
 	
 	@Override
 	public void onServiceConnected() {
-		mService.getInstance().getAllContacts();
+		((ConversationListFragment) getFragmentManager()
+				.findFragmentById(R.id.conversation_list))
+				.onServiceConnected();
 	}
 }

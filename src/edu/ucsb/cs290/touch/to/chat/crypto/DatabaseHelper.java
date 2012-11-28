@@ -10,12 +10,10 @@ import net.sqlcipher.database.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
 
 /**
@@ -24,7 +22,6 @@ import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
  * and secure private key storage.
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
-
 	private static final String TOUCH_TO_TEXT_PREFERENCES_XML = "touchToTextPreferences.xml";
 	// DB Strings
 	public static final String MESSAGES_TABLE = "Messages";
@@ -82,7 +79,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private MasterPassword passwordInstance = null;
 	private Context context;
 	private SealablePublicKey publicKey;
-	// The singleton instance
+
+	public static final String[] CONTACTS_QUERY = new String[] {	/*CONTACTS_ID, PUBLIC_KEY,*/ NICKNAME/*, DATE_TIME*/};
 
 	public DatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
@@ -243,6 +241,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
+	public Cursor getContactsCursor() {
+		// TODO: Need to update DATE_TIME when message is sent or received for this contact.
+		String sortOrder = DATE_TIME + " DESC";
+		Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
+				CONTACTS_TABLE, 
+				new String[] {	CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME}
+				, null, null, null, null, sortOrder);
+		return cursor;
+	}
+	
 	private class AddMessageToDBTask extends
 	AsyncTask<ContentValues, Void, Void> {
 		@Override
@@ -252,11 +260,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			}
 			return null;
 		}
-	}
-
-	public void getAllContacts() {
-		GetContactsFromDBTask task = new GetContactsFromDBTask();
-		task.execute(new String[] { null });
 	}
 
 	private class AddContactsToDBTask extends
@@ -308,37 +311,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				result.moveToNext();
 			}
 			CryptoContacts.addMessages(id, messages);
-			result.close();
-		}
-	}
-
-	private class GetContactsFromDBTask extends AsyncTask<String, Void, Cursor> {
-		@Override
-		protected Cursor doInBackground(String... names) {
-			// TODO: Need to update DATE_TIME when message is sent or received for this contact.
-			String sortOrder = DATE_TIME + " DESC";
-			Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
-					CONTACTS_TABLE, 
-					new String[] {	CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME}
-					, null, null, null, null, sortOrder);
-			return cursor;
-		}
-
-		@Override
-		protected void onPostExecute(Cursor result) {
-			super.onPostExecute(result);
-			CryptoContacts.clearContacts();
-			result.moveToFirst();
-			// {ID, SEALABLE_PUBLIC_KEY, NICKNAME };
-			while (!result.isAfterLast()) {
-				long id = result.getLong(0);
-				SealablePublicKey key = (SealablePublicKey) Helpers.deserialize(result.getBlob(1));
-				String nickname = result.getString(2);
-				CryptoContacts.Contact newContact = new CryptoContacts.Contact(
-						nickname, key, id);
-				CryptoContacts.addContact(newContact);
-				result.moveToNext();
-			}
 			result.close();
 		}
 	}

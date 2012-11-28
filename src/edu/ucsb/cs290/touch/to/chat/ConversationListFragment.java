@@ -2,12 +2,13 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import android.app.Activity;
 import android.app.ListFragment;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
+import android.widget.SimpleCursorAdapter;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 
 public class ConversationListFragment extends ListFragment {
 
@@ -27,17 +28,6 @@ public class ConversationListFragment extends ListFragment {
     };
 
     public ConversationListFragment() {
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ArrayAdapter<CryptoContacts.Contact> a = new ArrayAdapter<CryptoContacts.Contact>(getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                CryptoContacts.ITEMS);
-        a.setNotifyOnChange(true);
-        setListAdapter(a);
     }
 
     @Override
@@ -68,7 +58,7 @@ public class ConversationListFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
-        mCallbacks.onItemSelected(CryptoContacts.ITEMS.get(position).getName());
+        mCallbacks.onItemSelected(((Cursor)getListAdapter().getItem(position)).getString(0));
     }
 
     @Override
@@ -93,5 +83,26 @@ public class ConversationListFragment extends ListFragment {
         }
 
         mActivatedPosition = position;
+    }
+    
+    private class GetContactsFromDBTask extends AsyncTask<DatabaseHelper, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(DatabaseHelper... db) {
+			return db[0].getContactsCursor();
+		}
+
+		@Override
+		protected void onPostExecute(Cursor result) {
+			super.onPostExecute(result);
+			SimpleCursorAdapter s = new SimpleCursorAdapter(getActivity(),
+					android.R.layout.simple_list_item_activated_1,
+					result, DatabaseHelper.CONTACTS_QUERY,
+					new int[] {android.R.id.text1},0);
+			setListAdapter(s);
+		}
+	}
+    
+    public void onServiceConnected() {
+    	new GetContactsFromDBTask().execute(((KeyActivity)getActivity()).mService.getInstance());
     }
 }
