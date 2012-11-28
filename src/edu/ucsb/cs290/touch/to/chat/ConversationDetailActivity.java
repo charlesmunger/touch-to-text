@@ -7,7 +7,9 @@ import android.view.MenuItem;
 
 public class ConversationDetailActivity extends KeyActivity {
 
-    @Override
+    private ConversationDetailFragment fragment;
+
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation_detail);
@@ -18,11 +20,9 @@ public class ConversationDetailActivity extends KeyActivity {
             Bundle arguments = new Bundle();
             arguments.putString(ConversationDetailFragment.ARG_ITEM_ID,
                     getIntent().getStringExtra(ConversationDetailFragment.ARG_ITEM_ID));
-            ConversationDetailFragment fragment = new ConversationDetailFragment();
+            fragment = new ConversationDetailFragment();
             fragment.setArguments(arguments);
-            getFragmentManager().beginTransaction()
-                    .add(R.id.conversation_detail_container, fragment)
-                    .commit();
+            
         }
     }
 
@@ -35,4 +35,12 @@ public class ConversationDetailActivity extends KeyActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+	@Override
+	public void onServiceConnected() {
+		// TODO Auto-generated method stub
+		getFragmentManager().beginTransaction()
+                    .add(R.id.conversation_detail_container, fragment)
+                    .commit();
+	}
 }

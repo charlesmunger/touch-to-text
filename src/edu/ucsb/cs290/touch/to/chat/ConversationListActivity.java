@@ -83,7 +83,6 @@ ConversationListFragment.Callbacks {
 	
 	@Override
 	public void onServiceConnected() {
-		super.onServiceConnected();
 		mService.getInstance().getAllContacts();
 	}
 }

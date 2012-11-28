@@ -1,12 +1,15 @@
 package edu.ucsb.cs290.touch.to.chat;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.KeyManagementService.KeyCachingBinder;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
@@ -15,7 +18,14 @@ public abstract class KeyActivity extends Activity {
 	KeyManagementService mService;
 	boolean mBound = false;
 	private String password;
-
+	private final BroadcastReceiver exitReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			finish();
+		}
+	};
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -24,7 +34,9 @@ public abstract class KeyActivity extends Activity {
 			startActivityForResult(new Intent(getApplicationContext(),
 					AuthActivity.class), 100);
 		}
-
+		
+		LocalBroadcastManager.getInstance(this).registerReceiver(exitReceiver, 
+		new IntentFilter(KeyManagementService.EXIT));
 		bindService(intent, mConnection, Context.BIND_IMPORTANT);
 	}
 
@@ -82,9 +94,7 @@ public abstract class KeyActivity extends Activity {
 		return mService.getInstance();
 	}
 
-	public void onServiceConnected() {
-		// override me!
-	}
+	public abstract void onServiceConnected();
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
@@ -107,5 +117,10 @@ public abstract class KeyActivity extends Activity {
 						"edu.ucsb.cs290.touch.to.chat.password");
 			}
 		}
+	}
+	@Override
+	public void onDestroy() {
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(exitReceiver);
+		super.onDestroy();
 	}
 }

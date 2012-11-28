@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
@@ -28,7 +29,8 @@ public class KeyManagementService extends Service {
 	private final IBinder binder = new KeyCachingBinder();
 	private static final int SERVICE_RUNNING_ID = 155296813;
 	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
-
+	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
+	
 	public KeyPairsProvider getKeys() {
 		return kp;
 	}
@@ -82,6 +84,7 @@ public class KeyManagementService extends Service {
 		Log.i("kmg", "On start command called");
 		if(CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
+			LocalBroadcastManager.getInstance(this).sendBroadcastSync(new Intent(EXIT));
 		}
 		return START_STICKY;
 	}
