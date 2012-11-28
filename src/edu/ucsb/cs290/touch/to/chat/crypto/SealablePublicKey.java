@@ -35,6 +35,13 @@ public final class SealablePublicKey implements Serializable {
 		}
 		this.signedToken = st;
 	}
+	
+	public SealablePublicKey(PublicKey signingKey, PublicKey encryptingKey, SignedObject signedToken) {
+		this.signingKey = signingKey;
+		this.encryptionKey = encryptingKey;
+		this.signedToken = signedToken;
+	}
+
 
 	public String digest() {
 		

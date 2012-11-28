@@ -11,6 +11,7 @@ import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class ConversationListActivity extends KeyActivity implements
 ConversationListFragment.Callbacks {
+	private static final long NEW_CONTACT_ID = 0;
 	private boolean mTwoPane;
 
 	@Override
@@ -67,13 +68,13 @@ ConversationListFragment.Callbacks {
 			}
 			System.out.println("Contact added");
 			// String long SealablePublicKey
-			// name time key+signedsecret
+			// name timeAdded (irrelevant/bad to store) key+signedsecret
 			String name = data.getExtras().getString("name");
 			Long dateTime = data.getExtras().getLong("date");
 			SealablePublicKey keyAndToken = (SealablePublicKey) data
 					.getExtras().get("key");
 			CryptoContacts.Contact newContact = new CryptoContacts.Contact(
-					name, keyAndToken);
+					name, keyAndToken, NEW_CONTACT_ID);
 			getInstance().addContact(
 					newContact);
 			return;

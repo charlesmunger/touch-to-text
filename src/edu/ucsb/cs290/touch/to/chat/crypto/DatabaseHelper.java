@@ -269,9 +269,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			for (CryptoContacts.Contact newContact : toAdd) {
 				ContentValues newUser = new ContentValues();
 				newUser.put(NICKNAME, newContact.toString());
-				newUser.put(PUBLIC_KEY, Helpers.serialize(newContact.getSigningKey()));
+				newUser.put(PUBLIC_KEY, Helpers.serialize(newContact.getSealablePublicKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
-				newUser.put(TOKEN, Helpers.serialize(newContact.getToken()));
 				getReadableDatabase(passwordInstance.getPasswordString()).insert(CONTACTS_TABLE, null, newUser);
 			}
 			return null;
@@ -281,10 +280,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private class GetContactsFromDBTask extends AsyncTask<String, Void, Cursor> {
 		@Override
 		protected Cursor doInBackground(String... names) {
+			// TODO: Need to update DATE_TIME when message is sent or received for this contact.
 			String sortOrder = DATE_TIME + " DESC";
 			Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
 					CONTACTS_TABLE, 
-					new String[] {	CONTACTS_ID, TOKEN, PUBLIC_KEY, NICKNAME, DATE_TIME}
+					new String[] {	CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME}
 					, null, null, null, null, sortOrder);
 			return cursor;
 		}
@@ -292,14 +292,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		@Override
 		protected void onPostExecute(Cursor result) {
 			super.onPostExecute(result);
+			CryptoContacts.clearContacts();
 			result.moveToFirst();
-			// {ID, TOKEN, PUBLIC_KEY, NICKNAME };
+			// {ID, SEALABLE_PUBLIC_KEY, NICKNAME };
 			while (!result.isAfterLast()) {
-				SignedObject token = (SignedObject)Helpers.deserialize(result.getBlob(1));
-				PublicKey key = (PublicKey) Helpers.deserialize(result.getBlob(2));
-				String nickname = result.getString(3);
+				long id = result.getLong(0);
+				SealablePublicKey key = (SealablePublicKey) Helpers.deserialize(result.getBlob(1));
+				String nickname = result.getString(2);
 				CryptoContacts.Contact newContact = new CryptoContacts.Contact(
-						nickname, key, key, token);
+						nickname, key, id);
 				CryptoContacts.addContact(newContact);
 				result.moveToNext();
 			}

@@ -45,13 +45,13 @@ public class ConversationDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_conversation_detail, container, false);
         messageList = (ListView) rootView.findViewById(R.id.messages_list);
         if (mItem != null) {
-        	String[] stuff = new String[] {"No messages."}; //TODO externalize this string
+        	String[] stuff = new String[] {"Testing","Attack at dawn"};    
             messageList.setAdapter( new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_2,android.R.id.text1, stuff));
         }
         return rootView;
     }
     
-    public void sendMessage(View v) {
+    private void sendMessage(View v) {
     	EditText messageToSend = (EditText) v.findViewById(R.id.edit_message_text);
     	Message m = new Message(messageToSend.getText().toString());
     	ProtectedMessage pm = null;
