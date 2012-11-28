@@ -1,10 +1,9 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
 import java.io.File;
-import java.security.PublicKey;
-import java.security.SignedObject;
-
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import java.security.KeyPair;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -15,6 +14,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
+import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
 
 /**
  * 
@@ -60,7 +62,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " INTEGER, " + HASH_MATCHES + " INTEGER DEFAULT 0, " + READ
 			+ " INTEGER DEFAULT 0, " + SIGNATURE_MATCHES
 			+ " INTEGER DEFAULT 0, " + SUBJECT + " TEXT, " + MESSAGE_BODY
-			+ " TEXT, " + ATTACHMENT + " BLOB);";
+			+ " BLOB, " + ATTACHMENT + " BLOB);";
 
 	// Contacts: _id, name, CONTACT_ID, timestamp (added), verified_by (_ids),
 	// note
@@ -70,12 +72,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ PUBLIC_KEY + " BLOB, " + DATE_TIME + " INTEGER, " + VERIFIED_BY
 			+ " TEXT, " + TOKEN + " BLOB, " + CONTACT_NOTE + " TEXT);";
 
-
-	// LocalStorage: _id, private key, public key, timestamp (added), name
-	private static final String CREATE_LOCAL_STORAGE_COMMAND = "CREATE TABLE "
-			+ LOCAL_STORAGE + " (" + ID + " integer PRIMARY KEY, "
-			+ PRIVATE_KEY + " TEXT, " + PUBLIC_KEY + " TEXT, " + DATE_TIME
-			+ " INTEGER, " + KEYPAIR_NAME + " TEXT);";
 
 	private static final String DATABASE_NAME = "touchToText.db";
 	private static final int DATABASE_VERSION = 1;
@@ -110,22 +106,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			setPassword(password);
 			SQLiteDatabase.loadLibs(context);
 			db = this.getWritableDatabase(password);
-		}
-	}
-
-	void insertKeypair(byte[] privateKeyRing, byte[] publicKeyRing, String name) {
-		ContentValues cv = new ContentValues();
-		if (privateKeyRing == null) {
-			cv.put(PUBLIC_KEY, publicKeyRing);
-			cv.put(DATE_TIME, System.currentTimeMillis());
-			cv.put(NICKNAME, name);
-			db.insert(CONTACTS_TABLE, null, cv);
-		} else {
-			cv.put(PRIVATE_KEY, privateKeyRing);
-			cv.put(PUBLIC_KEY, publicKeyRing);
-			cv.put(DATE_TIME, System.currentTimeMillis());
-			cv.put(KEYPAIR_NAME, name);
-			db.insert(LOCAL_STORAGE, null, cv);
 		}
 	}
 
@@ -168,7 +148,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private void createTables(SQLiteDatabase db) {
 		db.execSQL(CREATE_MESSAGES_COMMAND);
 		db.execSQL(CREATE_CONTACTS_COMMAND);
-		db.execSQL(CREATE_LOCAL_STORAGE_COMMAND);
 	}
 
 	private boolean tableExists(String table_name) {
@@ -209,12 +188,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64.decode(
 				publicKeyString, Base64.DEFAULT));
 		publicKey = kp.getExternalKey();
-
 		return publicKey;
 	}
+	
+	public KeyPair getSigningKey() {
+		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
+				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPasswordString()
+				, true);
 
-	public void addPublicKey(SealablePublicKey key) {
-		// insertKeypair(null, key.publicKey, key.identity);
+		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
+		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64.decode(
+				publicKeyString, Base64.DEFAULT));
+		return kp.getSigningKey();
 	}
 
 	public void addContact(CryptoContacts.Contact newContact) {
@@ -224,36 +209,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
 	// read, signature_matches, subject, body, attachment
-	public void addOutgoingMessage(final String messageToSend, long timeSent,
+	public void addOutgoingMessage(final SignedMessage signedMessage, long timeSent,
 			CryptoContacts.Contact contact) {
 		AddMessageToDBTask task = new AddMessageToDBTask();
 		ContentValues newMessage = new ContentValues();
-		newMessage.put(MESSAGE_BODY, messageToSend);
+		newMessage.put(MESSAGE_BODY, Helpers.serialize(signedMessage));
 		newMessage.put(DATE_TIME, timeSent);
+		newMessage.put(CONTACT_ID, contact.getID());
 		newMessage.put(NICKNAME, contact.toString());
 		// Need to get CONTACT_ID from contact and add that, nickname is not
 		// guaranteed unique.
 		task.execute(new ContentValues[] { newMessage });
+		// Update
+		UpdateLastContactedTask last = new UpdateLastContactedTask();
+		ContentValues updateTime = new ContentValues();
+		updateTime.put(CONTACTS_ID, contact.getID());
+		updateTime.put(DATE_TIME, timeSent);
+		last.execute(new ContentValues[] { updateTime });
 	}
+
+
 
 	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
 	// read, signature_matches, subject, body, attachment
+	private class UpdateLastContactedTask extends
+	AsyncTask<ContentValues, Void, Void> {
+		@Override
+		protected Void doInBackground(ContentValues... toAdd) {
+			for (ContentValues val : toAdd) {
+				getReadableDatabase(passwordInstance.getPasswordString()).update(CONTACTS_TABLE, val, CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID), null);
+			}
+			return null;
+		}
+	}
 
 	private class AddMessageToDBTask extends
-	AsyncTask<ContentValues, Void, Uri> {
+	AsyncTask<ContentValues, Void, Void> {
 		@Override
-		protected Uri doInBackground(ContentValues... toAdd) {
-			Uri mNewUri = null;
+		protected Void doInBackground(ContentValues... toAdd) {
 			for (ContentValues val : toAdd) {
 				getReadableDatabase(passwordInstance.getPasswordString()).insert(MESSAGES_TABLE, null, val);
-
 			}
-			return mNewUri;
-		}
-
-		@Override
-		protected void onPostExecute(Uri result) {
-			// result is Uri of newly added row
+			return null;
 		}
 	}
 
@@ -274,6 +271,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				getReadableDatabase(passwordInstance.getPasswordString()).insert(CONTACTS_TABLE, null, newUser);
 			}
 			return null;
+		}
+	}
+
+	private class GetMessagesFromDBTask extends AsyncTask<Long, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(Long... ids) {
+			Cursor cursor = null;
+			for (Long id : ids) {
+				String sortOrder = DATE_TIME + " ASC";
+				String condition = CONTACT_ID + "=" + ids;
+				cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
+						MESSAGES_TABLE, 
+						new String[] {DATE_TIME, MESSAGE_BODY, CONTACT_ID}
+						, condition, null, null, null, sortOrder);
+			}
+			
+			return cursor;
+		}
+
+		@Override
+		protected void onPostExecute(Cursor result) {
+			super.onPostExecute(result);
+			List<TimestampedMessage> messages = new ArrayList<TimestampedMessage>();
+			long id = -1;
+			result.moveToFirst();
+			// {DATE_TIME, MESSAGE_BODY, CONTACT_ID}
+			while (!result.isAfterLast()) {
+				if (id == -1) {
+					id = result.getLong(2);
+				}
+				long dateTime = result.getLong(0);
+				byte[] messageBody = result.getBlob(1);
+				SignedMessage message = (SignedMessage)Helpers.deserialize(messageBody);
+				messages.add(new TimestampedMessage(message, dateTime));
+				result.moveToNext();
+			}
+			CryptoContacts.addMessages(id, messages);
+			result.close();
 		}
 	}
 

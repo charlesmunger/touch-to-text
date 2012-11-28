@@ -1,12 +1,13 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
-import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.SignedObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 
 
 public class CryptoContacts {
@@ -64,7 +65,8 @@ public class CryptoContacts {
 
 	public static List<Contact> ITEMS = new ArrayList<CryptoContacts.Contact>();
 	public static Map<String,CryptoContacts.Contact> ITEM_MAP = new HashMap<String, CryptoContacts.Contact>(); 
-
+	public static Map<Long, List<TimestampedMessage>> MESSAGES_MAP = new HashMap<Long, List<TimestampedMessage>>();
+	
 	public static void clearContacts() {
 		ITEMS.clear();
 		ITEM_MAP.clear();
@@ -73,6 +75,10 @@ public class CryptoContacts {
 	public static void addContact(Contact newContact) {
 		ITEMS.add(newContact);
 		ITEM_MAP.put(newContact.name, newContact);
+	}
+	
+	public static void addMessages(Long id, List<TimestampedMessage> messages) {
+		MESSAGES_MAP.put(id, messages);
 	}
 	
 }

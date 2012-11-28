@@ -68,4 +68,9 @@ public class KeyPairsProvider implements Serializable {
 		return new SealablePublicKey(signingKeyPair,
 				transmissonKeyPair.getPublic());
 	}
+
+	KeyPair getSigningKey() {
+		// TODO Auto-generated method stub
+		return signingKeyPair;
+	}
 }
