@@ -38,6 +38,10 @@ ConversationListFragment.Callbacks {
 				NewContactActivity.class), 101);
 		return true;
 	}
+	
+	public boolean wipeDB(MenuItem item) {
+		return getInstance().wipeDB();
+	}
 
 	@Override
 	public void onItemSelected(String id) {
