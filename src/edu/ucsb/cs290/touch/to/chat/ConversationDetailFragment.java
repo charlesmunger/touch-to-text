@@ -37,6 +37,14 @@ public class ConversationDetailFragment extends Fragment {
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItem = CryptoContacts.ITEM_MAP.get(getArguments().get(ARG_ITEM_ID));
         }
+        getActivity().findViewById(R.id.send_message_button).setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				sendMessage(v);
+				
+			}
+		});
     }
 
     @Override
