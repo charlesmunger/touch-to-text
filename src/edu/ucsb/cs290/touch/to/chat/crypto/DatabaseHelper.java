@@ -138,8 +138,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public boolean wipeDB() {
 		if (db != null) {
-			db.close();
-			db = null;
+			db.rawExecSQL("DROP * FROM TABLE " + MESSAGES_TABLE);
+			db.rawExecSQL("DROP * FROM TABLE " + CONTACTS_TABLE);
 			return true;
 		}
 		return false;
