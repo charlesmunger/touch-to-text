@@ -140,6 +140,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (db != null) {
 			db.rawExecSQL("DROP TABLE " + MESSAGES_TABLE);
 			db.rawExecSQL("DROP TABLE " + CONTACTS_TABLE);
+			createTables(db);
 			return true;
 		}
 		return false;
