@@ -5,4 +5,9 @@
           android:title="@string/menu_add_contact"
           android:showAsAction="ifRoom|withText" 
           android:onClick="addContact"/>
+    <item android:id="@+id/menu_wipe_database"
+          android:icon="@drawable/ic_trashcan"
+          android:title="@string/clear_data"
+          android:showAsAction="ifRoom|withText"
+          android:onClick="wipeDB" />
 </menu>

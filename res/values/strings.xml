@@ -15,5 +15,6 @@
     <string name="title_activity_end_key_exchange">EndKeyExchangeActivity</string>
     <string name="title_activity_abstract_nfcexchange">AbstractNFCExchangeActivity</string>
     <string name="title_activity_key_generation">Key Generation</string>
+    <string name="clear_data">Clear All Data</string>
 
 </resources>

@@ -2,6 +2,8 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
+import edu.ucsb.cs290.touch.to.chat.crypto.TimestampedMessage;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
@@ -54,9 +57,14 @@ public class ConversationDetailFragment extends Fragment {
 
 			}
 		});
-        if (mItem != null) {
-        	String[] stuff = new String[] {"Testing","Attack at dawn"};    
-            messageList.setAdapter( new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_2,android.R.id.text1, stuff));
+        if (mItem != null) {     
+        	((KeyActivity) getActivity()).getInstance().getAllMessages(mItem.getID());
+        	List<TimestampedMessage> messages = CryptoContacts.MESSAGES_MAP.get(mItem.getID());
+        	if (messages != null) {
+        		ArrayAdapter<TimestampedMessage> adapter = new ArrayAdapter<TimestampedMessage>(getActivity(),
+        				android.R.layout.simple_list_item_1, messages);
+                messageList.setAdapter(adapter);
+        	}
         }
         return rootView;
     }
@@ -69,7 +77,6 @@ public class ConversationDetailFragment extends Fragment {
     	Message m = new Message(messageToSend.getText().toString());
     	ProtectedMessage pm = null;
     	SignedMessage signedMessage = null;
-    	
 		try {
 			signedMessage = new SignedMessage(m, ((KeyActivity) getActivity()).getInstance().getSigningKey());
 			pm = new ProtectedMessage(signedMessage, mItem.getEncryptingKey(), null);

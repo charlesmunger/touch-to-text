@@ -77,7 +77,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 1;
 
 	// Databases and Context
-	private File dbFile = null;
 	private SQLiteDatabase db;
 	private MasterPassword passwordInstance = null;
 	private Context context;
@@ -141,8 +140,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (db != null) {
 			db.close();
 			db = null;
+			return true;
 		}
-		return dbFile.delete();
+		return false;
 	}
 
 	private void createTables(SQLiteDatabase db) {
@@ -280,7 +280,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			Cursor cursor = null;
 			for (Long id : ids) {
 				String sortOrder = DATE_TIME + " ASC";
-				String condition = CONTACT_ID + "=" + ids;
+				String condition = CONTACT_ID + "=" + id;
 				cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
 						MESSAGES_TABLE, 
 						new String[] {DATE_TIME, MESSAGE_BODY, CONTACT_ID}
@@ -355,5 +355,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
 			return null;
 		}
+	}
+
+	public void getAllMessages(long id) {
+		GetMessagesFromDBTask task = new GetMessagesFromDBTask();
+		task.execute(new Long[] { id });		
 	}
 }
