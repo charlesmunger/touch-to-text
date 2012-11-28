@@ -2,22 +2,27 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import android.app.Fragment;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
-import edu.ucsb.cs290.touch.to.chat.crypto.TimestampedMessage;
+import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts.Contact;
+import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
@@ -25,63 +30,62 @@ import edu.ucsb.cs290.touch.to.chat.remote.messages.TokenAuthMessage;
 
 public class ConversationDetailFragment extends Fragment {
 
-    public static final String ARG_ITEM_ID = "contact name";
+	public static final String ARG_ITEM_ID = "contact name";
 
-    CryptoContacts.Contact mItem;
-    ListView messageList;
-    EditText messageText;
+	CryptoContacts.Contact mItem;
+	ListView messageList;
+	EditText messageText;
+	String item_id;
+	View rootView;
 
-    public ConversationDetailFragment() {
-    }
+	public ConversationDetailFragment() {
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //get contact data from database, or a map? TODO
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            mItem = CryptoContacts.ITEM_MAP.get(getArguments().get(ARG_ITEM_ID));
-        }
-    }
+	}
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_conversation_detail, container, false);
-        messageList = (ListView) rootView.findViewById(R.id.messages_list);
-        rootView.findViewById(R.id.send_message_button)
-		.setOnClickListener(new View.OnClickListener() {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// get contact data from database, or a map? TODO
+		if (getArguments().containsKey(ARG_ITEM_ID)) {
+			item_id = (String) getArguments().get(ARG_ITEM_ID);
+		}
+	}
 
-			@Override
-			public void onClick(View v) {
-				sendMessage(rootView);
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		rootView = inflater.inflate(R.layout.fragment_conversation_detail,
+				container, false);
+		messageList = (ListView) rootView.findViewById(R.id.messages_list);
+		if(((KeyActivity) getActivity()).mBound) {
+			inflateContact();
+		}
+		return rootView;
+	}
 
-			}
-		});
-        if (mItem != null) {     
-        	((KeyActivity) getActivity()).getInstance().getAllMessages(mItem.getID());
-        	List<TimestampedMessage> messages = CryptoContacts.MESSAGES_MAP.get(mItem.getID());
-        	if (messages != null) {
-        		ArrayAdapter<TimestampedMessage> adapter = new ArrayAdapter<TimestampedMessage>(getActivity(),
-        				android.R.layout.simple_list_item_1, messages);
-                messageList.setAdapter(adapter);
-        	}
-        }
-        return rootView;
-    }
-    
-    private void sendMessage(View v) {
-    	EditText messageToSend = (EditText) v.findViewById(R.id.edit_message_text);
-    	if(messageToSend.getText() == null) {
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		((CursorAdapter) messageList.getAdapter()).getCursor().close();
+	};
+	
+	private void sendMessage(View v) {
+		EditText messageToSend = (EditText) v
+				.findViewById(R.id.edit_message_text);
+		if (messageToSend.getText() == null) {
 			return;
 		}
-    	Message m = new Message(messageToSend.getText().toString());
-    	ProtectedMessage pm = null;
-    	SignedMessage signedMessage = null;
+		Message m = new Message(messageToSend.getText().toString());
+		ProtectedMessage pm = null;
+		SignedMessage signedMessage = null;
+		DatabaseHelper instance = ((KeyActivity) getActivity()).getInstance();
 		try {
-			signedMessage = new SignedMessage(m, ((KeyActivity) getActivity()).getInstance().getSigningKey());
-			pm = new ProtectedMessage(signedMessage, mItem.getEncryptingKey(), null);
-	    	((KeyActivity) getActivity()).getInstance().addOutgoingMessage(
-	    			signedMessage, System.currentTimeMillis(),mItem);
+			signedMessage = new SignedMessage(m, instance.getSigningKey());
+			pm = new ProtectedMessage(signedMessage, mItem.getEncryptingKey(),
+					instance.getSigningKey());
+
+			instance.addOutgoingMessage(signedMessage,
+					System.currentTimeMillis(), mItem);
 
 		} catch (GeneralSecurityException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
@@ -90,7 +94,72 @@ public class ConversationDetailFragment extends Fragment {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Problem creating ProtectedMessage!", e);
 		}
-    	TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getSigningKey(), mItem.getToken());
-    	TorProxy.sendMessage(tm);
-    }
+		TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getSigningKey(),
+				mItem.getToken());
+		TorProxy.sendMessage(tm);
+	}
+
+	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(Object... ids) {
+			Log.v("touch-to-text", "Updating message view");
+			return ((DatabaseHelper) ids[0]).getMessagesCursor((String) ids[1]);
+		}
+
+		@Override
+		protected void onPostExecute(Cursor result) {
+			super.onPostExecute(result);
+			if (messageList.getAdapter() != null) {
+				((SimpleCursorAdapter) messageList.getAdapter()).swapCursor(
+						result).close();
+			} else {
+				SimpleCursorAdapter s = new SimpleCursorAdapter(getActivity(),
+						android.R.layout.simple_list_item_activated_1, result,
+						DatabaseHelper.MESSAGES_QUERY,
+						new int[] { android.R.id.text1 }, 0);
+				messageList.setAdapter(s);
+			}
+		}
+	}
+
+	public void onServiceConnected() {
+		new GetMessagesFromDBTask().execute(
+				((KeyActivity) getActivity()).mService.getInstance(), item_id);
+		if (rootView != null) {
+			inflateContact();
+		}
+	}
+
+	public void inflateContact() {
+		final DatabaseHelper db = ((KeyActivity) getActivity())
+				.getInstance();
+		new AsyncTask<String, Void, CryptoContacts.Contact>() {
+
+			@Override
+			protected Contact doInBackground(String... params) {
+				Cursor result = db.getContactCursor(params[0]);
+				result.moveToFirst();
+				long id = result.getLong(0);
+				SealablePublicKey key = (SealablePublicKey) Helpers
+						.deserialize(result.getBlob(1));
+				String nickname = result.getString(2);
+				result.close();
+				return new CryptoContacts.Contact(nickname, key, id);
+			}
+
+			@Override
+			protected void onPostExecute(CryptoContacts.Contact contact) {
+				mItem = contact;
+				rootView.findViewById(R.id.send_message_button)
+						.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								sendMessage(rootView);
+
+							}
+						});
+			}
+		}.execute(item_id);
+	}
 }

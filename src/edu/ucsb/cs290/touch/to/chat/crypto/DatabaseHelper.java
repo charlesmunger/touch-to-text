@@ -10,6 +10,7 @@ import net.sqlcipher.database.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
@@ -25,7 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String TOUCH_TO_TEXT_PREFERENCES_XML = "touchToTextPreferences.xml";
 	// DB Strings
 	public static final String MESSAGES_TABLE = "Messages";
-	public static final String MESSAGES_ID = "messages_id";
+	public static final String MESSAGES_ID = "_id";
 	public static final String THREAD_ID = "threadId";
 	public static final String CONTACTS_TABLE = "Contacts";
 	public static final String CONTACTS_ID = "_id";
@@ -69,7 +70,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ PUBLIC_KEY + " BLOB, " + DATE_TIME + " INTEGER, " + VERIFIED_BY
 			+ " TEXT, " + TOKEN + " BLOB, " + CONTACT_NOTE + " TEXT);";
 
-
 	private static final String DATABASE_NAME = "touchToText.db";
 	private static final int DATABASE_VERSION = 1;
 
@@ -79,7 +79,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private Context context;
 	private SealablePublicKey publicKey;
 
-	public static final String[] CONTACTS_QUERY = new String[] {	/*CONTACTS_ID, PUBLIC_KEY,*/ NICKNAME/*, DATE_TIME*/};
+	public static final String[] CONTACTS_QUERY = new String[] { /*
+																 * CONTACTS_ID,
+																 * PUBLIC_KEY,
+																 */NICKNAME /*
+																			 * ,
+																			 * DATE_TIME
+																			 */};
+	
+	public static final String[] MESSAGES_QUERY = new String[] { /*
+		 * MESSAGE_BODY,
+		 * PUBLIC_KEY,
+		 */ CONTACTS_ID/*
+					 * ,
+					 * DATE_TIME
+					 */};
+
 
 	public DatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
@@ -98,7 +113,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @param password
 	 */
 	public void initalizeInstance(String password) {
-		Log.i("db","Intializing database");
+		Log.i("db", "Intializing database");
 		if (passwordInstance == null) {
 			setPassword(password);
 			SQLiteDatabase.loadLibs(context);
@@ -180,24 +195,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public SealablePublicKey getPGPPublicKey() {
 		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPasswordString()
-				, true);
+				TOUCH_TO_TEXT_PREFERENCES_XML,
+				passwordInstance.getPasswordString(), true);
 
 		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64.decode(
-				publicKeyString, Base64.DEFAULT));
+		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64
+				.decode(publicKeyString, Base64.DEFAULT));
 		publicKey = kp.getExternalKey();
 		return publicKey;
 	}
-	
+
 	public KeyPair getSigningKey() {
 		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPasswordString()
-				, true);
+				TOUCH_TO_TEXT_PREFERENCES_XML,
+				passwordInstance.getPasswordString(), true);
 
 		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64.decode(
-				publicKeyString, Base64.DEFAULT));
+		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64
+				.decode(publicKeyString, Base64.DEFAULT));
 		return kp.getSigningKey();
 	}
 
@@ -208,8 +223,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
 	// read, signature_matches, subject, body, attachment
-	public void addOutgoingMessage(final SignedMessage signedMessage, long timeSent,
-			CryptoContacts.Contact contact) {
+	public void addOutgoingMessage(final SignedMessage signedMessage,
+			long timeSent, CryptoContacts.Contact contact) {
 		AddMessageToDBTask task = new AddMessageToDBTask();
 		ContentValues newMessage = new ContentValues();
 		newMessage.put(MESSAGE_BODY, Helpers.serialize(signedMessage));
@@ -227,111 +242,100 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		last.execute(new ContentValues[] { updateTime });
 	}
 
-
-
 	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
 	// read, signature_matches, subject, body, attachment
 	private class UpdateLastContactedTask extends
-	AsyncTask<ContentValues, Void, Void> {
+			AsyncTask<ContentValues, Void, Void> {
 		@Override
 		protected Void doInBackground(ContentValues... toAdd) {
 			for (ContentValues val : toAdd) {
-				getReadableDatabase(passwordInstance.getPasswordString()).update(CONTACTS_TABLE, val, CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID), null);
+				getReadableDatabase(passwordInstance.getPasswordString())
+						.update(CONTACTS_TABLE, val,
+								CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID),
+								null);
 			}
 			return null;
 		}
 	}
 
 	public Cursor getContactsCursor() {
-		// TODO: Need to update DATE_TIME when message is sent or received for this contact.
+		// TODO: Need to update DATE_TIME when message is sent or received for
+		// this contact.
 		String sortOrder = DATE_TIME + " DESC";
-		Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
-				CONTACTS_TABLE, 
-				new String[] {	CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME}
-				, null, null, null, null, sortOrder);
+		Cursor cursor = getReadableDatabase(
+				passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
+				new String[] { CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME },
+				null, null, null, null, sortOrder);
 		return cursor;
 	}
-	
+
 	private class AddMessageToDBTask extends
-	AsyncTask<ContentValues, Void, Void> {
+			AsyncTask<ContentValues, Void, Void> {
 		@Override
 		protected Void doInBackground(ContentValues... toAdd) {
 			for (ContentValues val : toAdd) {
-				getReadableDatabase(passwordInstance.getPasswordString()).insert(MESSAGES_TABLE, null, val);
+				getReadableDatabase(passwordInstance.getPasswordString())
+						.insert(MESSAGES_TABLE, null, val);
 			}
 			return null;
 		}
 	}
 
 	private class AddContactsToDBTask extends
-	AsyncTask<CryptoContacts.Contact, Void, Void> {
+			AsyncTask<CryptoContacts.Contact, Void, Void> {
 		@Override
 		protected Void doInBackground(CryptoContacts.Contact... toAdd) {
 			for (CryptoContacts.Contact newContact : toAdd) {
 				ContentValues newUser = new ContentValues();
 				newUser.put(NICKNAME, newContact.toString());
-				newUser.put(PUBLIC_KEY, Helpers.serialize(newContact.getSealablePublicKey()));
+				newUser.put(PUBLIC_KEY,
+						Helpers.serialize(newContact.getSealablePublicKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
-				getReadableDatabase(passwordInstance.getPasswordString()).insert(CONTACTS_TABLE, null, newUser);
+				getReadableDatabase(passwordInstance.getPasswordString())
+						.insert(CONTACTS_TABLE, null, newUser);
 			}
 			return null;
 		}
 	}
 
-	private class GetMessagesFromDBTask extends AsyncTask<Long, Void, Cursor> {
-		@Override
-		protected Cursor doInBackground(Long... ids) {
-			Cursor cursor = null;
-			for (Long id : ids) {
-				String sortOrder = DATE_TIME + " ASC";
-				String condition = CONTACT_ID + "=" + id;
-				cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
-						MESSAGES_TABLE, 
-						new String[] {DATE_TIME, MESSAGE_BODY, CONTACT_ID}
-						, condition, null, null, null, sortOrder);
-			}
-			
-			return cursor;
-		}
+	public Cursor getMessagesCursor(String id) {
+		Cursor cursor = null;
+		String sortOrder = DATE_TIME + " ASC";
+		String condition = NICKNAME + "='" + id+"'";
+		cursor = getReadableDatabase(passwordInstance.getPasswordString())
+				.query(MESSAGES_TABLE,
+						new String[] { DATE_TIME, MESSAGE_BODY, CONTACT_ID , MESSAGES_ID},
+						null, null, null, null, sortOrder);
 
-		@Override
-		protected void onPostExecute(Cursor result) {
-			super.onPostExecute(result);
-			List<TimestampedMessage> messages = new ArrayList<TimestampedMessage>();
-			long id = -1;
-			result.moveToFirst();
-			// {DATE_TIME, MESSAGE_BODY, CONTACT_ID}
-			while (!result.isAfterLast()) {
-				if (id == -1) {
-					id = result.getLong(2);
-				}
-				long dateTime = result.getLong(0);
-				byte[] messageBody = result.getBlob(1);
-				SignedMessage message = (SignedMessage)Helpers.deserialize(messageBody);
-				messages.add(new TimestampedMessage(message, dateTime));
-				result.moveToNext();
-			}
-			CryptoContacts.addMessages(id, messages);
-			result.close();
-		}
+		return cursor;
 	}
 
+	public Cursor getContactCursor(String name) {
+//		String stmt = "SELECT ITEMS ( CONTACTS_ID, PUBLIC_KEY," +
+//				" NICKNAME, DATE_TIME ) FROM CONTACTS_TABLE WHERE NICKNAME = ?";
+//		net.sqlcipher.database.SQLiteStatement statement = db.compileStatement(stmt);
+//		statement.bindString(0, name);
+//		statement.execute();
+		String sortOrder = DATE_TIME + " DESC";
+		String condition = NICKNAME + "='" + name+"'";
+		Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
+				CONTACTS_TABLE, 
+				new String[] {CONTACTS_ID,	PUBLIC_KEY, DATE_TIME}
+				, condition, null, null, null, sortOrder); //TODO no sql injection!!
+		return cursor;
+	}
+	
 	private class GenerateKeysTask extends AsyncTask<String, Void, Void> {
 		@Override
 		protected Void doInBackground(String... names) {
-			SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-					TOUCH_TO_TEXT_PREFERENCES_XML, passwordInstance.getPasswordString()
-					, true);
+			SecurePreferences encryptedPublicKey = new SecurePreferences(
+					context, TOUCH_TO_TEXT_PREFERENCES_XML,
+					passwordInstance.getPasswordString(), true);
 			KeyPairsProvider kp = new KeyPairsProvider();
 			byte[] b = Helpers.serialize(kp);
 			String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
 			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
 			return null;
 		}
-	}
-
-	public void getAllMessages(long id) {
-		GetMessagesFromDBTask task = new GetMessagesFromDBTask();
-		task.execute(new Long[] { id });		
 	}
 }

@@ -3,6 +3,7 @@ package edu.ucsb.cs290.touch.to.chat;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -13,7 +14,7 @@ public class ConversationListActivity extends KeyActivity implements
 ConversationListFragment.Callbacks {
 	private static final long NEW_CONTACT_ID = 0;
 	private boolean mTwoPane;
-
+	private boolean fragmentInit = false;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,12 +49,20 @@ ConversationListFragment.Callbacks {
 		if (mTwoPane) {
 			Bundle arguments = new Bundle();
 			arguments.putString(ConversationDetailFragment.ARG_ITEM_ID, id);
-			ConversationDetailFragment fragment = new ConversationDetailFragment();
+			final ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
 			getFragmentManager().beginTransaction()
 			.replace(R.id.conversation_detail_container, fragment)
 			.commit();
-
+			new Handler().post(new Runnable() {
+				
+				@Override
+				public void run() {
+					fragment.onServiceConnected();
+					fragmentInit = true;
+				}
+			});
+			
 		} else {
 			Intent detailIntent = new Intent(this,
 					ConversationDetailActivity.class);
@@ -90,5 +99,10 @@ ConversationListFragment.Callbacks {
 		((ConversationListFragment) getFragmentManager()
 				.findFragmentById(R.id.conversation_list))
 				.onServiceConnected();
+				if(mTwoPane && fragmentInit) {
+					ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()
+							.findFragmentById(R.id.conversation_detail));
+					f.onServiceConnected();
+				}
 	}
 }
