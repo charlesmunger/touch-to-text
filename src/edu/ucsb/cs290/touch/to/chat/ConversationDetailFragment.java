@@ -73,8 +73,10 @@ public class ConversationDetailFragment extends Fragment {
 
 	@Override
 	public void onDestroyView() {
+		if(messageList.getAdapter() != null) {
+			((CursorAdapter) messageList.getAdapter()).getCursor().close();
+		}
 		super.onDestroyView();
-		((CursorAdapter) messageList.getAdapter()).getCursor().close();
 	};
 	
 	private void sendMessage(View v) {

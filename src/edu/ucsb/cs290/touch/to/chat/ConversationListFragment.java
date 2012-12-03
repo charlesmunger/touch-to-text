@@ -63,10 +63,10 @@ public class ConversationListFragment extends ListFragment {
 	
 	@Override
 	public void onDestroyView() {
-		super.onDestroyView();
 		if(getListAdapter() != null) {
 			((CursorAdapter) getListAdapter()).getCursor().close();
-		}		
+		}
+		super.onDestroyView();	
 	};
 
 	@Override
