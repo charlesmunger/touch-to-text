@@ -2,6 +2,7 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,13 +17,11 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts.Contact;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
+import edu.ucsb.cs290.touch.to.chat.crypto.MessagesListCursorAdapter;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
@@ -35,19 +34,13 @@ public class ConversationDetailFragment extends Fragment {
 	CryptoContacts.Contact mItem;
 	ListView messageList;
 	EditText messageText;
-	String item_id;
 	View rootView;
-
-	public ConversationDetailFragment() {
-
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// get contact data from database, or a map? TODO
 		if (getArguments().containsKey(ARG_ITEM_ID)) {
-			item_id = (String) getArguments().get(ARG_ITEM_ID);
+			mItem = (CryptoContacts.Contact) getArguments().get(ARG_ITEM_ID);
 		}
 	}
 
@@ -99,66 +92,51 @@ public class ConversationDetailFragment extends Fragment {
 	}
 
 	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {
+		private PublicKey author;
+		private PublicKey self;
+		public GetMessagesFromDBTask(PublicKey self, Contact mItem) {
+			this.author = mItem.getSigningKey();
+			this.self = self;
+		}
+		
 		@Override
 		protected Cursor doInBackground(Object... ids) {
+			
 			Log.v("touch-to-text", "Updating message view");
-			return ((DatabaseHelper) ids[0]).getMessagesCursor((String) ids[1]);
+			DatabaseHelper databaseHelper = (DatabaseHelper) ids[0];
+			return databaseHelper.getMessagesCursor((Long) ids[1]);
 		}
 
 		@Override
 		protected void onPostExecute(Cursor result) {
 			super.onPostExecute(result);
 			if (messageList.getAdapter() != null) {
-				((SimpleCursorAdapter) messageList.getAdapter()).swapCursor(
-						result).close();
+				((CursorAdapter) messageList.getAdapter()).swapCursor(result).close();
 			} else {
-				SimpleCursorAdapter s = new SimpleCursorAdapter(getActivity(),
-						android.R.layout.simple_list_item_activated_1, result,
-						DatabaseHelper.MESSAGES_QUERY,
-						new int[] { android.R.id.text1 }, 0);
+				MessagesListCursorAdapter s = new MessagesListCursorAdapter(
+						getActivity(),result, author, self);
 				messageList.setAdapter(s);
 			}
 		}
 	}
 
 	public void onServiceConnected() {
-		new GetMessagesFromDBTask().execute(
-				((KeyActivity) getActivity()).mService.getInstance(), item_id);
+		new GetMessagesFromDBTask(((KeyActivity) getActivity()).mService.getInstance().getPGPPublicKey().sign(), mItem).execute(
+				((KeyActivity) getActivity()).mService.getInstance(), mItem);
 		if (rootView != null) {
 			inflateContact();
 		}
 	}
 
 	public void inflateContact() {
-		final DatabaseHelper db = ((KeyActivity) getActivity())
-				.getInstance();
-		new AsyncTask<String, Void, CryptoContacts.Contact>() {
+		rootView.findViewById(R.id.send_message_button)
+				.setOnClickListener(new View.OnClickListener() {
 
-			@Override
-			protected Contact doInBackground(String... params) {
-				Cursor result = db.getContactCursor(params[0]);
-				result.moveToFirst();
-				long id = result.getLong(0);
-				SealablePublicKey key = (SealablePublicKey) Helpers
-						.deserialize(result.getBlob(1));
-				String nickname = result.getString(2);
-				result.close();
-				return new CryptoContacts.Contact(nickname, key, id);
-			}
+					@Override
+					public void onClick(View v) {
+						sendMessage(rootView);
 
-			@Override
-			protected void onPostExecute(CryptoContacts.Contact contact) {
-				mItem = contact;
-				rootView.findViewById(R.id.send_message_button)
-						.setOnClickListener(new View.OnClickListener() {
-
-							@Override
-							public void onClick(View v) {
-								sendMessage(rootView);
-
-							}
-						});
-			}
-		}.execute(item_id);
+					}
+				});
 	}
 }
