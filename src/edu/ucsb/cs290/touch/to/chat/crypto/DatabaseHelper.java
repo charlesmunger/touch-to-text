@@ -1,19 +1,21 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
-import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.List;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
+import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts.Contact;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
 
@@ -23,52 +25,51 @@ import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
  * and secure private key storage.
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
+	
+	// Encrypted Preferences File
 	private static final String TOUCH_TO_TEXT_PREFERENCES_XML = "touchToTextPreferences.xml";
+	
 	// DB Strings
 	public static final String MESSAGES_TABLE = "Messages";
-	public static final String MESSAGES_ID = "_id";
-	public static final String THREAD_ID = "threadId";
 	public static final String CONTACTS_TABLE = "Contacts";
-	public static final String CONTACTS_ID = "_id";
-	public static final String LOCAL_STORAGE = "LocalStorage";
 
-	private static final String ID = "_id";
+	// Messages Table
+	public static final String MESSAGES_ID = "_id";
+	private static final String SENDER_ID = "sender";
+	private static final String RECIPIENT_ID = "recipient";
+	private static final String DATE_TIME = "dateTime";
+	private static final String READ = "read"; // 1 if read, 0 for unread
+	private static final String MESSAGE_BODY = "messageBody";
+	
+	// Contacts Table
+	public static final String CONTACTS_ID = "_id";
 	private static final String NICKNAME = "nickname";
 	private static final String CONTACT_ID = "contactId";
-	private static final String DATE_TIME = "dateTime";
-	private static final String SUBJECT = "subject";
-	private static final String MESSAGE_BODY = "messageBody";
-	private static final String HASH_MATCHES = "hashVerifed";
-	private static final String SIGNATURE_MATCHES = "signatureVerifed";
-	private static final String ATTACHMENT = "attachmentBlob";
-	private static final String READ = "read"; // 1 if read, 0 for unread
-
-	// NICKNAME
-	private static final String TOKEN = "token";
 	private static final String CONTACT_NOTE = "note";
 	private static final String VERIFIED_BY = "verifiers";
-	private static final String PRIVATE_KEY = "privateKey";
 	private static final String PUBLIC_KEY = "publicKey";
-	private static final String KEYPAIR_NAME = "keyName";
+	
+	// My contact ID
+	private static final long MY_CONTACT_ID = -1;
 
-	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
-	// read, signature_matches, subject, body, attachment
-	private static final String CREATE_MESSAGES_COMMAND = "CREATE TABLE "
-			+ MESSAGES_TABLE + " (" + MESSAGES_ID
-			+ " integer PRIMARY KEY autoincrement, " + THREAD_ID + " INTEGER, "
-			+ NICKNAME + " TEXT, " + CONTACT_ID + " INTEGER, " + DATE_TIME
-			+ " INTEGER, " + HASH_MATCHES + " INTEGER DEFAULT 0, " + READ
-			+ " INTEGER DEFAULT 0, " + SIGNATURE_MATCHES
-			+ " INTEGER DEFAULT 0, " + SUBJECT + " TEXT, " + MESSAGE_BODY
-			+ " BLOB, " + ATTACHMENT + " BLOB);";
 
-	// Contacts: _id, name, CONTACT_ID, timestamp (added), verified_by (_ids),
-	// note
-	private static final String CREATE_CONTACTS_COMMAND = "CREATE TABLE "
-			+ CONTACTS_TABLE + " (" + CONTACTS_ID
-			+ " integer PRIMARY KEY autoincrement, " + NICKNAME + " TEXT, "
-			+ PUBLIC_KEY + " BLOB, " + DATE_TIME + " INTEGER, " + VERIFIED_BY
-			+ " TEXT, " + TOKEN + " BLOB, " + CONTACT_NOTE + " TEXT);";
+	private static final String CREATE_MESSAGES_COMMAND = 
+			"CREATE TABLE " + MESSAGES_TABLE + " (  " 
+					+ MESSAGES_ID + " INTEGER PRIMARY KEY autoincrement, "
+					+ SENDER_ID + " INTEGER, "
+					+ RECIPIENT_ID + " INTEGER, "
+					+ DATE_TIME + " INTEGER, " 
+					+ READ + " INTEGER DEFAULT 0, " 
+					+ MESSAGE_BODY + " BLOB);";
+
+	private static final String CREATE_CONTACTS_COMMAND =
+			"CREATE TABLE " + CONTACTS_TABLE + " ( " 
+					+ CONTACTS_ID + " integer PRIMARY KEY autoincrement, " 
+					+ NICKNAME + " TEXT, "
+					+ PUBLIC_KEY + " BLOB, "
+					+ DATE_TIME + " INTEGER, " 
+					+ VERIFIED_BY + " TEXT, "
+					+ CONTACT_NOTE + " TEXT);";
 
 	private static final String DATABASE_NAME = "touchToText.db";
 	private static final int DATABASE_VERSION = 1;
@@ -80,20 +81,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private SealablePublicKey publicKey;
 
 	public static final String[] CONTACTS_QUERY = new String[] { /*
-																 * CONTACTS_ID,
-																 * PUBLIC_KEY,
-																 */NICKNAME /*
-																			 * ,
-																			 * DATE_TIME
-																			 */};
-	
+	 * CONTACTS_ID,
+	 * PUBLIC_KEY,
+	 */NICKNAME /*
+	 * ,
+	 * DATE_TIME
+	 */};
+
 	public static final String[] MESSAGES_QUERY = new String[] { /*
-		 * MESSAGE_BODY,
-		 * PUBLIC_KEY,
-		 */ CONTACTS_ID/*
-					 * ,
-					 * DATE_TIME
-					 */};
+	 * MESSAGE_BODY,
+	 * PUBLIC_KEY,
+	 */ MESSAGE_BODY/*
+	 * ,
+	 * DATE_TIME
+	 */};
 
 
 	public DatabaseHelper(Context ctx) {
@@ -121,18 +122,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	// Insert a message you just wrote into the database.
-	void addSentMessage(int threadID, int contactID, String nickname,
-			String body) {
-		ContentValues cv = new ContentValues();
-		cv.put(THREAD_ID, threadID);
-		cv.put(NICKNAME, nickname);
-		cv.put(CONTACT_ID, contactID);
-		cv.put(MESSAGE_BODY, body);
-		cv.put(DATE_TIME, System.currentTimeMillis());
-		db.insert(MESSAGES_TABLE, null, cv);
-	}
-
 	public void setPassword(String password) {
 		if (passwordInstance != null) {
 			passwordInstance.forgetPassword();
@@ -151,8 +140,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public boolean wipeDB() {
 		if (db != null) {
-			db.rawExecSQL("DROP TABLE " + MESSAGES_TABLE);
-			db.rawExecSQL("DROP TABLE " + CONTACTS_TABLE);
+			if(tableExists(MESSAGES_TABLE)) {
+				db.rawExecSQL("DROP TABLE " + MESSAGES_TABLE);
+			}
+			if(tableExists(CONTACTS_TABLE)) {
+				db.rawExecSQL("DROP TABLE " + CONTACTS_TABLE);
+			}
 			createTables(db);
 			return true;
 		}
@@ -166,9 +159,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private boolean tableExists(String table_name) {
 
-		Cursor cursor = getReadableDatabase("password").rawQuery(
-				"select DISTINCT tbl_name from sqlite_master where tbl_name = '"
-						+ table_name + "'", null);
+		String condition = "tbl_name = ?";
+		Cursor cursor = getReadableDatabase("password")
+				.query("sqlite_master", new String[] { "tbl_name" },
+						condition, new String[] { table_name }, null,null,null);
+
 		if (cursor != null) {
 			if (cursor.getCount() > 0) {
 				cursor.close();
@@ -221,38 +216,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		task.execute(new CryptoContacts.Contact[] { newContact });
 	}
 
-	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
-	// read, signature_matches, subject, body, attachment
+
 	public void addOutgoingMessage(final SignedMessage signedMessage,
-			long timeSent, CryptoContacts.Contact contact) {
+		CryptoContacts.Contact contact) {
+		long time=0;
+		try {
+			time = signedMessage.getMessage(getSigningKey().getPublic()).getTimeSent().getTime();
+		} catch (GeneralSecurityException e) {
+			Log.wtf("Touch-to-text", "Your keys may have been tampered with!?!?", e);
+		} catch (IOException e) {
+			Log.d("Touch-to-text", "Error deserializing signed message", e);
+			time = System.currentTimeMillis();
+		} catch (ClassNotFoundException e) {
+			Log.d("Touch-to-text", "Error, class not found in addOutgoingMessage", e);
+			time = System.currentTimeMillis();
+		}
+		
 		AddMessageToDBTask task = new AddMessageToDBTask();
 		ContentValues newMessage = new ContentValues();
 		newMessage.put(MESSAGE_BODY, Helpers.serialize(signedMessage));
-		newMessage.put(DATE_TIME, timeSent);
-		newMessage.put(CONTACT_ID, contact.getID());
-		newMessage.put(NICKNAME, contact.toString());
-		// Need to get CONTACT_ID from contact and add that, nickname is not
-		// guaranteed unique.
+		newMessage.put(DATE_TIME, time );
+		newMessage.put(RECIPIENT_ID, contact.getID());
+		newMessage.put(SENDER_ID, MY_CONTACT_ID);
+		newMessage.put(READ, 1);
 		task.execute(new ContentValues[] { newMessage });
-		// Update
+		// For sorting purposes, update last contacted.
 		UpdateLastContactedTask last = new UpdateLastContactedTask();
 		ContentValues updateTime = new ContentValues();
 		updateTime.put(CONTACTS_ID, contact.getID());
-		updateTime.put(DATE_TIME, timeSent);
+		updateTime.put(DATE_TIME, time);
 		last.execute(new ContentValues[] { updateTime });
 	}
 
-	// Messages: _id, thread_id, nickname, CONTACT_ID, timestamp, hash_matches,
-	// read, signature_matches, subject, body, attachment
 	private class UpdateLastContactedTask extends
-			AsyncTask<ContentValues, Void, Void> {
+	AsyncTask<ContentValues, Void, Void> {
 		@Override
 		protected Void doInBackground(ContentValues... toAdd) {
 			for (ContentValues val : toAdd) {
 				getReadableDatabase(passwordInstance.getPasswordString())
-						.update(CONTACTS_TABLE, val,
-								CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID),
-								null);
+				.update(CONTACTS_TABLE, val,
+						CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID),
+						null);
 			}
 			return null;
 		}
@@ -264,25 +268,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		String sortOrder = DATE_TIME + " DESC";
 		Cursor cursor = getReadableDatabase(
 				passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
-				new String[] { CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME },
-				null, null, null, null, sortOrder);
+						new String[] { CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME },
+						null, null, null, null, sortOrder);
 		return cursor;
 	}
 
 	private class AddMessageToDBTask extends
-			AsyncTask<ContentValues, Void, Void> {
+	AsyncTask<ContentValues, Void, Void> {
 		@Override
 		protected Void doInBackground(ContentValues... toAdd) {
 			for (ContentValues val : toAdd) {
 				getReadableDatabase(passwordInstance.getPasswordString())
-						.insert(MESSAGES_TABLE, null, val);
+				.insert(MESSAGES_TABLE, null, val);
 			}
 			return null;
 		}
 	}
 
 	private class AddContactsToDBTask extends
-			AsyncTask<CryptoContacts.Contact, Void, Void> {
+	AsyncTask<CryptoContacts.Contact, Void, Void> {
 		@Override
 		protected Void doInBackground(CryptoContacts.Contact... toAdd) {
 			for (CryptoContacts.Contact newContact : toAdd) {
@@ -292,7 +296,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						Helpers.serialize(newContact.getSealablePublicKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
 				getReadableDatabase(passwordInstance.getPasswordString())
-						.insert(CONTACTS_TABLE, null, newUser);
+				.insert(CONTACTS_TABLE, null, newUser);
 			}
 			return null;
 		}
@@ -301,31 +305,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public Cursor getMessagesCursor(String id) {
 		Cursor cursor = null;
 		String sortOrder = DATE_TIME + " ASC";
-		String condition = NICKNAME + "='" + id+"'";
+		String condition = RECIPIENT_ID + "=? OR " + SENDER_ID + "=?";
 		cursor = getReadableDatabase(passwordInstance.getPasswordString())
 				.query(MESSAGES_TABLE,
-						new String[] { DATE_TIME, MESSAGE_BODY, CONTACT_ID , MESSAGES_ID},
-						null, null, null, null, sortOrder);
+						new String[] { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID },
+						condition, new String[] {id, id}, null, null, sortOrder);
 
 		return cursor;
 	}
 
 	public Cursor getContactCursor(String name) {
-//		String stmt = "SELECT ITEMS ( CONTACTS_ID, PUBLIC_KEY," +
-//				" NICKNAME, DATE_TIME ) FROM CONTACTS_TABLE WHERE NICKNAME = ?";
-//		net.sqlcipher.database.SQLiteStatement statement = db.compileStatement(stmt);
-//		statement.bindString(0, name);
-//		statement.execute();
 		String sortOrder = DATE_TIME + " DESC";
-		String condition = NICKNAME + "='" + name+"'";
+		String condition = NICKNAME + "=?";
 		Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
 				CONTACTS_TABLE, 
 				new String[] {CONTACTS_ID,	PUBLIC_KEY, DATE_TIME}
-				, condition, null, null, null, sortOrder); //TODO no sql injection!!
+				, condition, new String[] { name }, null, null, sortOrder);
 		return cursor;
 	}
-	
+
 	private class GenerateKeysTask extends AsyncTask<String, Void, Void> {
+
+		@Override
+		protected void onPreExecute() {
+			// Add "generating keys" notification
+		}
+
 		@Override
 		protected Void doInBackground(String... names) {
 			SecurePreferences encryptedPublicKey = new SecurePreferences(
@@ -337,5 +342,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
 			return null;
 		}
+
+		@Override
+		protected void onPostExecute(Void evil) {
+			// Set "done generating keys" notification
+		}
 	}
+
 }

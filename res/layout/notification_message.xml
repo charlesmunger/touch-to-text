@@ -17,7 +17,7 @@
             android:ellipsize="marquee"
             android:fadingEdge="horizontal"
             android:singleLine="true"
-            android:text="Touch To Text Secure Messaging!" />
+            android:text="@string/persistent_notification_title" />
 
         <TextView
             android:id="@+id/text2"
@@ -28,7 +28,7 @@
             android:ellipsize="marquee"
             android:fadingEdge="horizontal"
             android:singleLine="true"
-            android:text="Passphrase is Cached. Touch icon to forget." />
+            android:text="@string/passphrase_cached" />
     </LinearLayout>
 
     <ImageView

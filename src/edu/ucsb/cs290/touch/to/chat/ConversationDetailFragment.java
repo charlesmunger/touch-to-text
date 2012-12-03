@@ -84,8 +84,7 @@ public class ConversationDetailFragment extends Fragment {
 			pm = new ProtectedMessage(signedMessage, mItem.getEncryptingKey(),
 					instance.getSigningKey());
 
-			instance.addOutgoingMessage(signedMessage,
-					System.currentTimeMillis(), mItem);
+			instance.addOutgoingMessage(signedMessage, mItem);
 
 		} catch (GeneralSecurityException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,

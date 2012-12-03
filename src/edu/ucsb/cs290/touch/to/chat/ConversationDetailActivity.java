@@ -41,7 +41,6 @@ public class ConversationDetailActivity extends KeyActivity {
 		getFragmentManager().beginTransaction()
                     .add(R.id.conversation_detail_container, fragment)
                     .commit();
-		((ConversationDetailFragment) getFragmentManager()
-				.findFragmentById(R.id.conversation_list)).onServiceConnected();
+		fragment.onServiceConnected();
 	}
 }

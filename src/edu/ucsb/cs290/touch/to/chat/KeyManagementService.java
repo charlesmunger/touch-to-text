@@ -110,8 +110,6 @@ public class KeyManagementService extends Service {
 		.setWhen(System.currentTimeMillis())
 		.setContent(remoteView)
 		.setOngoing(true);
-
-
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			builder.setPriority(Notification.PRIORITY_LOW);
 		}

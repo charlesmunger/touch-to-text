@@ -16,5 +16,7 @@
     <string name="title_activity_abstract_nfcexchange">AbstractNFCExchangeActivity</string>
     <string name="title_activity_key_generation">Key Generation</string>
     <string name="clear_data">Clear All Data</string>
+    <string name="passphrase_cached">Passphrase is Cached. Touch X to forget.</string>
+    <string name="persistent_notification_title">Touch to Text Secure Messaging</string>
 
 </resources>
