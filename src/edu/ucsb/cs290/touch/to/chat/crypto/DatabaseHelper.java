@@ -262,8 +262,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public Cursor getContactsCursor() {
-		// TODO: Need to update DATE_TIME when message is sent or received for
-		// this contact.
 		String sortOrder = DATE_TIME + " DESC";
 		Cursor cursor = getReadableDatabase(
 				passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
@@ -301,14 +299,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	public Cursor getMessagesCursor(String id) {
+	public Cursor getMessagesCursor(long id) {
 		Cursor cursor = null;
 		String sortOrder = DATE_TIME + " ASC";
-		String condition = RECIPIENT_ID + "=? OR " + SENDER_ID + "=?";
+		String condition = RECIPIENT_ID + "="+id+" OR " + SENDER_ID + "="+id;
 		cursor = getReadableDatabase(passwordInstance.getPasswordString())
 				.query(MESSAGES_TABLE,
 						MESSAGES_CURSOR_COLUMNS,
-						condition, new String[] {id, id}, null, null, sortOrder);
+						condition, null, null, null, sortOrder);
 
 		return cursor;
 	}
