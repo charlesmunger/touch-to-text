@@ -6,9 +6,12 @@ import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import android.animation.LayoutTransition;
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,12 +47,24 @@ public class ConversationDetailFragment extends Fragment {
 		}
 	}
 
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			final LayoutTransition l = new LayoutTransition();
+			l.enableTransitionType(LayoutTransition.APPEARING);
+			l.enableTransitionType(LayoutTransition.CHANGE_APPEARING);
+			l.enableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
+			l.enableTransitionType(LayoutTransition.CHANGING);
+			l.enableTransitionType(LayoutTransition.DISAPPEARING);
+			container.setLayoutTransition(l);
+		}
 		rootView = inflater.inflate(R.layout.fragment_conversation_detail,
 				container, false);
 		messageList = (ListView) rootView.findViewById(R.id.messages_list);
+		messageList.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+		messageList.setStackFromBottom(true);
 		if(((KeyActivity) getActivity()).mBound) {
 			inflateContact();
 		}
@@ -69,6 +84,7 @@ public class ConversationDetailFragment extends Fragment {
 			return;
 		}
 		Message m = new Message(messageToSend.getText().toString());
+		messageToSend.getEditableText().clear();
 		ProtectedMessage pm = null;
 		SignedMessage signedMessage = null;
 		DatabaseHelper instance = ((KeyActivity) getActivity()).getInstance();
