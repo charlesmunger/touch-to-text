@@ -322,6 +322,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				, condition, new String[] { name }, null, null, sortOrder);
 		return cursor;
 	}
+	
+	public SealablePublicKey getKeyForContact(long contactID) {
+		String condition = CONTACTS_ID+"=?";
+		Cursor publicKeyCursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
+				CONTACTS_TABLE, new String[] {PUBLIC_KEY}, condition, new String[] {String.valueOf(contactID)}, null,null,null);
+		if( publicKeyCursor.getCount() != 1) {
+			Log.wtf("touch-to-text", "Contact not found, or someone may be attempting to spoof a contact through database modification.");
+		}
+		publicKeyCursor.moveToFirst();
+		SealablePublicKey contactPublicKey = (SealablePublicKey)Helpers.deserialize(publicKeyCursor.getBlob(0));
+		return contactPublicKey;
+	}
 
 	private class GenerateKeysTask extends AsyncTask<String, Void, Void> {
 
