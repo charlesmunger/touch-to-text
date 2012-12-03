@@ -311,13 +311,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return cursor;
 	}
 
-	public Cursor getContactCursor(String name) {
+	public Cursor getContactCursor() {
 		String sortOrder = DATE_TIME + " DESC";
-		String condition = NICKNAME + "=?";
 		Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString()).query(
 				CONTACTS_TABLE, 
-				new String[] {CONTACTS_ID,	PUBLIC_KEY, DATE_TIME}
-				, condition, new String[] { name }, null, null, sortOrder);
+				new String[] {CONTACTS_ID, PUBLIC_KEY, DATE_TIME, NICKNAME}
+				,null,null, null, null, sortOrder);
 		return cursor;
 	}
 	
