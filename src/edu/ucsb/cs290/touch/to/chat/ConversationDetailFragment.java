@@ -86,6 +86,8 @@ public class ConversationDetailFragment extends Fragment {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Problem creating ProtectedMessage!", e);
 		}
+		new GetMessagesFromDBTask().execute(
+				((KeyActivity) getActivity()).mService.getInstance(), mItem);
 		TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getSigningKey(),
 				mItem.getToken());
 		TorProxy.sendMessage(tm);
@@ -94,17 +96,16 @@ public class ConversationDetailFragment extends Fragment {
 	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {
 		private PublicKey author;
 		private PublicKey self;
-		public GetMessagesFromDBTask(PublicKey self, Contact mItem) {
-			this.author = mItem.getSigningKey();
-			this.self = self;
-		}
 		
 		@Override
 		protected Cursor doInBackground(Object... ids) {
 			
 			Log.v("touch-to-text", "Updating message view");
 			DatabaseHelper databaseHelper = (DatabaseHelper) ids[0];
-			return databaseHelper.getMessagesCursor((Long) ids[1]);
+			self = databaseHelper.getPGPPublicKey().sign();
+			Contact contact = (CryptoContacts.Contact) ids[1];
+			author = contact.getSigningKey();
+			return databaseHelper.getMessagesCursor(contact.getID());
 		}
 
 		@Override
@@ -121,7 +122,7 @@ public class ConversationDetailFragment extends Fragment {
 	}
 
 	public void onServiceConnected() {
-		new GetMessagesFromDBTask(((KeyActivity) getActivity()).mService.getInstance().getPGPPublicKey().sign(), mItem).execute(
+		new GetMessagesFromDBTask().execute(
 				((KeyActivity) getActivity()).mService.getInstance(), mItem);
 		if (rootView != null) {
 			inflateContact();

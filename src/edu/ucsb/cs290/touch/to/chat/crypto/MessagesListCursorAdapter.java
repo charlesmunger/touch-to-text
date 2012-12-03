@@ -33,19 +33,18 @@ public class MessagesListCursorAdapter extends CursorAdapter {
 
 	@Override
 	public void bindView(View view, Context context, Cursor c) {
-		final TwoLineListItem v = (TwoLineListItem) view
-				.findViewById(android.R.layout.simple_list_item_1);
+		TwoLineListItem v = (TwoLineListItem) view;
 		final Date date = new Date(c.getLong(c
 				.getColumnIndex(DatabaseHelper.DATE_TIME)));
 		final SignedMessage sm = (SignedMessage) Helpers.deserialize(c
 				.getBlob(c.getColumnIndex(DatabaseHelper.MESSAGE_BODY)));
 		Message message = null;
 		try {
-			if (sm.getAuthor() == author) {
+			if (sm.getAuthor().equals(author)) {
 				v.getText1().setGravity(Gravity.LEFT);
 				v.getText2().setGravity(Gravity.LEFT);
 				message = sm.getMessage(author);
-			} else if (sm.getAuthor() == self) {
+			} else if (sm.getAuthor().equals(self)) {
 				v.getText1().setGravity(Gravity.RIGHT);
 				v.getText2().setGravity(Gravity.RIGHT);
 				message = sm.getMessage(self);

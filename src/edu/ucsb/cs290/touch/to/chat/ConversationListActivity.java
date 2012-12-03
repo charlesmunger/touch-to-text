@@ -45,7 +45,7 @@ ConversationListFragment.Callbacks {
 	}
 
 	@Override
-	public void onItemSelected(String id) {
+	public void onItemSelected(CryptoContacts.Contact id) {
 		if (mTwoPane) {
 			Bundle arguments = new Bundle();
 			arguments.putSerializable(ConversationDetailFragment.ARG_ITEM_ID, id);

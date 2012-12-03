@@ -1,5 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.SignedObject;
 import java.util.ArrayList;
@@ -7,19 +8,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.database.Cursor;
 import android.util.Log;
-
-import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
 
 public class CryptoContacts {
-	public static class Contact {
+	public static class Contact implements Serializable {
 		private final PublicKey signingKey;
 		private final PublicKey encryptingKey;
 		private final SignedObject so;
 		private final String name;
 		private long id;
 
+		public Contact(Cursor c) {
+			this(c.getString(c.getColumnIndex(DatabaseHelper.NICKNAME)), 
+				(SealablePublicKey) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.PUBLIC_KEY))), 
+				c.getLong(c.getColumnIndex(DatabaseHelper.CONTACTS_ID)));
+		}
+		
 		public Contact(String name, PublicKey signing, PublicKey encrypting, SignedObject so, long id) {
 			this.signingKey = signing;
 			this.encryptingKey = encrypting;

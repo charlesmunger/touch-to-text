@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import edu.ucsb.cs290.touch.to.chat.crypto.ContactsListCursorAdapter;
+import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 
 public class ConversationListFragment extends ListFragment {
@@ -20,12 +22,12 @@ public class ConversationListFragment extends ListFragment {
 
 	public interface Callbacks {
 
-		public void onItemSelected(String id);
+		public void onItemSelected(CryptoContacts.Contact id);
 	}
 
 	private static Callbacks sDummyCallbacks = new Callbacks() {
 		@Override
-		public void onItemSelected(String id) {
+		public void onItemSelected(CryptoContacts.Contact id) {
 		}
 	};
 
@@ -69,8 +71,7 @@ public class ConversationListFragment extends ListFragment {
 	public void onListItemClick(ListView listView, View view, int position,
 			long id) {
 		super.onListItemClick(listView, view, position, id);
-		mCallbacks.onItemSelected(((Cursor) getListAdapter().getItem(position))
-				.getString(2));
+		mCallbacks.onItemSelected(new CryptoContacts.Contact((Cursor) getListAdapter().getItem(position)));
 	}
 
 	@Override
@@ -108,12 +109,9 @@ public class ConversationListFragment extends ListFragment {
 		protected void onPostExecute(Cursor result) {
 			super.onPostExecute(result);
 			if (getListAdapter() != null) {
-				((SimpleCursorAdapter) getListAdapter()).swapCursor(result).close();
+				((CursorAdapter) getListAdapter()).swapCursor(result).close();
 			} else {
-				SimpleCursorAdapter s = new SimpleCursorAdapter(getActivity(),
-						android.R.layout.simple_list_item_activated_1, result,
-						DatabaseHelper.CONTACTS_QUERY,
-						new int[] { android.R.id.text1 }, 0);
+				ContactsListCursorAdapter s = new ContactsListCursorAdapter(getActivity(), result);
 				setListAdapter(s);
 			}
 		}
