@@ -48,7 +48,7 @@ ConversationListFragment.Callbacks {
 	public void onItemSelected(String id) {
 		if (mTwoPane) {
 			Bundle arguments = new Bundle();
-			arguments.putString(ConversationDetailFragment.ARG_ITEM_ID, id);
+			arguments.putSerializable(ConversationDetailFragment.ARG_ITEM_ID, id);
 			final ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
 			getFragmentManager().beginTransaction()
