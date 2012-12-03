@@ -3,9 +3,8 @@ package edu.ucsb.cs290.touch.to.chat.crypto;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
+import java.util.Arrays;
+import java.util.List;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -15,7 +14,6 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts.Contact;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
 
@@ -35,12 +33,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// Messages Table
 	public static final String MESSAGES_ID = "_id";
-	private static final String SENDER_ID = "sender";
-	private static final String RECIPIENT_ID = "recipient";
-	private static final String DATE_TIME = "dateTime";
-	private static final String READ = "read"; // 1 if read, 0 for unread
-	private static final String MESSAGE_BODY = "messageBody";
-	
+	public  static final String SENDER_ID = "sender";
+	public static final String RECIPIENT_ID = "recipient";
+	public static final String DATE_TIME = "dateTime";
+	public static final String READ = "read"; // 1 if read, 0 for unread
+	public static final String MESSAGE_BODY = "messageBody";
+
+	public static final String[] MESSAGES_CURSOR_COLUMNS = new String[] { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
 	// Contacts Table
 	public static final String CONTACTS_ID = "_id";
 	private static final String NICKNAME = "nickname";
@@ -221,7 +220,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		CryptoContacts.Contact contact) {
 		long time=0;
 		try {
-			time = signedMessage.getMessage(getSigningKey().getPublic()).getTimeSent().getTime();
+			time = signedMessage.getMessage(getSigningKey().getPublic()).getTimeSent();
 		} catch (GeneralSecurityException e) {
 			Log.wtf("Touch-to-text", "Your keys may have been tampered with!?!?", e);
 		} catch (IOException e) {
@@ -308,7 +307,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		String condition = RECIPIENT_ID + "=? OR " + SENDER_ID + "=?";
 		cursor = getReadableDatabase(passwordInstance.getPasswordString())
 				.query(MESSAGES_TABLE,
-						new String[] { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID },
+						MESSAGES_CURSOR_COLUMNS,
 						condition, new String[] {id, id}, null, null, sortOrder);
 
 		return cursor;
