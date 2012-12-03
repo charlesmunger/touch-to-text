@@ -40,14 +40,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String MESSAGE_BODY = "messageBody";
 
 	public static final String[] MESSAGES_CURSOR_COLUMNS = new String[] { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
+	
 	// Contacts Table
 	public static final String CONTACTS_ID = "_id";
-	private static final String NICKNAME = "nickname";
-	private static final String CONTACT_ID = "contactId";
-	private static final String CONTACT_NOTE = "note";
+	public static final String NICKNAME = "nickname";
+	public static final String CONTACT_ID = "contactId";
+	public static final String CONTACT_NOTE = "note";
 	private static final String VERIFIED_BY = "verifiers";
-	private static final String PUBLIC_KEY = "publicKey";
+	public static final String PUBLIC_KEY = "publicKey";
 	
+
+	public static final String[] CONTACT_CURSOR_COLUMNS = new String[] {CONTACTS_ID, PUBLIC_KEY, NICKNAME};
+
 	// My contact ID
 	private static final long MY_CONTACT_ID = -1;
 
@@ -265,7 +269,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		String sortOrder = DATE_TIME + " DESC";
 		Cursor cursor = getReadableDatabase(
 				passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
-						new String[] { CONTACTS_ID, PUBLIC_KEY, NICKNAME, DATE_TIME },
+						CONTACT_CURSOR_COLUMNS,
 						null, null, null, null, sortOrder);
 		return cursor;
 	}
