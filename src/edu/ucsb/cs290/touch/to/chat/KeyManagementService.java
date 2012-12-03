@@ -82,7 +82,7 @@ public class KeyManagementService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
 		Log.i("kmg", "On start command called");
-		if(CLEAR_MEMORY.equals(intent.getAction())) {
+		if(intent!= null && CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
 			LocalBroadcastManager.getInstance(this).sendBroadcastSync(new Intent(EXIT));
 		}
