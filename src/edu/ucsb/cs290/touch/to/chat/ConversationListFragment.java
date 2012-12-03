@@ -9,8 +9,8 @@ import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
 import edu.ucsb.cs290.touch.to.chat.crypto.ContactsListCursorAdapter;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 
 public class ConversationListFragment extends ListFragment {
@@ -22,12 +22,12 @@ public class ConversationListFragment extends ListFragment {
 
 	public interface Callbacks {
 
-		public void onItemSelected(CryptoContacts.Contact id);
+		public void onItemSelected(Contact id);
 	}
 
 	private static Callbacks sDummyCallbacks = new Callbacks() {
 		@Override
-		public void onItemSelected(CryptoContacts.Contact id) {
+		public void onItemSelected(Contact id) {
 		}
 	};
 
@@ -73,7 +73,7 @@ public class ConversationListFragment extends ListFragment {
 	public void onListItemClick(ListView listView, View view, int position,
 			long id) {
 		super.onListItemClick(listView, view, position, id);
-		mCallbacks.onItemSelected(new CryptoContacts.Contact((Cursor) getListAdapter().getItem(position)));
+		mCallbacks.onItemSelected(new Contact((Cursor) getListAdapter().getItem(position)));
 	}
 
 	@Override

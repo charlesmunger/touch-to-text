@@ -20,8 +20,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts.Contact;
+import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.MessagesListCursorAdapter;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
@@ -34,7 +33,7 @@ public class ConversationDetailFragment extends Fragment {
 
 	public static final String ARG_ITEM_ID = "contact name";
 
-	CryptoContacts.Contact mItem;
+	Contact mItem;
 	ListView messageList;
 	EditText messageText;
 	View rootView;
@@ -43,7 +42,7 @@ public class ConversationDetailFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments().containsKey(ARG_ITEM_ID)) {
-			mItem = (CryptoContacts.Contact) getArguments().get(ARG_ITEM_ID);
+			mItem = (Contact) getArguments().get(ARG_ITEM_ID);
 		}
 	}
 
@@ -121,7 +120,7 @@ public class ConversationDetailFragment extends Fragment {
 			Log.v("touch-to-text", "Updating message view");
 			DatabaseHelper databaseHelper = (DatabaseHelper) ids[0];
 			self = databaseHelper.getPGPPublicKey().sign();
-			Contact contact = (CryptoContacts.Contact) ids[1];
+			Contact contact = (Contact) ids[1];
 			author = contact.getSigningKey();
 			return databaseHelper.getMessagesCursor(contact.getID());
 		}

@@ -214,14 +214,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return kp.getSigningKey();
 	}
 
-	public void addContact(CryptoContacts.Contact newContact) {
+	public void addContact(Contact newContact) {
 		AddContactsToDBTask task = new AddContactsToDBTask();
-		task.execute(new CryptoContacts.Contact[] { newContact });
+		task.execute(new Contact[] { newContact });
 	}
 
 
 	public void addOutgoingMessage(final SignedMessage signedMessage,
-		CryptoContacts.Contact contact) {
+		Contact contact) {
 		long time=0;
 		try {
 			time = signedMessage.getMessage(getSigningKey().getPublic()).getTimeSent();
@@ -287,10 +287,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	private class AddContactsToDBTask extends
-	AsyncTask<CryptoContacts.Contact, Void, Void> {
+	AsyncTask<Contact, Void, Void> {
 		@Override
-		protected Void doInBackground(CryptoContacts.Contact... toAdd) {
-			for (CryptoContacts.Contact newContact : toAdd) {
+		protected Void doInBackground(Contact... toAdd) {
+			for (Contact newContact : toAdd) {
 				ContentValues newUser = new ContentValues();
 				newUser.put(NICKNAME, newContact.toString());
 				newUser.put(PUBLIC_KEY,

@@ -7,7 +7,7 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import edu.ucsb.cs290.touch.to.chat.crypto.CryptoContacts;
+import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
 import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
 
 public class ConversationListActivity extends KeyActivity implements
@@ -45,7 +45,7 @@ ConversationListFragment.Callbacks {
 	}
 
 	@Override
-	public void onItemSelected(CryptoContacts.Contact id) {
+	public void onItemSelected(Contact id) {
 		if (mTwoPane) {
 			Bundle arguments = new Bundle();
 			arguments.putSerializable(ConversationDetailFragment.ARG_ITEM_ID, id);
@@ -86,7 +86,7 @@ ConversationListFragment.Callbacks {
 			Long dateTime = data.getExtras().getLong("date");
 			SealablePublicKey keyAndToken = (SealablePublicKey) data
 					.getExtras().get("key");
-			CryptoContacts.Contact newContact = new CryptoContacts.Contact(
+			Contact newContact = new Contact(
 					name, keyAndToken, NEW_CONTACT_ID);
 			getInstance().addContact(
 					newContact);
