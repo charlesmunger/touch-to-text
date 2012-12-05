@@ -107,7 +107,7 @@ public class ConversationDetailFragment extends Fragment {
 				((KeyActivity) getActivity()).mService.getInstance(), mItem);
 		TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getSigningKey(),
 				mItem.getToken());
-		TorProxy.sendMessage(tm);
+		TorProxy.postThroughTor(getActivity().getApplicationContext(), tm);
 	}
 
 	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {

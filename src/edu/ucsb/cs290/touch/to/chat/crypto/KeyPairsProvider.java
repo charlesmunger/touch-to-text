@@ -20,14 +20,17 @@ public class KeyPairsProvider implements Serializable {
 	}
 	private KeyPair signingKeyPair;
 	private KeyPair transmissonKeyPair;
+	private KeyPair tokenSigningKeyPair;
 
 	public KeyPairsProvider() {
 		ExecutorService e = Executors.newCachedThreadPool();
 		Future<KeyPair> signingFut = e.submit(new Generate("DSA", 1024));
 		Future<KeyPair> transFut = e.submit(new Generate("ElGamal", 1024));
+		Future<KeyPair> tokenFut = e.submit(new Generate("DSA", 1024));
 		try {
 			signingKeyPair = signingFut.get();
 			transmissonKeyPair = transFut.get();
+			tokenSigningKeyPair = tokenFut.get();
 		} catch (Exception e1) {
 			Log.wtf("touch-to-text", "Interrupted key generation", e1);
 		}
@@ -65,12 +68,16 @@ public class KeyPairsProvider implements Serializable {
 	}
 
 	public SealablePublicKey getExternalKey() {
-		return new SealablePublicKey(signingKeyPair,
-				transmissonKeyPair.getPublic());
+		return new SealablePublicKey(signingKeyPair.getPublic(),
+				transmissonKeyPair.getPublic(), tokenSigningKeyPair);
 	}
 
 	KeyPair getSigningKey() {
 		// TODO Auto-generated method stub
 		return signingKeyPair;
+	}
+	
+	KeyPair getTokenKey() {
+		return tokenSigningKeyPair;
 	}
 }

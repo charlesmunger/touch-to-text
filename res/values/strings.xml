@@ -18,5 +18,6 @@
     <string name="clear_data">Clear All Data</string>
     <string name="passphrase_cached">Passphrase is Cached. Touch X to forget.</string>
     <string name="persistent_notification_title">Touch to Text Secure Messaging</string>
-
+    <string name="service_url">k4pf4spu5742f4px.onion</string>
+    <string name="GCM_Sender_ID">529649669170</string>
 </resources>

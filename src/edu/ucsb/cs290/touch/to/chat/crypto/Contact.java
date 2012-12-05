@@ -10,6 +10,7 @@ import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 public class Contact implements Serializable {
 	private final PublicKey signingKey;
 	private final PublicKey encryptingKey;
+	private final PublicKey tokenKey;
 	private final SignedObject so;
 	final String name;
 	private long id;
@@ -20,16 +21,17 @@ public class Contact implements Serializable {
 			c.getLong(c.getColumnIndex(DatabaseHelper.CONTACTS_ID)));
 	}
 	
-	public Contact(String name, PublicKey signing, PublicKey encrypting, SignedObject so, long id) {
+	public Contact(String name, PublicKey signing, PublicKey encrypting, PublicKey tokenKey,SignedObject so, long id) {
 		this.signingKey = signing;
 		this.encryptingKey = encrypting;
+		this.tokenKey = tokenKey;
 		this.name = name;
 		this.so = so;
 		this.id = id;
 	}
 	
 	public Contact(String name, SealablePublicKey spk, long id) {
-		this(name,spk.sign(),spk.encrypt(),spk.token(), id);
+		this(name,spk.sign(),spk.encrypt(),spk.address(),spk.token(), id);
 	}
 
 	public PublicKey getSigningKey() {
@@ -53,7 +55,7 @@ public class Contact implements Serializable {
 	}
 
 	public SealablePublicKey getSealablePublicKey() {
-		return new SealablePublicKey(signingKey, encryptingKey, so);
+		return new SealablePublicKey(signingKey, encryptingKey,tokenKey, so);
 	}
 
 	public long getID() {

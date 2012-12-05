@@ -20,14 +20,16 @@ public final class SealablePublicKey implements Serializable {
 	
 	private final PublicKey signingKey;
 	private final PublicKey encryptionKey;
+	private final PublicKey tokenKey;
 	private final SignedObject signedToken;
 
-	public SealablePublicKey(KeyPair signingKeys, PublicKey encryptingKey) {
-		this.signingKey = signingKeys.getPublic();
+	public SealablePublicKey(PublicKey signingKey, PublicKey encryptingKey, KeyPair tokenKey) {
+		this.signingKey = signingKey;
 		this.encryptionKey = encryptingKey;
+		this.tokenKey = tokenKey.getPublic();
 		SignedObject st = null;
 		try {
-			st = new SignedObject(UUID.randomUUID(), signingKeys.getPrivate(), Signature.getInstance("DSA", "SC"));
+			st = new SignedObject(UUID.randomUUID(), tokenKey.getPrivate(), Signature.getInstance("DSA", "SC"));
 		} catch (GeneralSecurityException e) {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Security error creating exchange object", e);
 		} catch (IOException i) {
@@ -36,12 +38,12 @@ public final class SealablePublicKey implements Serializable {
 		this.signedToken = st;
 	}
 	
-	public SealablePublicKey(PublicKey signingKey, PublicKey encryptingKey, SignedObject signedToken) {
+	public SealablePublicKey(PublicKey signingKey, PublicKey encryptingKey, PublicKey tokenKey, SignedObject signedToken) {
 		this.signingKey = signingKey;
 		this.encryptionKey = encryptingKey;
 		this.signedToken = signedToken;
+		this.tokenKey = tokenKey;
 	}
-
 
 	public String digest() {
 		
@@ -72,5 +74,9 @@ public final class SealablePublicKey implements Serializable {
 	
 	public PublicKey sign() {
 		return signingKey;
+	}
+	
+	public PublicKey address() {
+		return tokenKey;
 	}
 }

@@ -6,6 +6,8 @@ import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.android.gcm.GCMRegistrar;
+
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
 import android.content.ContentValues;
@@ -14,8 +16,11 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
+import edu.ucsb.cs290.touch.to.chat.R;
+import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
+import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
 
 /**
  * 
@@ -82,23 +87,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private MasterPassword passwordInstance = null;
 	private Context context;
 	private SealablePublicKey publicKey;
-
-	public static final String[] CONTACTS_QUERY = new String[] { /*
-	 * CONTACTS_ID,
-	 * PUBLIC_KEY,
-	 */NICKNAME /*
-	 * ,
-	 * DATE_TIME
-	 */};
-
-	public static final String[] MESSAGES_QUERY = new String[] { /*
-	 * MESSAGE_BODY,
-	 * PUBLIC_KEY,
-	 */ MESSAGE_BODY/*
-	 * ,
-	 * DATE_TIME
-	 */};
-
 
 	public DatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
@@ -340,6 +328,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			byte[] b = Helpers.serialize(kp);
 			String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
 			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
+			GCMRegistrar.register(context, context.getResources().getString(R.string.GCM_Sender_ID));
+			try {
+				TorProxy.postThroughTor(context, new RegisterUser(GCMRegistrar.getRegistrationId(context), kp.getTokenKey(), 50));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (GeneralSecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return null;
 		}
 

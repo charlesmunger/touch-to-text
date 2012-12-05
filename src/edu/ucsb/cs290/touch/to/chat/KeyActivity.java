@@ -1,5 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import info.guardianproject.onionkit.ui.OrbotHelper;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -122,5 +123,20 @@ public abstract class KeyActivity extends Activity {
 	public void onDestroy() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(exitReceiver);
 		super.onDestroy();
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		OrbotHelper oc = new OrbotHelper(this);
+
+		if (!oc.isOrbotInstalled())
+		{
+			oc.promptToInstall(this);
+		}
+		else if (!oc.isOrbotRunning())
+		{
+			oc.requestOrbotStart(this);
+		}
 	}
 }
