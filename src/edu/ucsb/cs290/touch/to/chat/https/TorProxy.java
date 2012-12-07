@@ -1,11 +1,11 @@
 package edu.ucsb.cs290.touch.to.chat.https;
 
-import info.guardianproject.bouncycastle.util.encoders.Base64;
 import info.guardianproject.onionkit.proxy.HttpManager;
 
 import java.util.Properties;
 
 import android.content.Context;
+import android.util.Base64;
 import edu.ucsb.cs290.touch.to.chat.R;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.TokenAuthMessage;
@@ -15,13 +15,13 @@ public class TorProxy {
 
 	public static void postThroughTor(Context c, TokenAuthMessage tm) {
 		Properties p = new Properties();
-		p.put(TokenAuthMessage.FIELD_NAME, Base64.encode(Helpers.serialize(tm)));
+		p.put(TokenAuthMessage.FIELD_NAME, Base64.encode(Helpers.serialize(tm), Base64.DEFAULT));
 		executeHttpsPost(c, TokenAuthMessage.FIELD_NAME, p);
 	}
 	
 	public  static void postThroughTor(Context c, RegisterUser ru) {
 		Properties p = new Properties();
-		p.put(RegisterUser.FIELD_NAME, Base64.encode(Helpers.serialize(ru)));
+		p.put(RegisterUser.FIELD_NAME, Base64.encode(Helpers.serialize(ru),Base64.DEFAULT));
 		executeHttpsPost(c, RegisterUser.FIELD_NAME, p);
 	}
 	

@@ -3,10 +3,6 @@ package edu.ucsb.cs290.touch.to.chat.crypto;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.util.Arrays;
-import java.util.List;
-
-import com.google.android.gcm.GCMRegistrar;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -18,6 +14,9 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Base64;
 import android.util.Log;
+
+import com.google.android.gcm.GCMRegistrar;
+
 import edu.ucsb.cs290.touch.to.chat.R;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;

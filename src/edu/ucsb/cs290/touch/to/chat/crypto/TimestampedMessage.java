@@ -1,12 +1,7 @@
  
 package edu.ucsb.cs290.touch.to.chat.crypto;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.util.Date;
 
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
