@@ -14,6 +14,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.util.Base64;
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.R;
@@ -28,10 +30,10 @@ import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
  * and secure private key storage.
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
-	
+
 	// Encrypted Preferences File
 	private static final String TOUCH_TO_TEXT_PREFERENCES_XML = "touchToTextPreferences.xml";
-	
+
 	// DB Strings
 	public static final String MESSAGES_TABLE = "Messages";
 	public static final String CONTACTS_TABLE = "Contacts";
@@ -45,7 +47,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String MESSAGE_BODY = "messageBody";
 
 	public static final String[] MESSAGES_CURSOR_COLUMNS = new String[] { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
-	
+
 	// Contacts Table
 	public static final String CONTACTS_ID = "_id";
 	public static final String NICKNAME = "nickname";
@@ -53,7 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String CONTACT_NOTE = "note";
 	private static final String VERIFIED_BY = "verifiers";
 	public static final String PUBLIC_KEY = "publicKey";
-	
+
 
 	public static final String[] CONTACT_CURSOR_COLUMNS = new String[] {CONTACTS_ID, PUBLIC_KEY, NICKNAME};
 
@@ -209,7 +211,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 	public void addOutgoingMessage(final SignedMessage signedMessage,
-		Contact contact) {
+			Contact contact) {
 		long time=0;
 		try {
 			time = signedMessage.getMessage(getSigningKey().getPublic()).getTimeSent();
@@ -222,7 +224,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			Log.d("Touch-to-text", "Error, class not found in addOutgoingMessage", e);
 			time = System.currentTimeMillis();
 		}
-		
+
 		AddMessageToDBTask task = new AddMessageToDBTask();
 		ContentValues newMessage = new ContentValues();
 		newMessage.put(MESSAGE_BODY, Helpers.serialize(signedMessage));
@@ -324,7 +326,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			SecurePreferences encryptedPublicKey = new SecurePreferences(
 					context, TOUCH_TO_TEXT_PREFERENCES_XML,
 					passwordInstance.getPasswordString(), true);
-			KeyPairsProvider kp = new KeyPairsProvider();
+			PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+			WakeLock mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Touch To Text Key Generation");
+			mWakeLock.acquire();
+			KeyPairsProvider kp = null;
+			try { 
+				kp = new KeyPairsProvider();
+			} finally {
+				mWakeLock.release();
+			}
 			byte[] b = Helpers.serialize(kp);
 			String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
 			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
