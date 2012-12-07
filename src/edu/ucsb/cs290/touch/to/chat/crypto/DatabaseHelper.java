@@ -331,21 +331,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			KeyPairsProvider kp = null;
 			try { 
 				kp = new KeyPairsProvider();
+				GCMRegistrar.register(context, context.getResources().getString(R.string.GCM_Sender_ID));
 			} finally {
 				mWakeLock.release();
-			}
-			byte[] b = Helpers.serialize(kp);
-			String publicKeyString = Base64.encodeToString(b, Base64.DEFAULT);
-			encryptedPublicKey.put(PUBLIC_KEY, publicKeyString);
-			GCMRegistrar.register(context, context.getResources().getString(R.string.GCM_Sender_ID));
-			try {
-				TorProxy.postThroughTor(context, new RegisterUser(GCMRegistrar.getRegistrationId(context), kp.getTokenKey(), 50));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (GeneralSecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			return null;
 		}

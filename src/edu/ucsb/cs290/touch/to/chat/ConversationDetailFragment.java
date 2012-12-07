@@ -3,11 +3,13 @@ package edu.ucsb.cs290.touch.to.chat;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import android.animation.LayoutTransition;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Fragment;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -37,12 +39,16 @@ public class ConversationDetailFragment extends Fragment {
 	ListView messageList;
 	EditText messageText;
 	View rootView;
+	boolean connectedA = false;
+	boolean connectedService = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments().containsKey(ARG_ITEM_ID)) {
 			mItem = (Contact) getArguments().get(ARG_ITEM_ID);
+		} else {
+			Log.wtf("touch-to-text", "contact arg not passed");
 		}
 	}
 
@@ -107,7 +113,20 @@ public class ConversationDetailFragment extends Fragment {
 				((KeyActivity) getActivity()).mService.getInstance(), mItem);
 		TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getSigningKey(),
 				mItem.getToken());
-		TorProxy.postThroughTor(getActivity().getApplicationContext(), tm);
+		new AsyncTask<TokenAuthMessage, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(TokenAuthMessage... params) {
+				try {
+					TorProxy.postThroughTor(getActivity().getApplicationContext(), params[0]);
+				} catch (CertificateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+			
+		}.execute(tm);
 	}
 
 	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {
@@ -139,11 +158,8 @@ public class ConversationDetailFragment extends Fragment {
 	}
 
 	public void onServiceConnected() {
-		new GetMessagesFromDBTask().execute(
-				((KeyActivity) getActivity()).mService.getInstance(), mItem);
-		if (rootView != null) {
-			inflateContact();
-		}
+		connectedService = true;
+		checkDone();
 	}
 
 	public void inflateContact() {
@@ -156,5 +172,22 @@ public class ConversationDetailFragment extends Fragment {
 
 					}
 				});
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		connectedA = true;
+		checkDone();
+	}
+	
+	private void checkDone() {
+		if(connectedA && connectedService) {
+			new GetMessagesFromDBTask().execute(
+					((KeyActivity) getActivity()).mService.getInstance(), mItem);
+			if (rootView != null) {
+				inflateContact();
+			}
+		}
 	}
 }
