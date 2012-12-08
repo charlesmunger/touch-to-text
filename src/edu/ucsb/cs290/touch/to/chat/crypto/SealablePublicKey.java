@@ -79,4 +79,8 @@ public final class SealablePublicKey implements Serializable {
 	public PublicKey address() {
 		return tokenKey;
 	}
+	
+	public String signingKeyFingerprint() {
+		return Helpers.getKeyFingerprint(signingKey);
+	}
 }

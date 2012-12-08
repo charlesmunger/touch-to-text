@@ -61,9 +61,10 @@ public class MessagesListCursorAdapter extends CursorAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		v.getText1().setText(message.getBody());
-		v.getText2().setText(df.format(date));
+		if(v != null && message != null) {
+			v.getText1().setText(message.getBody());
+			v.getText2().setText(df.format(date));
+		}
 	}
 
 	@Override

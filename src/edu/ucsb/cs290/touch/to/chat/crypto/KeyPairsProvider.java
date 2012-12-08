@@ -12,6 +12,8 @@ import java.util.concurrent.Future;
 
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 
+import android.content.Context;
+import android.os.PowerManager;
 import android.util.Log;
 
 public class KeyPairsProvider implements Serializable {
@@ -79,5 +81,9 @@ public class KeyPairsProvider implements Serializable {
 	
 	KeyPair getTokenKey() {
 		return tokenSigningKeyPair;
+	}
+	
+	KeyPair getEncryptionKey() {
+		return transmissonKeyPair;
 	}
 }

@@ -3,6 +3,7 @@ package edu.ucsb.cs290.touch.to.chat.crypto;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
+import java.security.PublicKey;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -20,6 +21,8 @@ import com.google.android.gcm.GCMRegistrar;
 import edu.ucsb.cs290.touch.to.chat.R;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
+import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
 import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
 
@@ -54,6 +57,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String CONTACT_NOTE = "note";
 	private static final String VERIFIED_BY = "verifiers";
 	public static final String PUBLIC_KEY = "publicKey";
+	public static final String PUBLIC_KEY_FINGERPRINT = "publicKeyFingerprint";
 
 
 	public static final String[] CONTACT_CURSOR_COLUMNS = new String[] {CONTACTS_ID, PUBLIC_KEY, NICKNAME};
@@ -61,14 +65,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// My contact ID
 	private static final long MY_CONTACT_ID = -1;
 
-
 	private static final String CREATE_MESSAGES_COMMAND = 
 			"CREATE TABLE " + MESSAGES_TABLE + " (  " 
 					+ MESSAGES_ID + " INTEGER PRIMARY KEY autoincrement, "
 					+ SENDER_ID + " INTEGER, "
 					+ RECIPIENT_ID + " INTEGER, "
 					+ DATE_TIME + " INTEGER, " 
-					+ READ + " INTEGER DEFAULT 0, " 
+					+ READ + " INTEGER DEFAULT 0, "
 					+ MESSAGE_BODY + " BLOB);";
 
 	private static final String CREATE_CONTACTS_COMMAND =
@@ -76,6 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					+ CONTACTS_ID + " integer PRIMARY KEY autoincrement, " 
 					+ NICKNAME + " TEXT, "
 					+ PUBLIC_KEY + " BLOB, "
+					+ PUBLIC_KEY_FINGERPRINT + " TEXT, "
 					+ DATE_TIME + " INTEGER, " 
 					+ VERIFIED_BY + " TEXT, "
 					+ CONTACT_NOTE + " TEXT);";
@@ -152,7 +156,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private boolean tableExists(String table_name) {
 
 		String condition = "tbl_name = ?";
-		Cursor cursor = getReadableDatabase("password")
+		Cursor cursor = getReadableDatabase(passwordInstance.getPasswordString())
 				.query("sqlite_master", new String[] { "tbl_name" },
 						condition, new String[] { table_name }, null,null,null);
 
@@ -233,18 +237,76 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		newMessage.put(READ, 1);
 		task.execute(new ContentValues[] { newMessage });
 		// For sorting purposes, update last contacted.
+		updateLastContacted(contact.getID(), time);
 		UpdateLastContactedTask last = new UpdateLastContactedTask();
-		ContentValues updateTime = new ContentValues();
-		updateTime.put(CONTACTS_ID, contact.getID());
-		updateTime.put(DATE_TIME, time);
-		last.execute(new ContentValues[] { updateTime });
+		last.execute(new Long[] { contact.getID(), time });
 	}
 
+	// { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
+
+	
+	public void addIncomingMessage(ProtectedMessage message) {
+		SecurePreferences getEncryptionKey = new SecurePreferences(
+				context, TOUCH_TO_TEXT_PREFERENCES_XML,
+				passwordInstance.getPasswordString(), true);
+		String encodedKeyPairProvider = getEncryptionKey.getString(PUBLIC_KEY);
+		KeyPairsProvider provider = (KeyPairsProvider)Helpers.deserialize(Base64.decode(encodedKeyPairProvider, Base64.DEFAULT));
+		try {
+			SignedMessage recieved = message.getMessage(provider.getEncryptionKey().getPrivate());
+			PublicKey author = recieved.getAuthor();
+			Message recievedTextMessage = recieved.getMessage(author);
+			long time = recievedTextMessage.getTimeSent();
+			AddIncomingMessageToDBTask task = new AddIncomingMessageToDBTask();
+			ContentValues newMessage = new ContentValues();
+			newMessage.put(MESSAGE_BODY, Helpers.serialize(recieved));
+			newMessage.put(DATE_TIME, time );
+			newMessage.put(RECIPIENT_ID, MY_CONTACT_ID);
+			newMessage.put(READ, 0);
+			// Used to retrieve contact in AddIncomingMessageToDBTask
+			newMessage.put(PUBLIC_KEY_FINGERPRINT, Helpers.getKeyFingerprint(author));
+			task.execute(new ContentValues[] { newMessage });
+			// For sorting purposes, update last contacted.
+		} catch (GeneralSecurityException e) {
+			Log.wtf("Touch-to-text", "You recieved a message that may have been tamperd with!", e);
+		} catch (IOException e) {
+			Log.d("Touch-to-text", "Error deserializing signed message", e);
+		} catch (ClassNotFoundException e) {
+			Log.d("Touch-to-text", "Error, class not found in addIncomingMessage", e);
+		} catch( Exception e ) {
+			Log.wtf("touch-to-text", "Failed to add message! Problem verifying author.", e);
+		}
+	}
+
+	private void updateLastContacted(long contactID, long dateTime) {
+		ContentValues updateDateContacted = new ContentValues();
+		updateDateContacted.put(CONTACTS_ID, contactID);
+		updateDateContacted.put(DATE_TIME, dateTime);
+		getReadableDatabase(passwordInstance.getPasswordString())
+		.update(CONTACTS_TABLE, updateDateContacted,
+				CONTACTS_ID + "=" + contactID,
+				null);
+	}
+	
+	/**
+	 * Update last contacted for a given contactID.
+	 * @author dannyiland
+	 * @param contactID
+	 * @param dateTime
+	 */
 	private class UpdateLastContactedTask extends
+	AsyncTask<Long, Void, Void> {
+		@Override
+		protected Void doInBackground(Long... toAdd) {
+			updateLastContacted(toAdd[0], toAdd[1]);
+			return null;
+		}
+	}
+
+	private class UpdateLastContactedWithCVTask extends
 	AsyncTask<ContentValues, Void, Void> {
 		@Override
-		protected Void doInBackground(ContentValues... toAdd) {
-			for (ContentValues val : toAdd) {
+		protected Void doInBackground(ContentValues... vals) {
+			for (ContentValues val: vals) {
 				getReadableDatabase(passwordInstance.getPasswordString())
 				.update(CONTACTS_TABLE, val,
 						CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID),
@@ -253,7 +315,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			return null;
 		}
 	}
-
 	public Cursor getContactsCursor() {
 		String sortOrder = DATE_TIME + " DESC";
 		Cursor cursor = getReadableDatabase(
@@ -262,7 +323,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						null, null, null, null, sortOrder);
 		return cursor;
 	}
-
+	
+	public long getContactFromPublicKeySignature(String keySignature) {
+		String sortOrder = DATE_TIME + " DESC";
+		String query = PUBLIC_KEY_FINGERPRINT + " = ?";
+		Cursor cursor = getReadableDatabase(
+				passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
+						CONTACT_CURSOR_COLUMNS,
+						query, new String[] { keySignature }, null, null, sortOrder);
+		if( cursor.getCount() < 1) {
+			Log.wtf("touch-to-text", "Recieved message from unknown contact");
+			return -1;
+		} else {
+			cursor.moveToFirst();
+			return cursor.getLong(cursor.getColumnIndex(CONTACTS_ID));
+		}
+	}
+	
+	private class AddIncomingMessageToDBTask extends
+	AsyncTask<ContentValues, Void, Void> {
+		@Override
+		protected Void doInBackground(ContentValues... toAdd) {
+			// Need to get get sender ID from PUBLIC_KEY_FINGERPRINT
+			for (ContentValues val : toAdd) {
+				long contactID = getContactFromPublicKeySignature(val.getAsString(PUBLIC_KEY_FINGERPRINT));
+				val.remove(PUBLIC_KEY_FINGERPRINT);
+				long dateTime = toAdd[0].getAsLong(DATE_TIME);
+				// Add message to messages Table
+				val.put(CONTACTS_ID, contactID);
+				getReadableDatabase(passwordInstance.getPasswordString())
+				.insert(MESSAGES_TABLE, null, val);
+				updateLastContacted(contactID, dateTime);
+			}
+			return null;
+		}
+	}
 	private class AddMessageToDBTask extends
 	AsyncTask<ContentValues, Void, Void> {
 		@Override
@@ -285,6 +380,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				newUser.put(PUBLIC_KEY,
 						Helpers.serialize(newContact.getSealablePublicKey()));
 				newUser.put(DATE_TIME, System.currentTimeMillis());
+				newUser.put(PUBLIC_KEY_FINGERPRINT, newContact.getSealablePublicKey().signingKeyFingerprint());
 				getReadableDatabase(passwordInstance.getPasswordString())
 				.insert(CONTACTS_TABLE, null, newUser);
 			}
