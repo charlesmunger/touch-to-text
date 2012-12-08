@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
 import android.os.Parcel;
 import android.util.Log;
 
@@ -17,10 +16,10 @@ import android.util.Log;
  */
 public class IntentDatabaseHelper extends SQLiteOpenHelper {
 
+	private static IntentDatabaseHelper instance = null;
 
 	// DB Strings
 	public static final String INTENTS_TABLE="Intents";
-
 	// Messages Table
 	public static final String INTENT_ID = "_id";
 	public static final String DATE_TIME = "dateTime";
@@ -51,11 +50,19 @@ public class IntentDatabaseHelper extends SQLiteOpenHelper {
 	 * 
 	 * @param password
 	 */
-	public void initalizeInstance() {
+	public void initalize() {
 		Log.i("db", "Intializing database");
 		db = this.getWritableDatabase();
 	}
 
+	public static IntentDatabaseHelper getInstance(Context context) {
+		if (instance == null) {
+			instance = new IntentDatabaseHelper(context);
+			instance.initalize();
+		}
+		return instance;
+	}
+	
 	/**
 	 * Erase the entire database file.
 	 * 
@@ -98,31 +105,17 @@ public class IntentDatabaseHelper extends SQLiteOpenHelper {
 		createTables(db);
 	}
 
-	// Don't do anything on upgrade! But must implement to work with schema
-	// changes.
-	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	public void addIntentToDB(Intent newIntent) {
+		ContentValues intentValues = new ContentValues();
+		Parcel parcel = Parcel.obtain();
+		newIntent.writeToParcel(parcel, 0);
+		ContentValues values = new ContentValues();  
+		values.put(INTENT_BODY, parcel.createByteArray());  
+		intentValues.put(DATE_TIME, System.currentTimeMillis());
+		getReadableDatabase()
+		.insert(INTENTS_TABLE, null, intentValues);
+	}
 
-	}
-	
-	public class AddIntentToDBTask extends
-	AsyncTask<Intent, Void, Void> {
-		@Override
-		protected Void doInBackground(Intent... toAdd) {
-			for (Intent newIntent : toAdd) {
-				ContentValues intentValues = new ContentValues();
-				Parcel parcel = null;
-				newIntent.writeToParcel(parcel, 0);
-				ContentValues values = new ContentValues();  
-				values.put(INTENT_BODY, parcel.createByteArray());  
-				intentValues.put(DATE_TIME, System.currentTimeMillis());
-				getReadableDatabase()
-				.insert(INTENTS_TABLE, null, intentValues);
-			}
-			return null;
-		}
-	}
-	
 	public Cursor getIntentsCursor() {
 		String sortOrder = DATE_TIME + " ASC";
 		Cursor cursor = getReadableDatabase().query(
@@ -130,6 +123,11 @@ public class IntentDatabaseHelper extends SQLiteOpenHelper {
 				new String[] {INTENT_ID, INTENT_BODY, DATE_TIME}
 				,null,null, null, null, sortOrder);
 		return cursor;
+	}
+
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		// TODO Auto-generated method stub
 	}
 
 }
