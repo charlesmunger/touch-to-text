@@ -18,6 +18,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
@@ -105,19 +106,13 @@ public class KeyManagementService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
-//		if(intent!=null && intent.getAction().equals("edu.ucsb.cs290.touch.to.chat.RECIEVE_MESSAGE")) {
-//			if(dbHelperInstance.initialized()) {
-//				recieveMessage((ProtectedMessage) Helpers.deserialize(Base64.decode(
-//										intent.getStringExtra("message"), Base64.DEFAULT)));
-//			} else {
-//				
-//			}
-//		}
 		Log.i("kmg", "On start command called");
 		if(intent!= null && CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
 			LocalBroadcastManager.getInstance(this).sendBroadcastSync(new Intent(EXIT));
-		} if(intent != null && UPDATE_REG.equals(intent.getAction())) {
+		} if((intent != null && UPDATE_REG.equals(intent.getAction())) || this.getSharedPreferences("touchToTextPreferences.xml", MODE_PRIVATE).getBoolean("GCM ready", false)) {
+			Log.d("touch-to-text", "Sending server reg key");
+			this.getSharedPreferences("touchToTextPreferences.xml", MODE_PRIVATE).edit().remove("GCM ready").commit();
 			new AsyncTask<String, Void, Void>() {
 
 				@Override
@@ -125,7 +120,7 @@ public class KeyManagementService extends Service {
 					try {
 						TorProxy.postThroughTor(getApplicationContext(), 
 								new RegisterUser(params[0],
-								KeyManagementService.getStatic().getTokenKeyPair(), 1000));
+								getInstance().getTokenKeyPair(), 1000));
 					} catch (CertificateException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -172,13 +167,5 @@ public class KeyManagementService extends Service {
 		Notification statusNotification = builder.build();
 		stopForeground(true);
 		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
-	}
-
-	public void recieveMessage(ProtectedMessage pm) {
-		if(dbHelperInstance.initialized()) {
-			//dbHelperInstance.addIncomingMessage(pm);
-		} else {
-			//store message in database
-		}
 	}
 }
