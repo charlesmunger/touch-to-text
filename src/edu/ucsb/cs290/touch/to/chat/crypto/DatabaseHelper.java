@@ -2,8 +2,12 @@ package edu.ucsb.cs290.touch.to.chat.crypto;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -182,7 +186,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	}
 
-	public SealablePublicKey getPGPPublicKey() {
+	public SealablePublicKey getSealablePublicKey() {
+		return getKeyPairsProvider().getExternalKey();
+	}
+
+	private KeyPairsProvider getKeyPairsProvider() {
 		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
 				TOUCH_TO_TEXT_PREFERENCES_XML,
 				passwordInstance.getPasswordString(), true);
@@ -190,20 +198,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
 		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64
 				.decode(publicKeyString, Base64.DEFAULT));
-		publicKey = kp.getExternalKey();
-		return publicKey;
+		return kp;
 	}
-
+	
 	public KeyPair getSigningKey() {
-		SecurePreferences encryptedPublicKey = new SecurePreferences(context,
-				TOUCH_TO_TEXT_PREFERENCES_XML,
-				passwordInstance.getPasswordString(), true);
-
-		String publicKeyString = encryptedPublicKey.getString(PUBLIC_KEY);
-		KeyPairsProvider kp = (KeyPairsProvider) Helpers.deserialize(Base64
-				.decode(publicKeyString, Base64.DEFAULT));
-		return kp.getSigningKey();
+		return getKeyPairsProvider().getSigningKey();
 	}
+	
+	public KeyPair getTokenKeyPair() {
+		
+		return getKeyPairsProvider().getTokenKey();
+	}
+
 
 	public void addContact(Contact newContact) {
 		AddContactsToDBTask task = new AddContactsToDBTask();
@@ -243,7 +249,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
 
 
-	public void addIncomingMessage(ProtectedMessage message) {
+	public void addIncomingMessage(ProtectedMessage message) throws GeneralSecurityException {
 		SecurePreferences getEncryptionKey = new SecurePreferences(
 				context, TOUCH_TO_TEXT_PREFERENCES_XML,
 				passwordInstance.getPasswordString(), true);
@@ -252,26 +258,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try {
 			SignedMessage recieved = message.getMessage(provider.getEncryptionKey().getPrivate());
 			PublicKey author = recieved.getAuthor();
-			Message recievedTextMessage = recieved.getMessage(author);
-			long time = recievedTextMessage.getTimeSent();
-			AddIncomingMessageToDBTask task = new AddIncomingMessageToDBTask();
+			long time = recieved.getMessage(author).getTimeSent();
 			ContentValues newMessage = new ContentValues();
 			newMessage.put(MESSAGE_BODY, Helpers.serialize(recieved));
 			newMessage.put(DATE_TIME, time );
 			newMessage.put(RECIPIENT_ID, MY_CONTACT_ID);
 			newMessage.put(READ, 0);
 			// Used to retrieve contact in AddIncomingMessageToDBTask
-			newMessage.put(PUBLIC_KEY_FINGERPRINT, Helpers.getKeyFingerprint(author));
-			task.execute(new ContentValues[] { newMessage });
+			String keyFingerprint = Helpers.getKeyFingerprint(author);
+			newMessage.put(PUBLIC_KEY_FINGERPRINT, keyFingerprint);
+			long contactID = getContactFromPublicKeySignature(keyFingerprint);
+			// Add message to messages Table
+			newMessage.put(SENDER_ID, contactID);
+			getReadableDatabase(passwordInstance.getPasswordString()).insert(
+					MESSAGES_TABLE, null, newMessage);
+			updateLastContacted(contactID, time);
 			// For sorting purposes, update last contacted.
-		} catch (GeneralSecurityException e) {
-			Log.wtf("Touch-to-text", "You recieved a message that may have been tamperd with!", e);
 		} catch (IOException e) {
 			Log.d("Touch-to-text", "Error deserializing signed message", e);
 		} catch (ClassNotFoundException e) {
 			Log.d("Touch-to-text", "Error, class not found in addIncomingMessage", e);
-		} catch( Exception e ) {
-			Log.wtf("touch-to-text", "Failed to add message! Problem verifying author.", e);
 		}
 	}
 
@@ -330,16 +336,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		@Override
 		protected Void doInBackground(ContentValues... toAdd) {
 			// Need to get get sender ID from PUBLIC_KEY_FINGERPRINT
-			for (ContentValues val : toAdd) {
-				long contactID = getContactFromPublicKeySignature(val.getAsString(PUBLIC_KEY_FINGERPRINT));
-				val.remove(PUBLIC_KEY_FINGERPRINT);
-				long dateTime = toAdd[0].getAsLong(DATE_TIME);
-				// Add message to messages Table
-				val.put(CONTACTS_ID, contactID);
-				getReadableDatabase(passwordInstance.getPasswordString())
-				.insert(MESSAGES_TABLE, null, val);
-				updateLastContacted(contactID, dateTime);
-			}
+			
 			return null;
 		}
 	}
@@ -398,7 +395,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		@Override
 		protected void onPreExecute() {
-			// Add "generating keys" notification
+			// TODO Add "generating keys" notification
 		}
 
 		@Override
@@ -422,8 +419,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		@Override
 		protected void onPostExecute(Void evil) {
-			// Set "done generating keys" notification
+			//TODO Set "done generating keys" notification
 		}
 	}
-
 }

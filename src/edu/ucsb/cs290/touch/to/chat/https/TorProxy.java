@@ -37,7 +37,7 @@ public class TorProxy {
 	private static void executeHttpsPost(Context c, String name, Serializable value) throws CertificateException{
 		String valueString = Base64.encodeToString(Helpers.serialize(value), Base64.DEFAULT);
 		HttpClient http = new StrongHttpsClient(c);
-
+		Log.d("touch-to-text","Registering with server");
 		http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
 				new HttpHost("localhost", 8118));
 

@@ -1,7 +1,14 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateException;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import com.google.android.gcm.GCMRegistrar;
+
+import net.sqlcipher.database.SQLiteDebug.DbStats;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -11,17 +18,18 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.RemoteViews;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
+import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
 
 public class KeyManagementService extends Service {
 	private DatabaseHelper dbHelperInstance;
@@ -33,7 +41,17 @@ public class KeyManagementService extends Service {
 	private static final int SERVICE_RUNNING_ID = 155296813;
 	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
 	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
-	static final String JUST_CHECKING = "edu.ucsb.cs290.touch.to.chat.check";
+	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.chat.reg";
+	private static volatile boolean isRunning;
+	private static volatile KeyManagementService thisService;
+	
+	public static DatabaseHelper getStatic () {
+		//TODO HERE BE DRAGONS
+		if(isRunning && thisService != null && thisService.getInstance().initialized()) {
+			return thisService.getInstance();
+		} 
+		return null;
+	}
 	
 	public KeyPairsProvider getKeys() {
 		return kp;
@@ -69,7 +87,7 @@ public class KeyManagementService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
-
+		thisService = this;
 		timer = new Timer("KeyExpirationTimer");
 		//timer.schedule(expireTask, 1000L, 60 * 1000L);
 	}
@@ -77,6 +95,8 @@ public class KeyManagementService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		isRunning = false;
+		thisService = null;
 		Log.i(TAG, "Service destroying");
 		((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(SERVICE_RUNNING_ID);
 		timer.cancel();
@@ -97,7 +117,31 @@ public class KeyManagementService extends Service {
 		if(intent!= null && CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
 			LocalBroadcastManager.getInstance(this).sendBroadcastSync(new Intent(EXIT));
-		} 
+		} if(intent != null && UPDATE_REG.equals(intent.getAction())) {
+			new AsyncTask<String, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(String... params) {
+					try {
+						TorProxy.postThroughTor(getApplicationContext(), 
+								new RegisterUser(params[0],
+								KeyManagementService.getStatic().getTokenKeyPair(), 1000));
+					} catch (CertificateException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (GeneralSecurityException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return null;
+				}
+				
+			}.execute(GCMRegistrar.getRegistrationId(getApplicationContext()));
+		}
+
 		return START_STICKY;
 	}
 

@@ -55,7 +55,7 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 
 	@Override
 	public Serializable sendObject() throws Exception {
-		SealablePublicKey p = mService.getInstance().getPGPPublicKey();
+		SealablePublicKey p = mService.getInstance().getSealablePublicKey();
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, aesKey);
 		// Get Our PGP Public Key

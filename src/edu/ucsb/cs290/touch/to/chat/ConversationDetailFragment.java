@@ -138,7 +138,7 @@ public class ConversationDetailFragment extends Fragment {
 			
 			Log.v("touch-to-text", "Updating message view");
 			DatabaseHelper databaseHelper = (DatabaseHelper) ids[0];
-			self = databaseHelper.getPGPPublicKey().sign();
+			self = databaseHelper.getSealablePublicKey().sign();
 			Contact contact = (Contact) ids[1];
 			author = contact.getSigningKey();
 			return databaseHelper.getMessagesCursor(contact.getID());

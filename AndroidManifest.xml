@@ -9,16 +9,27 @@
 
     <uses-feature android:name="android.hardware.nfc" />
 
+    <permission
+        android:name="edu.ucsb.cs290.touch.to.chat.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="edu.ucsb.cs290.touch.to.chat.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.NFC" />
+    <!-- App receives GCM messages. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <!-- GCM connects to Google Services. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- GCM requires a Google account. -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <!-- Keeps the processor from sleeping when a message is received. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
+        android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:uiOptions="splitActionBarWhenNarrow" android:allowBackup="false">
+        android:uiOptions="splitActionBarWhenNarrow" >
         <activity
             android:name=".ConversationListActivity"
             android:label="@string/title_conversation_list" >
@@ -67,8 +78,21 @@
         <service
             android:name=".KeyManagementService"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false" >
         </service>
+        
+        <service android:name="edu.ucsb.cs290.touch.to.chat.GCMIntentService"/>
+
+        <receiver
+            android:name="com.google.android.gcm.GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+
+                <category android:name="edu.ucsb.cs290.touch.to.chat" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
