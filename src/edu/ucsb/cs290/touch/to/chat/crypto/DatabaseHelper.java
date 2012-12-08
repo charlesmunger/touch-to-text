@@ -244,7 +244,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
 
-	
+
 	public void addIncomingMessage(ProtectedMessage message) {
 		SecurePreferences getEncryptionKey = new SecurePreferences(
 				context, TOUCH_TO_TEXT_PREFERENCES_XML,
@@ -286,7 +286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				CONTACTS_ID + "=" + contactID,
 				null);
 	}
-	
+
 	/**
 	 * Update last contacted for a given contactID.
 	 * @author dannyiland
@@ -302,19 +302,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	private class UpdateLastContactedWithCVTask extends
-	AsyncTask<ContentValues, Void, Void> {
-		@Override
-		protected Void doInBackground(ContentValues... vals) {
-			for (ContentValues val: vals) {
-				getReadableDatabase(passwordInstance.getPasswordString())
-				.update(CONTACTS_TABLE, val,
-						CONTACTS_ID + "=" + val.getAsLong(CONTACTS_ID),
-						null);
-			}
-			return null;
-		}
-	}
 	public Cursor getContactsCursor() {
 		String sortOrder = DATE_TIME + " DESC";
 		Cursor cursor = getReadableDatabase(
@@ -323,7 +310,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						null, null, null, null, sortOrder);
 		return cursor;
 	}
-	
+
 	public long getContactFromPublicKeySignature(String keySignature) {
 		String sortOrder = DATE_TIME + " DESC";
 		String query = PUBLIC_KEY_FINGERPRINT + " = ?";
@@ -339,7 +326,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			return cursor.getLong(cursor.getColumnIndex(CONTACTS_ID));
 		}
 	}
-	
+
 	private class AddIncomingMessageToDBTask extends
 	AsyncTask<ContentValues, Void, Void> {
 		@Override

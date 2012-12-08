@@ -17,8 +17,6 @@ import android.util.Log;
  */
 public class IntentDatabaseHelper extends SQLiteOpenHelper {
 
-	// Encrypted Preferences File
-	private static final String TOUCH_TO_TEXT_PREFERENCES_XML = "touchToTextPreferences.xml";
 
 	// DB Strings
 	public static final String INTENTS_TABLE="Intents";
@@ -41,13 +39,11 @@ public class IntentDatabaseHelper extends SQLiteOpenHelper {
 
 	// Databases and Context
 	private SQLiteDatabase db;
-	private Context context;
 
 	public IntentDatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
 		super(ctx.getApplicationContext(), DATABASE_NAME, null,
 				DATABASE_VERSION);
-		context = ctx;
 	}
 
 	/**
@@ -109,7 +105,7 @@ public class IntentDatabaseHelper extends SQLiteOpenHelper {
 
 	}
 	
-	private class AddIntentToDBTask extends
+	public class AddIntentToDBTask extends
 	AsyncTask<Intent, Void, Void> {
 		@Override
 		protected Void doInBackground(Intent... toAdd) {

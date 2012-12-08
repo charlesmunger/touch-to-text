@@ -20,7 +20,6 @@ public class AuthActivity extends Activity {
     	if(e.getText().length() ==0) {
     		return;
     	}
-       	e.setText("Password Stored");
     	finish();
     }
 }
