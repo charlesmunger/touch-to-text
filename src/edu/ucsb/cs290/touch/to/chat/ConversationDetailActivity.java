@@ -1,5 +1,7 @@
 package edu.ucsb.cs290.touch.to.chat;
 
+import java.io.Serializable;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -18,8 +20,9 @@ public class ConversationDetailActivity extends KeyActivity {
 
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
-            arguments.putString(ConversationDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ConversationDetailFragment.ARG_ITEM_ID));
+            Serializable serializableExtra = getIntent().getSerializableExtra(ConversationDetailFragment.ARG_ITEM_ID);
+			arguments.putSerializable(ConversationDetailFragment.ARG_ITEM_ID,
+                    serializableExtra);
             fragment = new ConversationDetailFragment();
             fragment.setArguments(arguments);
             

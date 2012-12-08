@@ -15,10 +15,13 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.RemoteViews;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
 
 public class KeyManagementService extends Service {
 	private DatabaseHelper dbHelperInstance;
@@ -30,6 +33,7 @@ public class KeyManagementService extends Service {
 	private static final int SERVICE_RUNNING_ID = 155296813;
 	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
 	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
+	static final String JUST_CHECKING = "edu.ucsb.cs290.touch.to.chat.check";
 	
 	public KeyPairsProvider getKeys() {
 		return kp;
@@ -81,11 +85,19 @@ public class KeyManagementService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
+//		if(intent!=null && intent.getAction().equals("edu.ucsb.cs290.touch.to.chat.RECIEVE_MESSAGE")) {
+//			if(dbHelperInstance.initialized()) {
+//				recieveMessage((ProtectedMessage) Helpers.deserialize(Base64.decode(
+//										intent.getStringExtra("message"), Base64.DEFAULT)));
+//			} else {
+//				
+//			}
+//		}
 		Log.i("kmg", "On start command called");
 		if(intent!= null && CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
 			LocalBroadcastManager.getInstance(this).sendBroadcastSync(new Intent(EXIT));
-		}
+		} 
 		return START_STICKY;
 	}
 
@@ -118,4 +130,11 @@ public class KeyManagementService extends Service {
 		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
 	}
 
+	public void recieveMessage(ProtectedMessage pm) {
+		if(dbHelperInstance.initialized()) {
+			//dbHelperInstance.addIncomingMessage(pm);
+		} else {
+			//store message in database
+		}
+	}
 }
