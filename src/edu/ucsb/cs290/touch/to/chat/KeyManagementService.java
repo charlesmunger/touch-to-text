@@ -3,12 +3,10 @@ package edu.ucsb.cs290.touch.to.chat;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import com.google.android.gcm.GCMRegistrar;
-
-import net.sqlcipher.database.SQLiteDebug.DbStats;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
@@ -18,7 +16,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
@@ -27,6 +24,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import com.google.android.gcm.GCMRegistrar;
+
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.IntentDatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
@@ -48,6 +48,8 @@ public class KeyManagementService extends Service {
 	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.chat.reg";
 	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED";
 	public static final String REFRESH_VIEWS = "edu.ucsb.cs290.touch.to.chat.REFRESH_VIEWS";
+	private static final DateFormat df = DateFormat.getDateTimeInstance();
+
 
 	public KeyPairsProvider getKeys() {
 		return kp;
@@ -162,6 +164,13 @@ public class KeyManagementService extends Service {
 				stopSelf();
 			}
 			return START_REDELIVER_INTENT;
+		} else if(intent!= null &&  REFRESH_VIEWS.equals(intent.getAction())) {
+			if (dbHelperInstance.initialized()) { 
+				setCustomNotification("New Message Received at " + df.format(new Date()));
+			} else {
+				// Open the contacts view, bringing up AuthActivity if required.
+			}
+
 		}
 
 		return START_STICKY;
@@ -186,6 +195,32 @@ public class KeyManagementService extends Service {
 		Builder builder = new Notification.Builder(this);
 		builder.setSmallIcon(android.R.drawable.ic_lock_lock)
 				.setContentTitle("Touch to Text is Running")
+				.setContentText("Touch Lock to Clear Memory")
+				.setWhen(System.currentTimeMillis()).setContent(remoteView)
+				.setOngoing(true);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			builder.setPriority(Notification.PRIORITY_LOW);
+		}
+		Notification statusNotification = builder.build();
+		stopForeground(true);
+		startForeground(SERVICE_RUNNING_ID, statusNotification);
+	}
+	
+	@TargetApi(16)
+	public void setCustomNotification(String messageLine) {
+		RemoteViews remoteView = new RemoteViews(getPackageName(),
+				R.layout.notification_message);
+		Intent clearMemory = new Intent(this, KeyManagementService.class);
+		clearMemory.setAction(REFRESH_VIEWS);
+		PendingIntent showActivityIntent = PendingIntent.getService(
+				getApplicationContext(), 0, clearMemory, 0);
+		remoteView.setOnClickPendingIntent(R.id.lock_cache_icon,
+				showActivityIntent);
+		remoteView.setTextViewText(R.id.text2, messageLine);
+		Builder builder = new Notification.Builder(this);
+		// Not used at all! We use remoteView
+		builder.setSmallIcon(android.R.drawable.ic_lock_lock)
+				.setContentTitle("Touch to Text Secure Messaging")
 				.setContentText("Touch Lock to Clear Memory")
 				.setWhen(System.currentTimeMillis()).setContent(remoteView)
 				.setOngoing(true);
