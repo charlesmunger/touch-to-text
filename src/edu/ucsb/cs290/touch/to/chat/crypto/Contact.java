@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.SignedObject;
 
-import javax.crypto.SealedObject;
+import org.apache.http.annotation.Immutable;
 
 import android.database.Cursor;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-
+@Immutable
 public class Contact implements Serializable {
 	/**
 	 * Three public keys, a name, and a signedObject.
@@ -19,7 +19,7 @@ public class Contact implements Serializable {
 	private final PublicKey tokenKey;
 	private final SignedObject so;
 	private final String name;
-	private long id;
+	private final long id;
 
 	public Contact(Cursor c) {
 		this(c.getString(c.getColumnIndex(DatabaseHelper.NICKNAME)), 
@@ -82,8 +82,5 @@ public class Contact implements Serializable {
 	public long getID() {
 		return id;
 	}
-	
-	public void setID(long newID) {
-		id = newID;
-	}
+
 }
