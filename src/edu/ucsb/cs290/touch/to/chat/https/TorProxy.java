@@ -14,6 +14,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Context;
@@ -35,7 +36,6 @@ public class TorProxy {
 	}
 
 	private static void executeHttpsPost(Context c, String name, Serializable value) throws CertificateException{
-		String valueString = Base64.encodeToString(Helpers.serialize(value), Base64.DEFAULT);
 		HttpClient http = new StrongHttpsClient(c);
 		Log.d("touch-to-text","Registering with server");
 		http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
@@ -46,7 +46,7 @@ public class TorProxy {
 		
 		HttpResponse response;
 		try {
-			method.setEntity(new UrlEncodedFormEntity(Collections.singletonList(new BasicNameValuePair(name, valueString))));
+			method.setEntity(new ByteArrayEntity(Helpers.serialize(value)));
 			response = http.execute(method);
 			Log.d("HTTPtor", response.getStatusLine().getStatusCode()+"");
 		} catch (ClientProtocolException e) {

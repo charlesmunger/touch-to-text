@@ -56,15 +56,16 @@ public class ConversationDetailFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-			final LayoutTransition l = new LayoutTransition();
-			l.enableTransitionType(LayoutTransition.APPEARING);
-			l.enableTransitionType(LayoutTransition.CHANGE_APPEARING);
-			l.enableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
-			l.enableTransitionType(LayoutTransition.CHANGING);
-			l.enableTransitionType(LayoutTransition.DISAPPEARING);
-			container.setLayoutTransition(l);
-		}
+		//currently working around a bug that causes crash on layout transitions
+//		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN  && false) {
+//			final LayoutTransition l = new LayoutTransition();
+//			l.enableTransitionType(LayoutTransition.APPEARING);
+//			l.enableTransitionType(LayoutTransition.CHANGE_APPEARING);
+//			l.enableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
+//			l.enableTransitionType(LayoutTransition.CHANGING);
+//			l.enableTransitionType(LayoutTransition.DISAPPEARING);
+//			container.setLayoutTransition(l);
+//		}
 		rootView = inflater.inflate(R.layout.fragment_conversation_detail,
 				container, false);
 		messageList = (ListView) rootView.findViewById(R.id.messages_list);
