@@ -32,7 +32,9 @@
         android:uiOptions="splitActionBarWhenNarrow" >
         <activity
             android:name=".ConversationListActivity"
-            android:label="@string/title_conversation_list" >
+            android:label="@string/title_conversation_list" 
+            android:windowSoftInputMode="adjustResize"
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,18 +43,19 @@
         </activity>
         <activity
             android:name=".ConversationDetailActivity"
-            android:label="@string/title_conversation_detail" >
+            android:label="@string/title_conversation_detail" 
+            android:windowSoftInputMode="adjustResize"
+            android:excludeFromRecents="true">
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ConversationListActivity" />
         </activity>
-        <activity android:name=".NewContactActivity" >
-        </activity>
-        <activity android:name=".KeyGenerationActivity" >
-        </activity>
+        <activity android:name=".NewContactActivity" android:excludeFromRecents="true"/>
         <activity
             android:name=".AuthActivity"
-            android:label="@string/title_activity_auth" >
+            android:label="@string/title_activity_auth" 
+            android:windowSoftInputMode="adjustResize">
         </activity>
         <activity
             android:name=".BeginKeyExchangeActivity"
