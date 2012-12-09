@@ -5,21 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical" 
-		android:layout_above="@+id/LinearLayout2" >
-        <ImageView
+	<ImageView
             android:id="@+id/lock"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
             android:contentDescription="A lock"
             android:src="@android:drawable/ic_secure" />
-
-    </LinearLayout>
-
     <LinearLayout
         android:id="@+id/LinearLayout2"
         android:layout_width="fill_parent"
@@ -34,7 +26,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:ems="10"
-            android:inputType="textPassword" />
+            android:inputType="textPassword">
+            <requestFocus/>
+		</EditText>
 
         <Button
             android:id="@+id/submitPasswordButton"
