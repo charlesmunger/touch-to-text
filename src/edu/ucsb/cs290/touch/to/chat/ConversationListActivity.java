@@ -84,7 +84,6 @@ public class ConversationListActivity extends KeyActivity implements
 			System.out.println("Contact added");
 			// String long SealablePublicKey
 			String name = data.getExtras().getString("name");
-			Long dateTime = data.getExtras().getLong("date");
 			SealablePublicKey keyAndToken = (SealablePublicKey) data
 					.getExtras().get("key");
 			SealedObject token = (SealedObject) data.getExtras().get("token");

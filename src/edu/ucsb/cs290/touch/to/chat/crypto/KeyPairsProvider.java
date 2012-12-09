@@ -14,11 +14,14 @@ import java.util.concurrent.Future;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.jce.spec.ElGamalParameterSpec;
 
-import android.content.Context;
-import android.os.PowerManager;
 import android.util.Log;
 
 public class KeyPairsProvider implements Serializable {
+	/**
+	 * One ElGamal keypair, and two DSA keypairs.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	static {
 		Security.addProvider(new BouncyCastleProvider());
 	}

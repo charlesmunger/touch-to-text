@@ -2,7 +2,6 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Timer;
@@ -123,9 +122,6 @@ public class KeyManagementService extends Service {
 							TorProxy.postThroughTor(getApplicationContext(),
 									new RegisterUser(params[0], getInstance()
 											.getTokenKeyPair(), 1000));
-						} catch (CertificateException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

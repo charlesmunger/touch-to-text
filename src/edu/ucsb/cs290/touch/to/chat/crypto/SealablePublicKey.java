@@ -17,6 +17,10 @@ import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 //Class is final to prevent classloader attack
 public final class SealablePublicKey implements Serializable {
 	
+	/**
+	 * Version 1L has an ElGamal publicKey, and two DSA public keys. It also has a SignedObject containing a UUID.
+	 */
+	private static final long serialVersionUID = 1L;
 	private final PublicKey signingKey;
 	private final PublicKey encryptionKey;
 	private final PublicKey tokenKey;
