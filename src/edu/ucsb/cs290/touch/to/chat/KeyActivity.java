@@ -44,13 +44,13 @@ public abstract class KeyActivity extends Activity {
 					AuthActivity.class), 100);
 		}
 		
-		LocalBroadcastManager.getInstance(this).registerReceiver(exitReceiver, 
-		new IntentFilter(KeyManagementService.EXIT));
+		LocalBroadcastManager.getInstance(this).registerReceiver(exitReceiver, new IntentFilter(KeyManagementService.EXIT));
+		LocalBroadcastManager.getInstance(this).registerReceiver(refreshReceiver, new IntentFilter(KeyManagementService.REFRESH_VIEWS));
 		bindService(intent, mConnection, Context.BIND_IMPORTANT);
 	}
 
 	protected void refresh() {
-		
+		//Filled in by callees
 	}
 
 	@Override

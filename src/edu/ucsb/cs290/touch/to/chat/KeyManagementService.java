@@ -47,6 +47,7 @@ public class KeyManagementService extends Service {
 	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
 	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.chat.reg";
 	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED";
+	public static final String REFRESH_VIEWS = "edu.ucsb.cs290.touch.to.chat.REFRESH_VIEWS";
 
 	public KeyPairsProvider getKeys() {
 		return kp;
@@ -151,7 +152,7 @@ public class KeyManagementService extends Service {
 									.deserialize(Base64.decode(
 											intent.getStringExtra("message"),
 											Base64.DEFAULT)));
-
+					LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(REFRESH_VIEWS));
 				} catch (GeneralSecurityException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
