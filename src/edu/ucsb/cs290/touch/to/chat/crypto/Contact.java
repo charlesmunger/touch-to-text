@@ -8,11 +8,15 @@ import android.database.Cursor;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
 public class Contact implements Serializable {
+	/**
+	 * Three public keys, a name, and a signedObject.
+	 */
+	private static final long serialVersionUID = 1L;
 	private final PublicKey signingKey;
 	private final PublicKey encryptingKey;
 	private final PublicKey tokenKey;
 	private final SignedObject so;
-	final String name;
+	private final String name;
 	private long id;
 
 	public Contact(Cursor c) {
@@ -28,6 +32,10 @@ public class Contact implements Serializable {
 		this.name = name;
 		this.so = so;
 		this.id = id;
+	}
+	
+	public Contact(Contact c, SignedObject token) {
+		this(c.name,c.signingKey,c.encryptingKey,c.tokenKey,token,c.id);
 	}
 	
 	public Contact(String name, SealablePublicKey spk, long id) {

@@ -42,6 +42,7 @@ import android.util.Base64;
 
 public class SecurePreferences {
 
+	@SuppressWarnings("serial")
 	public static class SecurePreferencesException extends RuntimeException {
 
 		public SecurePreferencesException(Throwable e) {

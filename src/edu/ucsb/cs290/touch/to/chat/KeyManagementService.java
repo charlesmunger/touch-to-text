@@ -2,7 +2,6 @@ package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
 import java.util.Timer;
 import java.util.TimerTask;
 
