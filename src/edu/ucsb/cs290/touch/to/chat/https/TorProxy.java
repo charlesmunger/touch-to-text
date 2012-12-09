@@ -5,20 +5,16 @@ import info.guardianproject.onionkit.trust.StrongHttpsClient;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.cert.CertificateException;
-import java.util.Collections;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Context;
-import android.util.Base64;
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.R;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;

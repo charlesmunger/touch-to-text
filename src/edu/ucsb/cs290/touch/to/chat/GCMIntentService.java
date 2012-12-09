@@ -8,19 +8,6 @@ import com.google.android.gcm.GCMBaseIntentService;
 
 public class GCMIntentService extends GCMBaseIntentService {
 
-	private void handleRegistration(String regID) {
-		//if (KeyManagementService.getStatic() == null) {
-			this.getSharedPreferences("touchToTextPreferences.xml",
-					MODE_PRIVATE).edit().putBoolean("GCM ready", true).commit();
-//		} else {
-//			Intent i = new Intent(getApplicationContext(),
-//					KeyManagementService.class);
-//			i.setAction(KeyManagementService.UPDATE_REG);
-//			LocalBroadcastManager.getInstance(getApplicationContext())
-//					.sendBroadcastSync(i);
-//		}
-	}
-
 	@Override
 	protected void onError(Context arg0, String arg1) {
 		// TODO Auto-generated method stub
@@ -37,8 +24,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onRegistered(Context arg0, String arg1) {
-		// TODO Auto-generated method stub
-		handleRegistration(arg1);
+		Intent i = new Intent(getApplicationContext(), MessageReceiver.class);
+		i.setAction(KeyManagementService.UPDATE_REG);
+		i.putExtra("regID", arg1);
+		LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcastSync(i);
 	}
 
 	@Override

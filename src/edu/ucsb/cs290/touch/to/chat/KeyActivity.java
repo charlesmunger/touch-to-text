@@ -27,6 +27,14 @@ public abstract class KeyActivity extends Activity {
 		}
 	};
 	
+	private final BroadcastReceiver refreshReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			refresh();
+		}
+	};
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,6 +47,10 @@ public abstract class KeyActivity extends Activity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(exitReceiver, 
 		new IntentFilter(KeyManagementService.EXIT));
 		bindService(intent, mConnection, Context.BIND_IMPORTANT);
+	}
+
+	protected void refresh() {
+		
 	}
 
 	@Override

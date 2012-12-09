@@ -49,4 +49,15 @@ public class ConversationDetailActivity extends KeyActivity {
 		}
 		fragment.onServiceConnected();
 	}
+	
+	@Override
+	protected void refresh() {
+		if(fragNeedsAdded) {
+			getFragmentManager().beginTransaction()
+                    .add(R.id.conversation_detail_container, fragment)
+                    .commit();
+			fragNeedsAdded = false;
+		}
+		fragment.refresh();
+	}
 }

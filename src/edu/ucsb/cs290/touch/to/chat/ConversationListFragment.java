@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
 import edu.ucsb.cs290.touch.to.chat.crypto.ContactsListCursorAdapter;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
@@ -30,9 +29,6 @@ public class ConversationListFragment extends ListFragment {
 		public void onItemSelected(Contact id) {
 		}
 	};
-
-	public ConversationListFragment() {
-	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -120,7 +116,15 @@ public class ConversationListFragment extends ListFragment {
 	}
 
 	public void onServiceConnected() {
+		updateView();
+	}
+
+	public void refresh() {
+		updateView();
+	}
+
+	private void updateView() {
 		new GetContactsFromDBTask()
-				.execute(((KeyActivity) getActivity()).mService.getInstance());
+		.execute(((KeyActivity) getActivity()).mService.getInstance());
 	}
 }

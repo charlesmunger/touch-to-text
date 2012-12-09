@@ -7,9 +7,7 @@ import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import android.animation.LayoutTransition;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Fragment;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -191,4 +189,9 @@ public class ConversationDetailFragment extends Fragment {
 			}
 		}
 	}
+
+	public void refresh() {
+		checkDone();
+	}
+
 }

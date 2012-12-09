@@ -47,7 +47,7 @@ public class KeyManagementService extends Service {
 	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
 	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.chat.reg";
 	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED";
-	
+
 	public KeyPairsProvider getKeys() {
 		return kp;
 	}
@@ -83,14 +83,16 @@ public class KeyManagementService extends Service {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
 		timer = new Timer("KeyExpirationTimer");
-		//timer.schedule(expireTask, 1000L, 60 * 1000L);
+		// timer.schedule(expireTask, 1000L, 60 * 1000L);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		Log.i(TAG, "Service destroying");
-		((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(SERVICE_RUNNING_ID);
+		((NotificationManager) this
+				.getSystemService(Context.NOTIFICATION_SERVICE))
+				.cancel(SERVICE_RUNNING_ID);
 		timer.cancel();
 		timer = null;
 	}
@@ -98,45 +100,65 @@ public class KeyManagementService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
 		Log.i("kmg", "On start command called");
-		if(intent!= null && CLEAR_MEMORY.equals(intent.getAction())) {
+		if (intent != null && CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
-			LocalBroadcastManager.getInstance(this).sendBroadcastSync(new Intent(EXIT));
-		} if((intent != null && UPDATE_REG.equals(intent.getAction())) || this.getSharedPreferences("touchToTextPreferences.xml", MODE_PRIVATE).getBoolean("GCM ready", false)) {
-			Log.d("touch-to-text", "Sending server reg key");
-			this.getSharedPreferences("touchToTextPreferences.xml", MODE_PRIVATE).edit().remove("GCM ready").commit();
-			new AsyncTask<String, Void, Void>() {
+			LocalBroadcastManager.getInstance(this).sendBroadcastSync(
+					new Intent(EXIT));
+		}
+		if ((intent != null && UPDATE_REG.equals(intent.getAction()))
+				|| this.getSharedPreferences("touchToTextPreferences.xml",
+						MODE_PRIVATE).getBoolean("GCM ready", false)) {
+			if (dbHelperInstance.initialized()) {
+				Log.d("touch-to-text", "Sending server reg key");
+				this.getSharedPreferences("touchToTextPreferences.xml",
+						MODE_PRIVATE).edit().remove("GCM ready").commit();
+				new AsyncTask<String, Void, Void>() {
 
-				@Override
-				protected Void doInBackground(String... params) {
-					try {
-						TorProxy.postThroughTor(getApplicationContext(), 
-								new RegisterUser(params[0],
-								getInstance().getTokenKeyPair(), 1000));
-					} catch (CertificateException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (GeneralSecurityException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					@Override
+					protected Void doInBackground(String... params) {
+						try {
+							TorProxy.postThroughTor(getApplicationContext(),
+									new RegisterUser(params[0], getInstance()
+											.getTokenKeyPair(), 1000));
+						} catch (CertificateException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (GeneralSecurityException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						return null;
 					}
-					return null;
-				}
-				
-			}.execute(GCMRegistrar.getRegistrationId(getApplicationContext()));
-		} if(intent!= null && MESSAGE_RECEIVED.equals(intent.getAction())) {
-			if(dbHelperInstance.initialized()) {
+
+				}.execute(GCMRegistrar
+						.getRegistrationId(getApplicationContext()));
+				return START_REDELIVER_INTENT;
+			} else {
+				this.getSharedPreferences("touchToTextPreferences.xml",
+						MODE_PRIVATE).edit().putBoolean("GCM ready", true)
+						.commit();
+				return START_NOT_STICKY;
+			}
+		}
+		if (intent != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
+			if (dbHelperInstance.initialized()) {
 				try {
-					dbHelperInstance.addIncomingMessage((ProtectedMessage) Helpers.deserialize(
-							Base64.decode(intent.getStringExtra("message"), Base64.DEFAULT)));
+					dbHelperInstance
+							.addIncomingMessage((ProtectedMessage) Helpers
+									.deserialize(Base64.decode(
+											intent.getStringExtra("message"),
+											Base64.DEFAULT)));
+
 				} catch (GeneralSecurityException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			} else {
-				IntentDatabaseHelper.getInstance(getApplicationContext()).addIntentToDB(intent);
+				IntentDatabaseHelper.getInstance(getApplicationContext())
+						.addIntentToDB(intent);
 			}
 		}
 
@@ -151,24 +173,25 @@ public class KeyManagementService extends Service {
 
 	@TargetApi(16)
 	public void startNotification() {
-		RemoteViews remoteView = new RemoteViews(getPackageName(), R.layout.notification_message);
+		RemoteViews remoteView = new RemoteViews(getPackageName(),
+				R.layout.notification_message);
 		Intent clearMemory = new Intent(this, KeyManagementService.class);
 		clearMemory.setAction(CLEAR_MEMORY);
-		PendingIntent clearMemoryIntent = PendingIntent.getService(getApplicationContext(), 0, clearMemory, 0);
-		remoteView.setOnClickPendingIntent(R.id.lock_cache_icon,clearMemoryIntent);
+		PendingIntent clearMemoryIntent = PendingIntent.getService(
+				getApplicationContext(), 0, clearMemory, 0);
+		remoteView.setOnClickPendingIntent(R.id.lock_cache_icon,
+				clearMemoryIntent);
 		Builder builder = new Notification.Builder(this);
-		builder
-		.setSmallIcon(android.R.drawable.ic_lock_lock)
-		.setContentTitle("Touch to Text is Running")
-		.setContentText("Touch Lock to Clear Memory")
-		.setWhen(System.currentTimeMillis())
-		.setContent(remoteView)
-		.setOngoing(true);
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+		builder.setSmallIcon(android.R.drawable.ic_lock_lock)
+				.setContentTitle("Touch to Text is Running")
+				.setContentText("Touch Lock to Clear Memory")
+				.setWhen(System.currentTimeMillis()).setContent(remoteView)
+				.setOngoing(true);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			builder.setPriority(Notification.PRIORITY_LOW);
 		}
 		Notification statusNotification = builder.build();
 		stopForeground(true);
-		startForeground(SERVICE_RUNNING_ID, statusNotification);		 
+		startForeground(SERVICE_RUNNING_ID, statusNotification);
 	}
 }
