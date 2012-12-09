@@ -200,13 +200,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				.decode(publicKeyString, Base64.DEFAULT));
 		return kp;
 	}
-	
+
 	public KeyPair getSigningKey() {
 		return getKeyPairsProvider().getSigningKey();
 	}
-	
+
 	public KeyPair getTokenKeyPair() {
-		
+
 		return getKeyPairsProvider().getTokenKey();
 	}
 
@@ -266,7 +266,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			newMessage.put(READ, 0);
 			// Used to retrieve contact in AddIncomingMessageToDBTask
 			String keyFingerprint = Helpers.getKeyFingerprint(author);
-			newMessage.put(PUBLIC_KEY_FINGERPRINT, keyFingerprint);
 			long contactID = getContactFromPublicKeySignature(keyFingerprint);
 			// Add message to messages Table
 			newMessage.put(SENDER_ID, contactID);
@@ -316,18 +315,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public long getContactFromPublicKeySignature(String keySignature) {
-		String sortOrder = DATE_TIME + " DESC";
-		String query = PUBLIC_KEY_FINGERPRINT + " = ?";
-		Cursor cursor = getReadableDatabase(
-				passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
-						CONTACT_CURSOR_COLUMNS,
-						query, new String[] { keySignature }, null, null, sortOrder);
-		if( cursor.getCount() < 1) {
-			Log.wtf("touch-to-text", "Recieved message from unknown contact");
-			return -1;
-		} else {
-			cursor.moveToFirst();
-			return cursor.getLong(cursor.getColumnIndex(CONTACTS_ID));
+		Cursor cursor = null;
+		try {
+			String sortOrder = DATE_TIME + " DESC";
+			String query = PUBLIC_KEY_FINGERPRINT + " = ?";
+			cursor = getReadableDatabase(
+					passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
+							CONTACT_CURSOR_COLUMNS,
+							query, new String[] { keySignature }, null, null, sortOrder);
+			if( cursor.getCount() < 1) {
+				Log.wtf("touch-to-text", "Recieved message from unknown contact");
+				return -1;
+			} else {
+				cursor.moveToFirst();
+				return cursor.getLong(cursor.getColumnIndex(CONTACTS_ID));
+			}
+		} finally {
+			cursor.close();
 		}
 	}
 
@@ -336,7 +340,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		@Override
 		protected Void doInBackground(ContentValues... toAdd) {
 			// Need to get get sender ID from PUBLIC_KEY_FINGERPRINT
-			
+
 			return null;
 		}
 	}
