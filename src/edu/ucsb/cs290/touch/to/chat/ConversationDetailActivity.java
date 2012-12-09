@@ -9,7 +9,8 @@ import android.view.MenuItem;
 
 public class ConversationDetailActivity extends KeyActivity {
 
-    private ConversationDetailFragment fragment;
+    private static final String FRAG_TAG = "edu.ucsb.cs290.touch.to.chat.conversationDA.CDF";
+	private ConversationDetailFragment fragment;
     private boolean fragNeedsAdded = false;
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +43,11 @@ public class ConversationDetailActivity extends KeyActivity {
 	@Override
 	public void onServiceConnected() {
 		if(fragment == null) {
-			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentById(R.id.conversation_detail);
+			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentByTag(FRAG_TAG);
 		}
 		if(fragNeedsAdded) {
 			getFragmentManager().beginTransaction()
-                    .add(R.id.conversation_detail_container, fragment)
+                    .add(R.id.conversation_detail_container, fragment,FRAG_TAG)
                     .commit();
 			fragNeedsAdded = false;
 		}
@@ -57,14 +58,8 @@ public class ConversationDetailActivity extends KeyActivity {
 	@Override
 	protected void refresh() {
 		if(fragment == null) {
-			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentById(R.id.conversation_detail);
+			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentByTag(FRAG_TAG);
 		}
-		if(fragNeedsAdded) {
-			getFragmentManager().beginTransaction()
-                    .add(R.id.conversation_detail_container, fragment)
-                    .commit();
-			fragNeedsAdded = false;
-		} 
 		fragment.refresh();
 	}
 }
