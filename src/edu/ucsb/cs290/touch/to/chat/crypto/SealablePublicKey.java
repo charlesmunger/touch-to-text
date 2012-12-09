@@ -14,8 +14,8 @@ import org.spongycastle.util.encoders.Base64;
 
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-//Class is final to prevent classloader attack
-public final class SealablePublicKey implements Serializable {
+
+public class SealablePublicKey implements Serializable {
 	
 	/**
 	 * Version 1L has an ElGamal publicKey, and two DSA public keys. It also has a SignedObject containing a UUID.
