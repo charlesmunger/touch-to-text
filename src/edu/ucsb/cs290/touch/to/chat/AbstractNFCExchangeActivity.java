@@ -13,7 +13,9 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.MenuItem;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
 public abstract class AbstractNFCExchangeActivity extends KeyActivity {
@@ -41,6 +43,18 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		setResult(RESULT_CANCELED);
 		intentFiltersArray = new IntentFilter[] { ndef, };
 		mAdapter = NfcAdapter.getDefaultAdapter(this);
+		setContentView(R.layout.activity_nfc_exchange);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			NavUtils.navigateUpFromSameTask(this);
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	private void checkDone() {
