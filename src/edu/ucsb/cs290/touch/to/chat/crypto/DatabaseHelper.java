@@ -27,6 +27,9 @@ import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
  * 
  * Instantiate and provide access to the DB, which contains Messages, Contacts,
  * and secure private key storage.
+ * @author dannyiland
+ * @author charlesmunger
+ * 
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
