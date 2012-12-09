@@ -10,7 +10,7 @@ import android.view.MenuItem;
 public class ConversationDetailActivity extends KeyActivity {
 
     private ConversationDetailFragment fragment;
-
+    private boolean fragNeedsAdded = false;
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +25,7 @@ public class ConversationDetailActivity extends KeyActivity {
                     serializableExtra);
             fragment = new ConversationDetailFragment();
             fragment.setArguments(arguments);
-            
+            fragNeedsAdded = true;
         }
     }
 
@@ -41,9 +41,12 @@ public class ConversationDetailActivity extends KeyActivity {
 
 	@Override
 	public void onServiceConnected() {
-		getFragmentManager().beginTransaction()
+		if(fragNeedsAdded) {
+			getFragmentManager().beginTransaction()
                     .add(R.id.conversation_detail_container, fragment)
                     .commit();
+			fragNeedsAdded = false;
+		}
 		fragment.onServiceConnected();
 	}
 }
