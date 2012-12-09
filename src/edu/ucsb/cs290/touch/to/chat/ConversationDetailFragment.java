@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
@@ -102,11 +100,9 @@ public class ConversationDetailFragment extends Fragment {
 			instance.addOutgoingMessage(signedMessage, mItem);
 
 		} catch (GeneralSecurityException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem creating ProtectedMessage!", e);
+			Log.w("touch-to-text","Problem creating ProtectedMessage!", e);
 		} catch (IOException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Problem creating ProtectedMessage!", e);
+			Log.d("touch-to-text","Problem creating ProtectedMessage!", e);
 		}
 		new GetMessagesFromDBTask().execute(
 				((KeyActivity) getActivity()).mService.getInstance(), mItem);

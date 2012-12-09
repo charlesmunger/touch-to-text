@@ -7,8 +7,6 @@ import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.interfaces.ECPublicKey;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -16,6 +14,8 @@ import javax.crypto.SecretKey;
 import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.jce.spec.ECNamedCurveParameterSpec;
+
+import android.util.Log;
 
 public class KeyExchange implements Serializable {
 
@@ -40,7 +40,7 @@ public class KeyExchange implements Serializable {
 			keyGen.initialize(dhSpec);
 			keypair = keyGen.generateKeyPair();
 		} catch (Exception e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Exception in key exchange", e);
+			Log.d("touch-to-text","Exception in key exchange", e);
 		}
 	}
 	

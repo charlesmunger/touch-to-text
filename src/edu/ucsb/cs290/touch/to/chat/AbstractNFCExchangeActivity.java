@@ -1,8 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat;
 
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -21,7 +19,7 @@ import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	private IntentFilter[] intentFiltersArray;
 	private PendingIntent pendingIntent;
-	private String[][] mTechLists;
+	private static final String[][] mTechLists = new String[][] { new String[] { Ndef.class.getName() } };
 	private NfcAdapter mAdapter;
 
 	private NdefMessage message;
@@ -42,7 +40,6 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		}
 		setResult(RESULT_CANCELED);
 		intentFiltersArray = new IntentFilter[] { ndef, };
-		mTechLists = new String[][] { new String[] { Ndef.class.getName() } };
 		mAdapter = NfcAdapter.getDefaultAdapter(this);
 	}
 
@@ -60,8 +57,7 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 			recieve(b);
 			received = true;
 		} catch (Exception e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"Exception in key exchange!", e);
+			Log.w("touch-to-text","Exception in key exchange!", e);
 			setResult(RESULT_CANCELED, new Intent());
 		}
 		checkDone();
@@ -70,12 +66,6 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	public void onPause() {
 		super.onPause();
 		mAdapter.disableForegroundDispatch(this);
-	}
-
-	public void onResume() {
-		super.onResume();
-		mAdapter.enableForegroundDispatch(this, pendingIntent,
-				intentFiltersArray, mTechLists);
 	}
 
 	public void recieve(byte[] b) throws Exception{
@@ -100,6 +90,8 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	public abstract void parseIntent(Intent i);
 	
 	public void onServiceConnected() {
+		mAdapter.enableForegroundDispatch(this, pendingIntent,
+				intentFiltersArray, mTechLists);
 		Log.i("nfc", "Callbacks and NDEF Push set");
 		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
 				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],

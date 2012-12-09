@@ -9,11 +9,10 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignedObject;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.spongycastle.util.encoders.Base64;
 
+import android.util.Log;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 //Class is final to prevent classloader attack
 public final class SealablePublicKey implements Serializable {
@@ -31,9 +30,9 @@ public final class SealablePublicKey implements Serializable {
 		try {
 			st = new SignedObject(UUID.randomUUID(), tokenKey.getPrivate(), Signature.getInstance("DSA", "SC"));
 		} catch (GeneralSecurityException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Security error creating exchange object", e);
+			Log.w("touch-to-text","Security error creating exchange object", e);
 		} catch (IOException i) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE, "Error serializing object", i);
+			Log.w("touch-to-text", "Error serializing object", i);
 		}
 		this.signedToken = st;
 	}
@@ -58,8 +57,7 @@ public final class SealablePublicKey implements Serializable {
 			byte[] digest = sha1.digest(c);
 			return new String(Base64.encode(digest));
 		} catch (GeneralSecurityException e) {
-			Logger.getLogger("touch-to-text").log(Level.SEVERE,
-					"SHA1 is missing!", e);
+			Log.wtf("touch-to-text","SHA1 is missing!", e);
 			return "Key Verification Error";
 		}
 	}
