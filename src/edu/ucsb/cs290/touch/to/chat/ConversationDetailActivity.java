@@ -41,6 +41,9 @@ public class ConversationDetailActivity extends KeyActivity {
 
 	@Override
 	public void onServiceConnected() {
+		if(fragment == null) {
+			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentById(R.id.conversation_detail);
+		}
 		if(fragNeedsAdded) {
 			getFragmentManager().beginTransaction()
                     .add(R.id.conversation_detail_container, fragment)
@@ -48,16 +51,20 @@ public class ConversationDetailActivity extends KeyActivity {
 			fragNeedsAdded = false;
 		}
 		fragment.onServiceConnected();
+		
 	}
 	
 	@Override
 	protected void refresh() {
+		if(fragment == null) {
+			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentById(R.id.conversation_detail);
+		}
 		if(fragNeedsAdded) {
 			getFragmentManager().beginTransaction()
                     .add(R.id.conversation_detail_container, fragment)
                     .commit();
 			fragNeedsAdded = false;
-		}
+		} 
 		fragment.refresh();
 	}
 }
