@@ -66,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String CONTACT_TOKEN = "token";
 
 	public static final String[] CONTACT_CURSOR_COLUMNS = new String[] {
-		CONTACTS_ID, PUBLIC_KEY, NICKNAME };
+		CONTACTS_ID, CONTACT_TOKEN, PUBLIC_KEY, NICKNAME };
 
 	// My contact ID
 	private static final long MY_CONTACT_ID = -1;

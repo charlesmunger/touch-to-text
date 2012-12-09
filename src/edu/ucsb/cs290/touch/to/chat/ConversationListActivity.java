@@ -1,6 +1,6 @@
 package edu.ucsb.cs290.touch.to.chat;
 
-import javax.crypto.SealedObject;
+import java.security.SignedObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -84,11 +84,11 @@ public class ConversationListActivity extends KeyActivity implements
 			System.out.println("Contact added");
 			// String long SealablePublicKey
 			String name = data.getExtras().getString("name");
-			SealablePublicKey keyAndToken = (SealablePublicKey) data
+			SealablePublicKey key = (SealablePublicKey) data
 					.getExtras().get("key");
-			SealedObject token = (SealedObject) data.getExtras().get("token");
+			SignedObject token = (SignedObject) data.getExtras().get("token");
 			
-			Contact newContact = new Contact(name, keyAndToken, NEW_CONTACT_ID);
+			Contact newContact = new Contact(name, key, token, NEW_CONTACT_ID);
 			getInstance().addContact(newContact);
 			return;
 		}

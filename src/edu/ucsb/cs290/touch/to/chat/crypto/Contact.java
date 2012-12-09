@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.SignedObject;
 
+import javax.crypto.SealedObject;
+
 import android.database.Cursor;
 import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 
@@ -22,6 +24,7 @@ public class Contact implements Serializable {
 	public Contact(Cursor c) {
 		this(c.getString(c.getColumnIndex(DatabaseHelper.NICKNAME)), 
 			(SealablePublicKey) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.PUBLIC_KEY))), 
+			(SignedObject) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.CONTACT_TOKEN))), 
 			c.getLong(c.getColumnIndex(DatabaseHelper.CONTACTS_ID)));
 	}
 	
@@ -38,9 +41,15 @@ public class Contact implements Serializable {
 		this(c.name,c.signingKey,c.encryptingKey,c.tokenKey,token,c.id);
 	}
 	
-	public Contact(String name, SealablePublicKey spk, long id) {
-		this(name,spk.sign(),spk.encrypt(),spk.address(),spk.token(), id);
-	}
+	public Contact(String name, SealablePublicKey key, SignedObject token,
+			long newContactId) {
+		this.signingKey = key.sign();
+		this.encryptingKey = key.encrypt();
+		this.tokenKey = key.address();
+		this.name = name;
+		this.so = token;
+		this.id = id;	
+		}
 
 	public PublicKey getSigningKey() {
 		return signingKey;
