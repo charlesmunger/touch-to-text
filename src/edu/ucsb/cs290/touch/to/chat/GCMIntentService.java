@@ -24,10 +24,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onRegistered(Context arg0, String arg1) {
-		Intent i = new Intent(getApplicationContext(), MessageReceiver.class);
+		Intent i = new Intent(getApplicationContext(), KeyManagementService.class);
 		i.setAction(KeyManagementService.UPDATE_REG);
 		i.putExtra("regID", arg1);
-		LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcastSync(i);
+		getApplicationContext().startService(i);
 	}
 
 	@Override
