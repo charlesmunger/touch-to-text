@@ -14,8 +14,6 @@ import java.util.concurrent.Future;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.jce.spec.ElGamalParameterSpec;
 
-import android.content.Context;
-import android.os.PowerManager;
 import android.util.Log;
 
 public class KeyPairsProvider implements Serializable {

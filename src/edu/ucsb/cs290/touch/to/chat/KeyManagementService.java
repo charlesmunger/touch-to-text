@@ -6,10 +6,6 @@ import java.security.cert.CertificateException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.android.gcm.GCMRegistrar;
-
-import net.sqlcipher.database.SQLiteDebug.DbStats;
-
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.Notification.Builder;
@@ -18,7 +14,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
@@ -27,6 +22,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import com.google.android.gcm.GCMRegistrar;
+
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.IntentDatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
@@ -121,9 +119,6 @@ public class KeyManagementService extends Service {
 							TorProxy.postThroughTor(getApplicationContext(),
 									new RegisterUser(params[0], getInstance()
 											.getTokenKeyPair(), 1000));
-						} catch (CertificateException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
