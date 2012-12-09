@@ -32,7 +32,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Intent i = new Intent(getApplicationContext(), KeyManagementService.class);
 		i.setAction(KeyManagementService.MESSAGE_RECEIVED);
 		i.putExtras(arg1.getExtras());
-		LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcastSync(arg1);
+		LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcastSync(i);
 	}
 
 	@Override

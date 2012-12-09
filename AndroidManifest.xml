@@ -83,6 +83,13 @@
         
         <service android:name="edu.ucsb.cs290.touch.to.chat.GCMIntentService"/>
 
+         <receiver android:name=".MessageReceiver"
+             android:exported="false" android:enabled="true">
+                <intent-filter>
+                      <action android:name="edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED"></action>  
+                </intent-filter>
+         </receiver>
+        
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
