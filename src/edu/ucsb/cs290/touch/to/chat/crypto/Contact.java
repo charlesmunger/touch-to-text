@@ -48,7 +48,7 @@ public class Contact implements Serializable {
 		this.tokenKey = key.address();
 		this.name = name;
 		this.so = token;
-		this.id = id;	
+		this.id = newContactId;	
 		}
 
 	public PublicKey getSigningKey() {
