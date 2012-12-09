@@ -53,6 +53,10 @@ public class Contact implements Serializable {
 	public String getName() {
 		return name;
 	}
+	
+	public PublicKey getTokenKey() {
+		return tokenKey;
+	}
 
 	public SealablePublicKey getSealablePublicKey() {
 		return new SealablePublicKey(signingKey, encryptingKey,tokenKey, so);
