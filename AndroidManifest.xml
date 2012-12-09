@@ -80,15 +80,18 @@
             android:enabled="true"
             android:exported="false" >
         </service>
-        
-        <service android:name="edu.ucsb.cs290.touch.to.chat.GCMIntentService"/>
+        <service android:name="edu.ucsb.cs290.touch.to.chat.GCMIntentService" />
 
-         <receiver android:name=".MessageReceiver"
-             android:exported="false" android:enabled="true">
-                <intent-filter>
-                      <action android:name="edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED"></action>  
-                </intent-filter>
-         </receiver>
+        <receiver
+            android:name=".MessageReceiver"
+            android:enabled="true"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED" >
+                </action>
+                <category android:name="edu.ucsb.cs290.touch.to.chat" />
+            </intent-filter>
+        </receiver>
         
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
