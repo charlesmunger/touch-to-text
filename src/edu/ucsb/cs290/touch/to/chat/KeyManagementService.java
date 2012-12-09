@@ -24,11 +24,14 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.RemoteViews;
 import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.chat.crypto.IntentDatabaseHelper;
 import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
 import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
+import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
 import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
 import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
 
@@ -43,16 +46,7 @@ public class KeyManagementService extends Service {
 	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
 	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
 	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.chat.reg";
-	private static volatile boolean isRunning;
-	private static volatile KeyManagementService thisService;
-	
-	public static DatabaseHelper getStatic () {
-		//TODO HERE BE DRAGONS
-		if(isRunning && thisService != null && thisService.getInstance().initialized()) {
-			return thisService.getInstance();
-		} 
-		return null;
-	}
+	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED";
 	
 	public KeyPairsProvider getKeys() {
 		return kp;
@@ -88,7 +82,6 @@ public class KeyManagementService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		Log.i(TAG, "Service creating");
-		thisService = this;
 		timer = new Timer("KeyExpirationTimer");
 		//timer.schedule(expireTask, 1000L, 60 * 1000L);
 	}
@@ -96,8 +89,6 @@ public class KeyManagementService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		isRunning = false;
-		thisService = null;
 		Log.i(TAG, "Service destroying");
 		((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(SERVICE_RUNNING_ID);
 		timer.cancel();
@@ -135,6 +126,18 @@ public class KeyManagementService extends Service {
 				}
 				
 			}.execute(GCMRegistrar.getRegistrationId(getApplicationContext()));
+		} if(intent!= null && MESSAGE_RECEIVED.equals(intent.getAction())) {
+			if(dbHelperInstance.initialized()) {
+				try {
+					dbHelperInstance.addIncomingMessage((ProtectedMessage) Helpers.deserialize(
+							Base64.decode(intent.getStringExtra("message"), Base64.DEFAULT)));
+				} catch (GeneralSecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				IntentDatabaseHelper.getInstance(getApplicationContext()).addIntentToDB(intent);
+			}
 		}
 
 		return START_STICKY;
