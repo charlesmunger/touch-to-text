@@ -11,6 +11,7 @@ public class MessageReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MessageReceived");
+		intent.setAction(KeyManagementService.MESSAGE_RECEIVED);
 		context.startService(intent);
 	}
 

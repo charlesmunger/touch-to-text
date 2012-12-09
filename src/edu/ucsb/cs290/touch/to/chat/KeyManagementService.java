@@ -155,11 +155,12 @@ public class KeyManagementService extends Service {
 				} catch (GeneralSecurityException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+				} 
 			} else {
-				IntentDatabaseHelper.getInstance(getApplicationContext())
-						.addIntentToDB(intent);
+				IntentDatabaseHelper.getInstance(getApplicationContext()).addIntentToDB(intent);
+				stopSelf();
 			}
+			return START_REDELIVER_INTENT;
 		}
 
 		return START_STICKY;

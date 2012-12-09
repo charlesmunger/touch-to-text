@@ -16,10 +16,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onMessage(Context arg0, Intent arg1) {
-		Intent i = new Intent(getApplicationContext(), MessageReceiver.class);
+		Intent i = new Intent(getApplicationContext(), KeyManagementService.class);
 		i.setAction(KeyManagementService.MESSAGE_RECEIVED);
 		i.putExtras(arg1.getExtras());
-		LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcastSync(i);
+		getApplicationContext().startService(i);	
 	}
 
 	@Override
