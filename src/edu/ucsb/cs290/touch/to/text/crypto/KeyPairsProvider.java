@@ -44,7 +44,7 @@ public class KeyPairsProvider implements Serializable {
 	}
 
 	private static KeyPair generate(String algorithm, int bits) {
-		Log.d("touch-to-chat", "starting generation of " + algorithm);
+		Log.d("touch-to-text", "starting generation of " + algorithm);
 		long time = System.currentTimeMillis();
 		KeyPairGenerator gen = null;
 		try {

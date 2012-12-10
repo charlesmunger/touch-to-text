@@ -2,6 +2,8 @@ package edu.ucsb.cs290.touch.to.text;
 
 import java.io.Serializable;
 
+import edu.ucsb.cs290.touch.to.text.crypto.Contact;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -22,6 +24,7 @@ public class ConversationDetailActivity extends KeyActivity {
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
             Serializable serializableExtra = getIntent().getSerializableExtra(ConversationDetailFragment.ARG_ITEM_ID);
+            getActionBar().setTitle(((Contact) serializableExtra).getName());
 			arguments.putSerializable(ConversationDetailFragment.ARG_ITEM_ID,
                     serializableExtra);
             fragment = new ConversationDetailFragment();
