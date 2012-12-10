@@ -42,7 +42,7 @@ public class ConversationListActivity extends KeyActivity implements
 	}
 
 	public boolean wipeDB(MenuItem item) {
-		return getInstance().wipeDB();
+		return mService.getInstance().wipeDB();
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class ConversationListActivity extends KeyActivity implements
 			// SignedObject token = (SignedObject) data.getExtras().get("token");
 			SignedObject token = key.token();
 			Contact newContact = new Contact(name, key, token, NEW_CONTACT_ID);
-			getInstance().addContact(newContact);
+			mService.getInstance().addContact(newContact);
 			return;
 		}
 	}

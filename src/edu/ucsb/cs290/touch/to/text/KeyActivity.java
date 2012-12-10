@@ -108,10 +108,6 @@ public abstract class KeyActivity extends Activity {
 		}
 	};
 
-	protected DatabaseHelper getInstance() {
-		return mService.getInstance();
-	}
-
 	protected abstract void onServiceConnected();
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -83,7 +83,7 @@ public class ConversationDetailFragment extends Fragment {
 	};
 	
 	private void sendMessage(View v) {
-		DatabaseHelper instance = ((KeyActivity) getActivity()).getInstance();
+		DatabaseHelper instance = ((KeyActivity) getActivity()).mService.getInstance();
 		EditText messageToSend = (EditText) v
 				.findViewById(R.id.edit_message_text);
 		if (messageToSend.getText() == null) {
