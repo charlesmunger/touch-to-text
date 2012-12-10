@@ -453,6 +453,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						null, null, null, sortOrder);
 
 		return cursor;
+
 	}
 
 	public Cursor getContactCursor() {

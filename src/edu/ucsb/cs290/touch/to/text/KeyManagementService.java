@@ -142,7 +142,7 @@ public class KeyManagementService extends Service {
 				return START_NOT_STICKY;
 			}
 		}
-		if (intent != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
+		if (intent != null && intent.getAction() != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
 			if (dbHelperInstance != null && dbHelperInstance.initialized()) {
 				try {
 					dbHelperInstance
@@ -160,7 +160,7 @@ public class KeyManagementService extends Service {
 				stopSelf();
 			}
 			return START_REDELIVER_INTENT;
-		} else if(intent!= null &&  REFRESH_VIEWS.equals(intent.getAction())) {
+		} else if(intent!= null &&  intent.getAction() != null && REFRESH_VIEWS.equals(intent.getAction())) {
 			if (dbHelperInstance != null && dbHelperInstance.initialized()) { 
 				setCustomNotification("New Message Received at " + df.format(new Date()));
 			} else {
