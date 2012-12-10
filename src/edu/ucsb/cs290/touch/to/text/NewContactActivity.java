@@ -79,7 +79,6 @@ public class NewContactActivity extends Activity {
     	Button b = (Button) v.findViewById(R.id.edit_contact_key_btn);
     	b.setText("Generating Keys...");
     	b.setClickable(false);
-    	final Activity current = this;
     	new AsyncTask<Object, Object, KeyExchange> () {
 
 			@Override
@@ -89,7 +88,7 @@ public class NewContactActivity extends Activity {
 			
 			@Override
 			protected void onPostExecute(KeyExchange result) {
-				Intent i = new Intent(current,BeginKeyExchangeActivity.class);
+				Intent i = new Intent(NewContactActivity.this.getApplicationContext(),BeginKeyExchangeActivity.class);
 				i.putExtra("keyExchange", result);
 		    	startActivityForResult(i, 1);
 			}

@@ -5,6 +5,7 @@ import android.app.ListFragment;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
@@ -60,6 +61,7 @@ public class ConversationListFragment extends ListFragment {
 	@Override
 	public void onDestroyView() {
 		if(getListAdapter() != null) {
+			Log.i("touch-to-text", "Closing cursor for List");
 			((CursorAdapter) getListAdapter()).getCursor().close();
 		}
 		super.onDestroyView();	

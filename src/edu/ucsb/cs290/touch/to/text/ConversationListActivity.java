@@ -98,8 +98,8 @@ public class ConversationListActivity extends KeyActivity implements
 	protected void onServiceConnected() {
 		getListFragment().onServiceConnected();
 		if (mTwoPane && fragmentInit) {
-			ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()
-					.findFragmentById(R.id.conversation_detail));
+			ConversationDetailFragment f = (ConversationDetailFragment) getFragmentManager()
+					.findFragmentByTag(FRAG_TAG);
 			f.onServiceConnected();
 		}
 	}
