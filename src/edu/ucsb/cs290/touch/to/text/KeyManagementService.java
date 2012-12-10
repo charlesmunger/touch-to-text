@@ -161,12 +161,7 @@ public class KeyManagementService extends Service {
 			}
 			return START_REDELIVER_INTENT;
 		} else if(intent!= null &&  intent.getAction() != null && REFRESH_VIEWS.equals(intent.getAction())) {
-			if (dbHelperInstance != null && dbHelperInstance.initialized()) { 
-				setCustomNotification("New Message Received at " + df.format(new Date()));
-			} else {
-				// Open the contacts view, bringing up AuthActivity if required.
-			}
-
+			setCustomNotification();
 		}
 
 		return START_STICKY;
@@ -203,25 +198,19 @@ public class KeyManagementService extends Service {
 	}
 	
 	@TargetApi(16)
-	public void setCustomNotification(String messageLine) {
-		RemoteViews remoteView = new RemoteViews(getPackageName(),
-				R.layout.notification_message);
-		Intent clearMemory = new Intent(this, KeyManagementService.class);
-		clearMemory.setAction(REFRESH_VIEWS);
+	public void setCustomNotification() {
+		Intent showList = new Intent(this, ConversationListActivity.class);
 		PendingIntent showActivityIntent = PendingIntent.getService(
-				getApplicationContext(), 0, clearMemory, 0);
-		remoteView.setOnClickPendingIntent(R.id.lock_cache_icon,
-				showActivityIntent);
-		remoteView.setTextViewText(R.id.text2, messageLine);
+				getApplicationContext(), 0, showList, 0);
 		Builder builder = new Notification.Builder(this);
-		// Not used at all! We use remoteView
 		builder.setSmallIcon(android.R.drawable.ic_lock_lock)
 				.setContentTitle("Touch to Text Secure Messaging")
-				.setContentText("Touch Lock to Clear Memory")
-				.setWhen(System.currentTimeMillis()).setContent(remoteView)
-				.setOngoing(true);
+				.setContentText("New Message(s)")
+				.setWhen(System.currentTimeMillis())
+				.setAutoCancel(true)
+				.setDeleteIntent(showActivityIntent);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-			builder.setPriority(Notification.PRIORITY_LOW);
+			builder.setPriority(Notification.PRIORITY_HIGH);
 		}
 		Notification statusNotification = builder.build();
 		stopForeground(true);

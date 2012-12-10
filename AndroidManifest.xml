@@ -59,7 +59,6 @@
         </activity>
         <activity
             android:name=".BeginKeyExchangeActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:excludeFromRecents="true"
             android:label="@string/title_activity_begin_key_exchange" >
             <meta-data
@@ -68,8 +67,7 @@
         </activity>
         <activity
             android:name=".EndKeyExchangeActivity"
-            android:label="@string/title_activity_end_key_exchange" 
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
+            android:label="@string/title_activity_end_key_exchange" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.ucsb.cs290.touch.to.text.BeginKeyExchangeActivity" />

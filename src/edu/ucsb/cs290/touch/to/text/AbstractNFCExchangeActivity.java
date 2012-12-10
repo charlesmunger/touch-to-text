@@ -19,14 +19,17 @@ import android.view.MenuItem;
 import edu.ucsb.cs290.touch.to.text.remote.Helpers;
 
 public abstract class AbstractNFCExchangeActivity extends KeyActivity {
+	private static final String RECEIVED = "received";
 	private IntentFilter[] intentFiltersArray;
 	private PendingIntent pendingIntent;
 	private static final String[][] mTechLists = new String[][] { new String[] { Ndef.class.getName() } };
+	private static final String SENT = "sent";
 	private NfcAdapter mAdapter;
-
+	
+	private byte[] toSend;
+	private byte[] received;
 	private NdefMessage message;
 	private boolean sent = false;
-	private boolean received = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,12 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		} catch (MalformedMimeTypeException e) {
 			throw new RuntimeException("fail", e);
 		}
+		if(savedInstanceState != null) {
+			if(savedInstanceState.containsKey(RECEIVED)) {
+				received = savedInstanceState.getByteArray(RECEIVED);
+			}
+			toSend = savedInstanceState.getByteArray(SENT);
+		}
 		setResult(RESULT_CANCELED);
 		intentFiltersArray = new IntentFilter[] { ndef, };
 		mAdapter = NfcAdapter.getDefaultAdapter(this);
@@ -47,6 +56,14 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
+	protected void onSaveInstanceState(Bundle state) {
+		super.onSaveInstanceState(state);
+		if(received != null) {
+			state.putByteArray(RECEIVED, received);
+		}
+		state.putByteArray(SENT, toSend);
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -57,8 +74,9 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void checkDone() {
-		if (sent && received) {
+	private void checkDone() throws Exception {
+		if (sent && (received != null)) {
+			recieveObject(Helpers.deserialize(received));
 			done();
 		}
 	}
@@ -67,15 +85,13 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	protected void onNewIntent(Intent intent) {
 		Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 		NdefMessage m = Ndef.get(tagFromIntent).getCachedNdefMessage();
-		byte[] b = m.getRecords()[0].getPayload();
+		received = m.getRecords()[0].getPayload();
 		try {
-			recieve(b);
-			received = true;
+			checkDone();
 		} catch (Exception e) {
 			Log.w("touch-to-text","Exception in key exchange!", e);
 			setResult(RESULT_CANCELED, new Intent());
 		}
-		checkDone();
 	}
 	
 	@Override
@@ -89,10 +105,6 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		super.onResume(); 
 		mAdapter.enableForegroundDispatch(this, pendingIntent,
 				intentFiltersArray, mTechLists);
-	}
-
-	protected void recieve(byte[] b) throws Exception{
-		recieveObject(Helpers.deserialize(b));
 	}
 
 	protected abstract void done();
@@ -114,16 +126,24 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	
 	protected void onServiceConnected() {
 		Log.i("nfc", "Callbacks and NDEF Push set");
+		if(toSend == null) {
+			toSend = send();
+		}
 		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
 				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],
-				send())});
+				toSend)});
 		mAdapter.setNdefPushMessage(message, this);
 		mAdapter.setOnNdefPushCompleteCallback(new NfcAdapter.OnNdefPushCompleteCallback() {
 			
 			@Override
 			public void onNdefPushComplete(NfcEvent event) {
 				sent = true;
-				checkDone();				
+				try {
+					checkDone();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
 			}
 		}, this);
 	}
