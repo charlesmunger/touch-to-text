@@ -108,8 +108,6 @@ public class NewContactActivity extends Activity {
     		t.setText(key.digest());
     		Button b = (Button) findViewById(R.id.edit_contact_key_btn);
     		b.setVisibility(View.GONE);
-    		// Should add user in caller of this Activity
-    		//DatabaseHelper.getInstance(getApplicationContext()).addPublicKey(key);    		
     	}
     }
 }

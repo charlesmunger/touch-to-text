@@ -17,39 +17,41 @@ public class Contact implements Serializable {
 	private final PublicKey signingKey;
 	private final PublicKey encryptingKey;
 	private final PublicKey tokenKey;
-	private final SignedObject so;
+	private final SignedObject tokenToSend;
+	private SignedObject myTokenForContact;
+
 	private final String name;
 	private final long id;
 
 	public Contact(Cursor c) {
 		this(c.getString(c.getColumnIndex(DatabaseHelper.NICKNAME)), 
-			(SealablePublicKey) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.PUBLIC_KEY))), 
-			(SignedObject) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.CONTACT_TOKEN))), 
-			c.getLong(c.getColumnIndex(DatabaseHelper.CONTACTS_ID)));
+				(SealablePublicKey) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.PUBLIC_KEY))),
+				((SealablePublicKey) Helpers.deserialize(c.getBlob(c.getColumnIndex(DatabaseHelper.PUBLIC_KEY)))).token(), 
+				c.getLong(c.getColumnIndex(DatabaseHelper.CONTACTS_ID)));
 	}
-	
+
 	public Contact(String name, PublicKey signing, PublicKey encrypting, PublicKey tokenKey,SignedObject so, long id) {
 		this.signingKey = signing;
 		this.encryptingKey = encrypting;
 		this.tokenKey = tokenKey;
 		this.name = name;
-		this.so = so;
+		this.tokenToSend = so;
 		this.id = id;
 	}
-	
+
 	public Contact(Contact c, SignedObject token) {
 		this(c.name,c.signingKey,c.encryptingKey,c.tokenKey,token,c.id);
 	}
-	
+
 	public Contact(String name, SealablePublicKey key, SignedObject token,
 			long newContactId) {
 		this.signingKey = key.sign();
 		this.encryptingKey = key.encrypt();
 		this.tokenKey = key.address();
 		this.name = name;
-		this.so = token;
+		this.tokenToSend = token;
 		this.id = newContactId;	
-		}
+	}
 
 	public PublicKey getSigningKey() {
 		return signingKey;
@@ -58,9 +60,9 @@ public class Contact implements Serializable {
 	public PublicKey getEncryptingKey() {
 		return encryptingKey;
 	}
-	
+
 	public SignedObject getToken() {
-		return so;
+		return tokenToSend;
 	}
 
 	public String toString() {
@@ -70,13 +72,13 @@ public class Contact implements Serializable {
 	public String getName() {
 		return name;
 	}
-	
+
 	public PublicKey getTokenKey() {
 		return tokenKey;
 	}
 
 	public SealablePublicKey getSealablePublicKey() {
-		return new SealablePublicKey(signingKey, encryptingKey,tokenKey, so);
+		return new SealablePublicKey(signingKey, encryptingKey,tokenKey, tokenToSend);
 	}
 
 	public long getID() {
