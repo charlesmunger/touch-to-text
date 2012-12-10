@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import javax.crypto.SealedObject;
 import javax.crypto.SecretKey;
 
 import android.content.Intent;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
+import edu.ucsb.cs290.touch.to.text.crypto.SealablePublicKey;
 
 public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private SecretKey aesKey;

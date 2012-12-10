@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.io.Serializable;
 
@@ -9,7 +9,7 @@ import android.view.MenuItem;
 
 public class ConversationDetailActivity extends KeyActivity {
 
-    private static final String FRAG_TAG = "edu.ucsb.cs290.touch.to.chat.conversationDA.CDF";
+    private static final String FRAG_TAG = "edu.ucsb.cs290.touch.to.text.conversationDA.CDF";
 	private ConversationDetailFragment fragment;
     private boolean fragNeedsAdded = false;
 	@Override

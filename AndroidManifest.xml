@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.ucsb.cs290.touch.to.chat"
+    package="edu.ucsb.cs290.touch.to.text"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -10,10 +10,10 @@
     <uses-feature android:name="android.hardware.nfc" />
 
     <permission
-        android:name="edu.ucsb.cs290.touch.to.chat.C2D_MESSAGE"
+        android:name="edu.ucsb.cs290.touch.to.text.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="edu.ucsb.cs290.touch.to.chat.C2D_MESSAGE" />
+    <uses-permission android:name="edu.ucsb.cs290.touch.to.text.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.NFC" />
     <!-- App receives GCM messages. -->
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
@@ -64,14 +64,14 @@
             android:label="@string/title_activity_begin_key_exchange" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="edu.ucsb.cs290.touch.to.chat.NewContactActivity2y" />
+                android:value="edu.ucsb.cs290.touch.to.text.NewContactActivity2y" />
         </activity>
         <activity
             android:name=".EndKeyExchangeActivity"
             android:label="@string/title_activity_end_key_exchange" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="edu.ucsb.cs290.touch.to.chat.BeginKeyExchangeActivity" />
+                android:value="edu.ucsb.cs290.touch.to.text.BeginKeyExchangeActivity" />
         </activity>
 
         <meta-data
@@ -83,7 +83,7 @@
             android:enabled="true"
             android:exported="false" >
         </service>
-        <service android:name="edu.ucsb.cs290.touch.to.chat.GCMIntentService" />
+        <service android:name="edu.ucsb.cs290.touch.to.text.GCMIntentService" />
 
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
@@ -92,7 +92,7 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
 
-                <category android:name="edu.ucsb.cs290.touch.to.chat" />
+                <category android:name="edu.ucsb.cs290.touch.to.text" />
             </intent-filter>
         </receiver>
     </application>

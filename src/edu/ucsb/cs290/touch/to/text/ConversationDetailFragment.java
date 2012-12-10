@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -18,14 +18,14 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
-import edu.ucsb.cs290.touch.to.chat.crypto.MessagesListCursorAdapter;
-import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.TokenAuthMessage;
+import edu.ucsb.cs290.touch.to.text.crypto.Contact;
+import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.text.crypto.MessagesListCursorAdapter;
+import edu.ucsb.cs290.touch.to.text.https.TorProxy;
+import edu.ucsb.cs290.touch.to.text.remote.messages.Message;
+import edu.ucsb.cs290.touch.to.text.remote.messages.ProtectedMessage;
+import edu.ucsb.cs290.touch.to.text.remote.messages.SignedMessage;
+import edu.ucsb.cs290.touch.to.text.remote.messages.TokenAuthMessage;
 
 public class ConversationDetailFragment extends Fragment {
 

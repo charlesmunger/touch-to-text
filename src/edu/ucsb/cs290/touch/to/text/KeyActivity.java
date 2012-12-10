@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import info.guardianproject.onionkit.ui.OrbotHelper;
 import android.app.Activity;
@@ -12,8 +12,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import edu.ucsb.cs290.touch.to.chat.KeyManagementService.KeyCachingBinder;
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.text.KeyManagementService.KeyCachingBinder;
+import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
 
 public abstract class KeyActivity extends Activity {
 	KeyManagementService mService;
@@ -120,14 +120,14 @@ public abstract class KeyActivity extends Activity {
 				// exist.
 				Log.i("kmg", "Initializing instance on activity result");
 				String derp = data.getExtras().getString(
-						"edu.ucsb.cs290.touch.to.chat.password");
+						"edu.ucsb.cs290.touch.to.text.password");
 				mService.getInstance().initalizeInstance(derp);
 				mService.startNotification();
 				k.onServiceConnected();
 			} else {
 				Log.i("kmg", "Storing password until service starts");
 				password = data.getExtras().getString(
-						"edu.ucsb.cs290.touch.to.chat.password");
+						"edu.ucsb.cs290.touch.to.text.password");
 			}
 		}
 	}

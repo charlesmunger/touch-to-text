@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -26,13 +26,13 @@ import android.widget.RemoteViews;
 
 import com.google.android.gcm.GCMRegistrar;
 
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
-import edu.ucsb.cs290.touch.to.chat.crypto.IntentDatabaseHelper;
-import edu.ucsb.cs290.touch.to.chat.crypto.KeyPairsProvider;
-import edu.ucsb.cs290.touch.to.chat.https.TorProxy;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
-import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
+import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.text.crypto.IntentDatabaseHelper;
+import edu.ucsb.cs290.touch.to.text.crypto.KeyPairsProvider;
+import edu.ucsb.cs290.touch.to.text.https.TorProxy;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.messages.ProtectedMessage;
+import edu.ucsb.cs290.touch.to.text.remote.register.RegisterUser;
 
 public class KeyManagementService extends Service {
 	private DatabaseHelper dbHelperInstance;
@@ -42,11 +42,11 @@ public class KeyManagementService extends Service {
 			.getSimpleName();
 	private final IBinder binder = new KeyCachingBinder();
 	private static final int SERVICE_RUNNING_ID = 155296813;
-	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.chat.ClearMemory";
-	static final String EXIT = "edu.ucsb.cs290.touch.to.chat.Exit";
-	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.chat.reg";
-	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.chat.MESSAGE_RECEIVED";
-	public static final String REFRESH_VIEWS = "edu.ucsb.cs290.touch.to.chat.REFRESH_VIEWS";
+	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.text.ClearMemory";
+	static final String EXIT = "edu.ucsb.cs290.touch.to.text.Exit";
+	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.text.reg";
+	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.text.MESSAGE_RECEIVED";
+	public static final String REFRESH_VIEWS = "edu.ucsb.cs290.touch.to.text.REFRESH_VIEWS";
 	private static final DateFormat df = DateFormat.getDateTimeInstance();
 
 

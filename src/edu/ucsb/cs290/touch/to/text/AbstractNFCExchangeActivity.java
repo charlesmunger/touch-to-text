@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.io.Serializable;
 
@@ -16,7 +16,7 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.MenuItem;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
 
 public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	private IntentFilter[] intentFiltersArray;

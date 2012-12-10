@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.crypto;
+package edu.ucsb.cs290.touch.to.text.crypto;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -15,9 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TwoLineListItem;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.Message;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.messages.Message;
+import edu.ucsb.cs290.touch.to.text.remote.messages.SignedMessage;
 
 public class MessagesListCursorAdapter extends CursorAdapter {
 	private final PublicKey author;

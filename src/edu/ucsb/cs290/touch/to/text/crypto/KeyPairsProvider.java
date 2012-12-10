@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.crypto;
+package edu.ucsb.cs290.touch.to.text.crypto;
 
 import java.io.Serializable;
 import java.math.BigInteger;

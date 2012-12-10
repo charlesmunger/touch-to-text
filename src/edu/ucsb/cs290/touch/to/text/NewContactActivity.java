@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -27,8 +27,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
+import edu.ucsb.cs290.touch.to.text.crypto.KeyExchange;
+import edu.ucsb.cs290.touch.to.text.crypto.SealablePublicKey;
 
 public class NewContactActivity extends Activity {
 	private SealablePublicKey key;

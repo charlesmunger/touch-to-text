@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.crypto;
+package edu.ucsb.cs290.touch.to.text.crypto;
 
 import java.io.Serializable;
 import java.security.PublicKey;
@@ -7,7 +7,7 @@ import java.security.SignedObject;
 import org.apache.http.annotation.Immutable;
 
 import android.database.Cursor;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
 @Immutable
 public class Contact implements Serializable {
 	/**

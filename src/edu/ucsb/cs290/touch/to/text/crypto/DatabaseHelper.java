@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.crypto;
+package edu.ucsb.cs290.touch.to.text.crypto;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -19,10 +19,10 @@ import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
 
-import edu.ucsb.cs290.touch.to.chat.R;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.ProtectedMessage;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.SignedMessage;
+import edu.ucsb.cs290.touch.to.text.R;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.messages.ProtectedMessage;
+import edu.ucsb.cs290.touch.to.text.remote.messages.SignedMessage;
 
 /**
  * 

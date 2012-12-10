@@ -9,7 +9,7 @@
     android:showDividers="middle"
     tools:context=".ConversationListActivity">
 
-    <fragment android:name="edu.ucsb.cs290.touch.to.chat.ConversationListFragment"
+    <fragment android:name="edu.ucsb.cs290.touch.to.text.ConversationListFragment"
         android:id="@+id/conversation_list"
         android:layout_width="0dp"
         android:layout_height="match_parent"

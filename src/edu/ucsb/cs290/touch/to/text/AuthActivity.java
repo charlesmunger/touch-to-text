@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,7 +16,7 @@ public class AuthActivity extends Activity {
     
     public void submitPassword(View view) {
     	EditText e = (EditText) findViewById(R.id.enter_password);
-    	setResult(RESULT_OK, new Intent().putExtra("edu.ucsb.cs290.touch.to.chat.password", e.getText().toString()));
+    	setResult(RESULT_OK, new Intent().putExtra("edu.ucsb.cs290.touch.to.text.password", e.getText().toString()));
     	if(e.getText().length() ==0) {
     		return;
     	}

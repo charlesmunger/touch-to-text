@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import android.app.Activity;
 import android.app.ListFragment;
@@ -8,9 +8,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
-import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
-import edu.ucsb.cs290.touch.to.chat.crypto.ContactsListCursorAdapter;
-import edu.ucsb.cs290.touch.to.chat.crypto.DatabaseHelper;
+import edu.ucsb.cs290.touch.to.text.crypto.Contact;
+import edu.ucsb.cs290.touch.to.text.crypto.ContactsListCursorAdapter;
+import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
 
 public class ConversationListFragment extends ListFragment {
 

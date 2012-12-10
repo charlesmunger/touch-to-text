@@ -1,3 +1,3 @@
-[submodule "src/edu/ucsb/cs290/touch/to/chat/remote"]
-	path = src/edu/ucsb/cs290/touch/to/chat/remote
-	url = https://github.com/charlesmunger/touch-to-text-common.git
+[submodule "src/edu/ucsb/cs290/touch/to/text/remote"]
+	path = src/edu/ucsb/cs290/touch/to/text/remote
+	url = https://github.com/charlesmunger/touch-to-text-common/

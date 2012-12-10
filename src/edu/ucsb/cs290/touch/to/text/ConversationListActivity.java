@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.security.SignedObject;
 
@@ -9,8 +9,8 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import edu.ucsb.cs290.touch.to.chat.crypto.Contact;
-import edu.ucsb.cs290.touch.to.chat.crypto.SealablePublicKey;
+import edu.ucsb.cs290.touch.to.text.crypto.Contact;
+import edu.ucsb.cs290.touch.to.text.crypto.SealablePublicKey;
 
 public class ConversationListActivity extends KeyActivity implements
 		ConversationListFragment.Callbacks {

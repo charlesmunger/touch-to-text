@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat;
+package edu.ucsb.cs290.touch.to.text;
 
 import java.io.Serializable;
 import java.security.interfaces.ECPublicKey;
@@ -6,7 +6,7 @@ import java.security.interfaces.ECPublicKey;
 import javax.crypto.SecretKey;
 
 import android.content.Intent;
-import edu.ucsb.cs290.touch.to.chat.crypto.KeyExchange;
+import edu.ucsb.cs290.touch.to.text.crypto.KeyExchange;
 
 public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private KeyExchange keyExchange;

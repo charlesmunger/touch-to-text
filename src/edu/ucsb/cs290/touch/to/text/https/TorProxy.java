@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.https;
+package edu.ucsb.cs290.touch.to.text.https;
 
 import info.guardianproject.onionkit.trust.StrongHttpsClient;
 
@@ -16,10 +16,10 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import android.content.Context;
 import android.util.Log;
-import edu.ucsb.cs290.touch.to.chat.R;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
-import edu.ucsb.cs290.touch.to.chat.remote.messages.TokenAuthMessage;
-import edu.ucsb.cs290.touch.to.chat.remote.register.RegisterUser;
+import edu.ucsb.cs290.touch.to.text.R;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.messages.TokenAuthMessage;
+import edu.ucsb.cs290.touch.to.text.remote.register.RegisterUser;
 
 public class TorProxy {
 

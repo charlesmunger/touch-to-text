@@ -1,4 +1,4 @@
-package edu.ucsb.cs290.touch.to.chat.crypto;
+package edu.ucsb.cs290.touch.to.text.crypto;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -13,7 +13,7 @@ import java.util.UUID;
 import org.spongycastle.util.encoders.Base64;
 
 import android.util.Log;
-import edu.ucsb.cs290.touch.to.chat.remote.Helpers;
+import edu.ucsb.cs290.touch.to.text.remote.Helpers;
 
 public class SealablePublicKey implements Serializable {
 	
