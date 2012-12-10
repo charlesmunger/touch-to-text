@@ -15,6 +15,7 @@ import edu.ucsb.cs290.touch.to.text.crypto.SealablePublicKey;
 public class ConversationListActivity extends KeyActivity implements
 		ConversationListFragment.Callbacks {
 	private static final long NEW_CONTACT_ID = 0;
+	private static final String FRAG_TAG = null;
 	private boolean mTwoPane;
 	private boolean fragmentInit = false;
 
@@ -54,7 +55,7 @@ public class ConversationListActivity extends KeyActivity implements
 			final ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
 			getFragmentManager().beginTransaction()
-					.replace(R.id.conversation_detail_container, fragment)
+					.replace(R.id.conversation_detail_container, fragment, FRAG_TAG)
 					.commit();
 			new Handler().post(new Runnable() {
 
@@ -109,7 +110,7 @@ public class ConversationListActivity extends KeyActivity implements
 		getListFragment().refresh();
 		if (mTwoPane && fragmentInit) {
 			ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()
-					.findFragmentById(R.id.conversation_detail));
+					.findFragmentByTag(FRAG_TAG));
 			f.refresh();
 		}
 	}
