@@ -3,7 +3,10 @@ package edu.ucsb.cs290.touch.to.text;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignedObject;
 import java.security.cert.CertificateException;
+import java.util.UUID;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
@@ -82,6 +85,7 @@ public class ConversationDetailFragment extends Fragment {
 	};
 	
 	private void sendMessage(View v) {
+		DatabaseHelper instance = ((KeyActivity) getActivity()).getInstance();
 		EditText messageToSend = (EditText) v
 				.findViewById(R.id.edit_message_text);
 		if (messageToSend.getText() == null) {
@@ -91,12 +95,13 @@ public class ConversationDetailFragment extends Fragment {
 		messageToSend.getEditableText().clear();
 		ProtectedMessage pm = null;
 		SignedMessage signedMessage = null;
-		DatabaseHelper instance = ((KeyActivity) getActivity()).getInstance();
+		
+		SignedObject newToken = instance.getOutgoingToken(mItem.getID());
+
 		try {
 			signedMessage = new SignedMessage(m, instance.getSigningKey());
 			pm = new ProtectedMessage(signedMessage, mItem.getEncryptingKey(),
-					instance.getSigningKey());
-
+					instance.getSigningKey(), newToken);
 			instance.addOutgoingMessage(signedMessage, mItem);
 
 		} catch (GeneralSecurityException e) {

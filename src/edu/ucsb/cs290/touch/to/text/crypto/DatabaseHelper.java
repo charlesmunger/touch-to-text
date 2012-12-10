@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.security.SignedObject;
+import java.util.UUID;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -26,8 +28,7 @@ import edu.ucsb.cs290.touch.to.text.remote.messages.SignedMessage;
 
 /**
  * 
- * Instantiate and provide access to the DB, which contains Messages, Contacts,
- * and secure private key storage.
+ * Instantiate and provide access to the DB, which contains Messages and Contacts.
  * @author dannyiland
  * @author charlesmunger
  * 
@@ -56,6 +57,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
 
 	// Contacts Table
+	// Store the token used for sending in SPK PUBLIC_KEY
+	// Store the last token given to a contact in CONTACT_TOKEN
 	public static final String CONTACTS_ID = "_id";
 	public static final String NICKNAME = "nickname";
 	public static final String CONTACT_ID = "contactId";
@@ -247,41 +250,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		newMessage.put(READ, 1);
 		task.execute(new ContentValues[] { newMessage });
 		// For sorting purposes, update last contacted.
-		updateLastContacted(contact.getID(), time);
 		UpdateLastContactedTask last = new UpdateLastContactedTask();
 		last.execute(new Long[] { contact.getID(), time });
 	}
 
 	// { MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
 
+	/**
+	 * Receive a message from a given contact. If the message contains a new
+	 * token, update the token in the Sealable Public Key. Always generate 
+	 * a new token to provide with the next outgoing message.
+	 * @param message
+	 * @throws GeneralSecurityException
+	 */
 	public void addIncomingMessage(ProtectedMessage message)
 			throws GeneralSecurityException {
-		SecurePreferences getEncryptionKey = new SecurePreferences(context,
-				TOUCH_TO_TEXT_PREFERENCES_XML,
-				passwordInstance.getPasswordString(), true);
-		String encodedKeyPairProvider = getEncryptionKey.getString(PUBLIC_KEY);
-		KeyPairsProvider provider = (KeyPairsProvider) Helpers
-				.deserialize(Base64.decode(encodedKeyPairProvider,
-						Base64.DEFAULT));
+		//Get your own keys
+		KeyPairsProvider provider = getKeyPairsProvider();
 		try {
 			SignedMessage recieved = message.getMessage(provider
 					.getEncryptionKey().getPrivate());
+			
 			PublicKey author = recieved.getAuthor();
 			long time = recieved.getMessage(author).getTimeSent();
+			
+			// Add unread, new message to DB
 			ContentValues newMessage = new ContentValues();
 			newMessage.put(MESSAGE_BODY, Helpers.serialize(recieved));
 			newMessage.put(DATE_TIME, time);
 			newMessage.put(RECIPIENT_ID, MY_CONTACT_ID);
 			newMessage.put(READ, 0);
-			// Used to retrieve contact in AddIncomingMessageToDBTask
+			
+			// Use the key fingerprint to get the contactID.
 			String keyFingerprint = Helpers.getKeyFingerprint(author);
 			long contactID = getContactFromPublicKeySignature(keyFingerprint);
-			// Add message to messages Table
 			newMessage.put(SENDER_ID, contactID);
 			getReadableDatabase(passwordInstance.getPasswordString()).insert(
 					MESSAGES_TABLE, null, newMessage);
-			updateLastContacted(contactID, time);
+			
 			// For sorting purposes, update last contacted.
+			updateLastContacted(contactID, time);
+			
+			// Update the tokens for this contact
+			SignedObject recievedToken = message.getToken(provider.getEncryptionKey().getPrivate());
+			updateToken(contactID, recievedToken);
 		} catch (IOException e) {
 			Log.d("Touch-to-text", "Error deserializing signed message", e);
 		} catch (ClassNotFoundException e) {
@@ -290,7 +302,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	private void updateLastContacted(long contactID, long dateTime) {
+	private void updateLastContacted(long contactID, long dateTime) {	
 		ContentValues updateDateContacted = new ContentValues();
 		updateDateContacted.put(CONTACTS_ID, contactID);
 		updateDateContacted.put(DATE_TIME, dateTime);
@@ -299,20 +311,56 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				CONTACTS_ID + "=" + contactID, null);
 	}
 
-	private void updateToken(long contactID, SignedObject newToken ) {
-		ContentValues updateDateContacted = new ContentValues();
-		updateDateContacted.put(CONTACT_TOKEN, Helpers.serialize(newToken));
-		getReadableDatabase(passwordInstance.getPasswordString()).update(
-				CONTACTS_TABLE, updateDateContacted,
-				CONTACTS_ID + "=" + contactID, null);
+	private SealablePublicKey getContactSPK(long contactID) {
+		Cursor cursor = null;
+		try {
+			String sortOrder = DATE_TIME + " DESC";
+			String query = CONTACTS_ID + " = " + contactID;
+			cursor = getReadableDatabase(
+					passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
+							CONTACT_CURSOR_COLUMNS,
+							query,null, null, null, sortOrder);
+			if( cursor.getCount() < 1) {
+				Log.wtf("touch-to-text", "Recieved message from unknown contact");
+				return null;
+			} else {
+				cursor.moveToFirst();
+				return (SealablePublicKey) Helpers.deserialize(cursor.getBlob(cursor.getColumnIndex(PUBLIC_KEY)));
+			}
+		} finally {
+			cursor.close();
+		}
 	}
 
-	private void setMessageRead(long messageID, long read) {
-		ContentValues messageRead = new ContentValues();
-		messageRead.put(READ, read);
+	/**
+	 * Add the new token you received from a user to their SealablePublicKey.
+	 * Also, to enable blacklisting and prevent social graph analysis, 
+	 * generate a new token to provide to that individual next time you send a message.
+	 * @param contactID The contact in question
+	 * @param newToken The token received
+	 */
+	private void updateToken(long contactID, SignedObject newToken ) {
+		SealablePublicKey currentContact = getContactSPK(contactID);
+		SealablePublicKey updatedContact = new SealablePublicKey(currentContact, newToken);
+		ContentValues updateContactToken = new ContentValues();
+		updateContactToken.put(PUBLIC_KEY, Helpers.serialize(updatedContact));
+		SignedObject outgoingToken = null;
+		try {
+			outgoingToken = new SignedObject(
+					UUID.randomUUID(),
+					getKeyPairsProvider().getTokenKey().getPrivate(), 
+					Signature.getInstance("DSA", "SC"));
+		} catch (GeneralSecurityException e) {
+			Log.wtf("touch-to-text", "Problem creating new token!");
+		} catch (IOException e) {
+			Log.wtf("touch-to-text", "Problem creating new token!");
+		}
+		if ( outgoingToken != null ) {
+		updateContactToken.put(CONTACT_TOKEN, Helpers.serialize(outgoingToken));
 		getReadableDatabase(passwordInstance.getPasswordString()).update(
-				MESSAGES_TABLE, messageRead,
-				MESSAGES_ID + "=" + messageID, null);
+				CONTACTS_TABLE, updateContactToken,
+				CONTACTS_ID + "=" + contactID, null);
+		}
 	}
 	
 	/**
@@ -338,6 +386,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return cursor;
 	}
 
+	/**
+	 * Returns the ID of a given contact
+	 * @param keySignature
+	 * @return
+	 */
 	public long getContactFromPublicKeySignature(String keySignature) {
 		Cursor cursor = null;
 		try {
@@ -444,6 +497,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		@Override
 		protected void onPostExecute(Void evil) {
 			// TODO Set "done generating keys" notification
+		}
+	}
+
+	public SignedObject getOutgoingToken(long id) {
+		Cursor cursor = null;
+		try {
+			String sortOrder = DATE_TIME + " DESC";
+			String query = CONTACTS_ID + " = " + id;
+			cursor = getReadableDatabase(
+					passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
+							CONTACT_CURSOR_COLUMNS,
+							query, null, null, null, sortOrder);
+			if( cursor.getCount() < 1) {
+				Log.wtf("touch-to-text", "Sending message to unknown contact?!");
+				return null;
+			} else {
+				cursor.moveToFirst();
+				return (SignedObject) Helpers.deserialize(cursor.getBlob(cursor.getColumnIndex(CONTACT_TOKEN)));
+			}
+			
+		} finally {
+			cursor.close();
 		}
 	}
 }

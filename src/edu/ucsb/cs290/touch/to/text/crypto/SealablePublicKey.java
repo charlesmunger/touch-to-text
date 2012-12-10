@@ -48,6 +48,14 @@ public class SealablePublicKey implements Serializable {
 		this.tokenKey = tokenKey;
 	}
 
+	public SealablePublicKey(SealablePublicKey currentContact,
+			SignedObject recievedToken) {
+		signingKey = currentContact.sign();
+		encryptionKey = currentContact.encrypt();
+		tokenKey = currentContact.address();
+		signedToken = recievedToken;
+	}
+
 	public String digest() {
 		
 		MessageDigest sha1;
