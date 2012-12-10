@@ -25,6 +25,7 @@ public abstract class KeyActivity extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			if(mBound) {
 				unbindService(mConnection);
+				mBound = false;
 			}
 			finish();
 		}
