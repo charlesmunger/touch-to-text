@@ -110,7 +110,7 @@ public class ConversationDetailFragment extends Fragment {
 		new GetMessagesFromDBTask().execute(
 				((KeyActivity) getActivity()).mService.getInstance(), mItem);
 		TokenAuthMessage tm = new TokenAuthMessage(pm, mItem.getTokenKey(),
-				mItem.getSealablePublicKey().token());
+				mItem.getToken());
 		new AsyncTask<TokenAuthMessage, Void, Void>() {
 
 			@Override
