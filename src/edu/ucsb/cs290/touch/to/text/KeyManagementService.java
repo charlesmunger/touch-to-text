@@ -110,7 +110,7 @@ public class KeyManagementService extends Service {
 		if ((intent != null && UPDATE_REG.equals(intent.getAction()))
 				|| this.getSharedPreferences("touchToTextPreferences.xml",
 						MODE_PRIVATE).getBoolean("GCM ready", false)) {
-			if (dbHelperInstance.initialized()) {
+			if (getInstance().initialized()) {
 				Log.d("touch-to-text", "Sending server reg key");
 				this.getSharedPreferences("touchToTextPreferences.xml",
 						MODE_PRIVATE).edit().remove("GCM ready").commit();
@@ -145,11 +145,14 @@ public class KeyManagementService extends Service {
 		if (intent != null && intent.getAction() != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
 			if (dbHelperInstance != null && dbHelperInstance.initialized()) {
 				try {
+					final String stringExtra = intent.getStringExtra("message");
+					final byte[] decode = Base64.decode(
+							stringExtra,
+							Base64.DEFAULT);
+					final ProtectedMessage deserialize = (ProtectedMessage) Helpers
+							.deserialize(decode);
 					dbHelperInstance
-							.addIncomingMessage((ProtectedMessage) Helpers
-									.deserialize(Base64.decode(
-											intent.getStringExtra("message"),
-											Base64.DEFAULT)));
+							.addIncomingMessage(deserialize);
 					LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(REFRESH_VIEWS));
 				} catch (GeneralSecurityException e) {
 					// TODO Auto-generated catch block
@@ -213,7 +216,6 @@ public class KeyManagementService extends Service {
 			builder.setPriority(Notification.PRIORITY_HIGH);
 		}
 		Notification statusNotification = builder.build();
-		stopForeground(true);
-		startForeground(SERVICE_RUNNING_ID, statusNotification);
+		startForeground(SERVICE_RUNNING_ID+1, statusNotification);
 	}
 }

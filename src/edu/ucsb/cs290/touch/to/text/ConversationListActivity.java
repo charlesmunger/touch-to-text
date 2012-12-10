@@ -101,7 +101,7 @@ public class ConversationListActivity extends KeyActivity implements
 		if (mTwoPane && fragmentInit) {
 			ConversationDetailFragment f = (ConversationDetailFragment) getFragmentManager()
 					.findFragmentByTag(FRAG_TAG);
-			f.onServiceConnected();
+			if(f!=null) {f.onServiceConnected();}
 		}
 	}
 

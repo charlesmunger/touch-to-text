@@ -82,7 +82,7 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
+	public void onNewIntent(Intent intent) {
 		Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 		NdefMessage m = Ndef.get(tagFromIntent).getCachedNdefMessage();
 		received = m.getRecords()[0].getPayload();
