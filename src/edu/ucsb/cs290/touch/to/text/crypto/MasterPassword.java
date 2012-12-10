@@ -1,10 +1,8 @@
 package edu.ucsb.cs290.touch.to.text.crypto;
 
-import java.lang.reflect.Field;
 import java.security.InvalidKeyException;
 import java.security.KeyStore.PasswordProtection;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +16,7 @@ import javax.security.auth.DestroyFailedException;
  *
  *	Most methods are package level visible for the other crypto classes.	
  **/
-public final class MasterPassword {
+final class MasterPassword {
 
 	private static MasterPassword instance;
 	private static PasswordProtection passphrase; 
@@ -27,7 +25,7 @@ public final class MasterPassword {
 	 * Package level access to decrypt the database. {
 	 */
 
-	public static MasterPassword getInstance(String password) {
+	static MasterPassword getInstance(String password) {
 		if(instance == null || passphrase == null || passphrase.isDestroyed()) {
 			instance = new MasterPassword(password);
 		}
@@ -76,7 +74,6 @@ public final class MasterPassword {
 
 		// Should wipe out all remaining copies of userPass 
 		// and zero out any Editables or UI elements that produced it.
-		scrub(userPass);
 		userPass = null;
 		System.gc();
 	}
@@ -88,21 +85,6 @@ public final class MasterPassword {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Unable to destroy password in memory!", e);
 
-		}
-	}
-	
-	public static void scrub(String password) {
-		Field internal;
-		try {
-			internal = String.class.getField("value");
-			char[] internalA = (char[]) internal.get(password);
-			Arrays.fill(internalA, 'X');
-		} catch (NoSuchFieldException e) {
-			//Never happens
-		} catch (IllegalArgumentException e) {
-			//Never happens
-		} catch (IllegalAccessException e) {
-			//never happens
 		}
 	}
 

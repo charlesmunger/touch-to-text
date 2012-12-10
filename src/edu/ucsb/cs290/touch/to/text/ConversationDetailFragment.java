@@ -83,7 +83,7 @@ public class ConversationDetailFragment extends Fragment {
 	};
 	
 	private void sendMessage(View v) {
-		DatabaseHelper instance = ((KeyActivity) getActivity()).mService.getInstance();
+		DatabaseHelper instance = ((KeyActivity) getActivity()).getInstance();
 		EditText messageToSend = (EditText) v
 				.findViewById(R.id.edit_message_text);
 		if (messageToSend.getText() == null) {
@@ -124,7 +124,7 @@ public class ConversationDetailFragment extends Fragment {
 				return null;
 			}
 			
-		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,tm);
+		}.execute(tm);
 	}
 
 	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {

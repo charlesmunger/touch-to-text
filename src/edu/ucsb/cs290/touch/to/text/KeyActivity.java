@@ -13,7 +13,7 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.text.KeyManagementService.KeyCachingBinder;
-import edu.ucsb.cs290.touch.to.text.crypto.MasterPassword;
+import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
 
 public abstract class KeyActivity extends Activity {
 	protected KeyManagementService mService;
@@ -86,7 +86,6 @@ public abstract class KeyActivity extends Activity {
 			mBound = true;
 			if (password != null) {
 				mService.getInstance().initalizeInstance(password);
-				MasterPassword.scrub(password);
 				password = null;
 				Log.i("kmg", "initializing db on service connected");
 				mService.startNotification();
@@ -105,6 +104,10 @@ public abstract class KeyActivity extends Activity {
 		}
 	};
 
+	protected DatabaseHelper getInstance() {
+		return mService.getInstance();
+	}
+
 	protected abstract void onServiceConnected();
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -120,7 +123,6 @@ public abstract class KeyActivity extends Activity {
 				String derp = data.getExtras().getString(
 						"edu.ucsb.cs290.touch.to.text.password");
 				mService.getInstance().initalizeInstance(derp);
-				MasterPassword.scrub(derp);
 				mService.startNotification();
 				KeyActivity.this.onServiceConnected();
 			} else {

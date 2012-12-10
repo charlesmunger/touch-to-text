@@ -17,7 +17,7 @@ public class ConversationListActivity extends KeyActivity implements
 	private static final long NEW_CONTACT_ID = 0;
 	private boolean mTwoPane;
 	private boolean fragmentInit = false;
-	private static final String FRAG_TAG = "fragtag";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -42,7 +42,7 @@ public class ConversationListActivity extends KeyActivity implements
 	}
 
 	public boolean wipeDB(MenuItem item) {
-		return mService.getInstance().wipeDB();
+		return getInstance().wipeDB();
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class ConversationListActivity extends KeyActivity implements
 			final ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
 			getFragmentManager().beginTransaction()
-					.replace(R.id.conversation_detail_container, fragment, FRAG_TAG)
+					.replace(R.id.conversation_detail_container, fragment)
 					.commit();
 			new Handler().post(new Runnable() {
 
@@ -89,7 +89,7 @@ public class ConversationListActivity extends KeyActivity implements
 			// SignedObject token = (SignedObject) data.getExtras().get("token");
 			SignedObject token = key.token();
 			Contact newContact = new Contact(name, key, token, NEW_CONTACT_ID);
-			mService.getInstance().addContact(newContact);
+			getInstance().addContact(newContact);
 			return;
 		}
 	}
@@ -108,7 +108,8 @@ public class ConversationListActivity extends KeyActivity implements
 	protected void refresh() {
 		getListFragment().refresh();
 		if (mTwoPane && fragmentInit) {
-			ConversationDetailFragment f = (ConversationDetailFragment) getFragmentManager().findFragmentByTag(FRAG_TAG);
+			ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()
+					.findFragmentById(R.id.conversation_detail));
 			f.refresh();
 		}
 	}

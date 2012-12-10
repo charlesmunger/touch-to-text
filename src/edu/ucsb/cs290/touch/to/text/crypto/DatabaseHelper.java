@@ -98,8 +98,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 1;
 
 	// Databases and Context
+	private SQLiteDatabase db;
 	private MasterPassword passwordInstance = null;
-	private final Context context;
+	private Context context;
 
 	public DatabaseHelper(Context ctx) {
 		// calls the super constructor, requesting the default cursor factory.
@@ -122,6 +123,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (passwordInstance == null) {
 			setPassword(password);
 			SQLiteDatabase.loadLibs(context);
+			db = this.getWritableDatabase(password);
 		}
 	}
 
@@ -142,7 +144,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @return true if DB was deleted, false otherwise.
 	 */
 	public boolean wipeDB() {
-		SQLiteDatabase db = getWritableDatabase(passwordInstance.getPasswordString());
 		if (db != null) {
 			if (tableExists(MESSAGES_TABLE)) {
 				db.rawExecSQL("DROP TABLE " + MESSAGES_TABLE);
@@ -452,6 +453,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 						null, null, null, sortOrder);
 
 		return cursor;
+
 	}
 
 	public Cursor getContactCursor() {

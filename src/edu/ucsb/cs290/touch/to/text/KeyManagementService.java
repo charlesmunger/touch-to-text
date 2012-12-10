@@ -57,7 +57,7 @@ public class KeyManagementService extends Service {
 	public DatabaseHelper getInstance() {
 		if (dbHelperInstance == null) {
 			// Use global context for the app
-			dbHelperInstance = new DatabaseHelper(getApplicationContext());
+			dbHelperInstance = new DatabaseHelper(this);
 		}
 		return dbHelperInstance;
 	}
@@ -126,12 +126,13 @@ public class KeyManagementService extends Service {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (GeneralSecurityException e) {
-							Log.wtf("touch-to-text", "can't post!",e);
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 						return null;
 					}
 
-				}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,GCMRegistrar
+				}.execute(GCMRegistrar
 						.getRegistrationId(getApplicationContext()));
 				return START_REDELIVER_INTENT;
 			} else {
@@ -141,7 +142,7 @@ public class KeyManagementService extends Service {
 				return START_NOT_STICKY;
 			}
 		}
-		if (intent != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
+		if (intent != null && intent.getAction() != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
 			if (dbHelperInstance != null && dbHelperInstance.initialized()) {
 				try {
 					dbHelperInstance
@@ -159,7 +160,7 @@ public class KeyManagementService extends Service {
 				stopSelf();
 			}
 			return START_REDELIVER_INTENT;
-		} else if(intent!= null &&  REFRESH_VIEWS.equals(intent.getAction())) {
+		} else if(intent!= null &&  intent.getAction() != null && REFRESH_VIEWS.equals(intent.getAction())) {
 			if (dbHelperInstance != null && dbHelperInstance.initialized()) { 
 				setCustomNotification("New Message Received at " + df.format(new Date()));
 			} else {
@@ -172,9 +173,7 @@ public class KeyManagementService extends Service {
 	}
 
 	private void clearKey() {
-		if(dbHelperInstance != null) {
-			dbHelperInstance.forgetPassword();
-		}		
+		dbHelperInstance.forgetPassword();
 		kp = null;
 		this.stopSelf();
 	}
