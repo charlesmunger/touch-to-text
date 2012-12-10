@@ -1,8 +1,10 @@
 package edu.ucsb.cs290.touch.to.text.crypto;
 
+import java.lang.reflect.Field;
 import java.security.InvalidKeyException;
 import java.security.KeyStore.PasswordProtection;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +18,7 @@ import javax.security.auth.DestroyFailedException;
  *
  *	Most methods are package level visible for the other crypto classes.	
  **/
-final class MasterPassword {
+public final class MasterPassword {
 
 	private static MasterPassword instance;
 	private static PasswordProtection passphrase; 
@@ -74,6 +76,7 @@ final class MasterPassword {
 
 		// Should wipe out all remaining copies of userPass 
 		// and zero out any Editables or UI elements that produced it.
+		scrub(userPass);
 		userPass = null;
 		System.gc();
 	}
@@ -85,6 +88,21 @@ final class MasterPassword {
 			Logger.getLogger("touch-to-text").log(Level.SEVERE,
 					"Unable to destroy password in memory!", e);
 
+		}
+	}
+	
+	public static void scrub(String password) {
+		Field internal;
+		try {
+			internal = String.class.getField("value");
+			char[] internalA = (char[]) internal.get(password);
+			Arrays.fill(internalA, 'X');
+		} catch (NoSuchFieldException e) {
+			//Never happens
+		} catch (IllegalArgumentException e) {
+			//Never happens
+		} catch (IllegalAccessException e) {
+			//never happens
 		}
 	}
 
