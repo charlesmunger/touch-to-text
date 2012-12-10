@@ -143,7 +143,7 @@ public class KeyManagementService extends Service {
 			}
 		}
 		if (intent != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
-			if (dbHelperInstance.initialized()) {
+			if (dbHelperInstance != null && dbHelperInstance.initialized()) {
 				try {
 					dbHelperInstance
 							.addIncomingMessage((ProtectedMessage) Helpers
@@ -161,7 +161,7 @@ public class KeyManagementService extends Service {
 			}
 			return START_REDELIVER_INTENT;
 		} else if(intent!= null &&  REFRESH_VIEWS.equals(intent.getAction())) {
-			if (dbHelperInstance.initialized()) { 
+			if (dbHelperInstance != null && dbHelperInstance.initialized()) { 
 				setCustomNotification("New Message Received at " + df.format(new Date()));
 			} else {
 				// Open the contacts view, bringing up AuthActivity if required.
