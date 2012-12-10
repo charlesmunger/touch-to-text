@@ -3,10 +3,8 @@ package edu.ucsb.cs290.touch.to.text;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignedObject;
 import java.security.cert.CertificateException;
-import java.util.UUID;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
