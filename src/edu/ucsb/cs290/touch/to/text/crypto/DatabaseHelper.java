@@ -52,7 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public static final int MESSAGE_READ = 1;
 	public static final int MESSAGE_UNREAD = 0;
-	
+
 	public static final String[] MESSAGES_CURSOR_COLUMNS = new String[] {
 		MESSAGES_ID, DATE_TIME, MESSAGE_BODY, SENDER_ID, RECIPIENT_ID };
 
@@ -270,27 +270,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		try {
 			SignedMessage recieved = message.getMessage(provider
 					.getEncryptionKey().getPrivate());
-			
+
 			PublicKey author = recieved.getAuthor();
 			long time = recieved.getMessage(author).getTimeSent();
-			
+
 			// Add unread, new message to DB
 			ContentValues newMessage = new ContentValues();
 			newMessage.put(MESSAGE_BODY, Helpers.serialize(recieved));
 			newMessage.put(DATE_TIME, time);
 			newMessage.put(RECIPIENT_ID, MY_CONTACT_ID);
 			newMessage.put(READ, 0);
-			
+
 			// Use the key fingerprint to get the contactID.
 			String keyFingerprint = Helpers.getKeyFingerprint(author);
 			long contactID = getContactFromPublicKeySignature(keyFingerprint);
 			newMessage.put(SENDER_ID, contactID);
 			getReadableDatabase(passwordInstance.getPasswordString()).insert(
 					MESSAGES_TABLE, null, newMessage);
-			
+
 			// For sorting purposes, update last contacted.
 			updateLastContacted(contactID, time);
-			
+
 			// Update the tokens for this contact
 			SignedObject recievedToken = message.getToken(provider.getEncryptionKey().getPrivate());
 			updateToken(contactID, recievedToken);
@@ -356,13 +356,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			Log.wtf("touch-to-text", "Problem creating new token!");
 		}
 		if ( outgoingToken != null ) {
-		updateContactToken.put(CONTACT_TOKEN, Helpers.serialize(outgoingToken));
-		getReadableDatabase(passwordInstance.getPasswordString()).update(
-				CONTACTS_TABLE, updateContactToken,
-				CONTACTS_ID + "=" + contactID, null);
+			updateContactToken.put(CONTACT_TOKEN, Helpers.serialize(outgoingToken));
+			getReadableDatabase(passwordInstance.getPasswordString()).update(
+					CONTACTS_TABLE, updateContactToken,
+					CONTACTS_ID + "=" + contactID, null);
 		}
 	}
-	
+
 	/**
 	 * Update last contacted for a given contactID.
 	 * 
@@ -501,24 +501,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	public SignedObject getOutgoingToken(long id) {
-		Cursor cursor = null;
+		ContentValues updateContactToken = new ContentValues();
+		SignedObject outgoingToken = null;
 		try {
-			String sortOrder = DATE_TIME + " DESC";
-			String query = CONTACTS_ID + " = " + id;
-			cursor = getReadableDatabase(
-					passwordInstance.getPasswordString()).query(CONTACTS_TABLE,
-							CONTACT_CURSOR_COLUMNS,
-							query, null, null, null, sortOrder);
-			if( cursor.getCount() < 1) {
-				Log.wtf("touch-to-text", "Sending message to unknown contact?!");
-				return null;
-			} else {
-				cursor.moveToFirst();
-				return (SignedObject) Helpers.deserialize(cursor.getBlob(cursor.getColumnIndex(CONTACT_TOKEN)));
-			}
-			
-		} finally {
-			cursor.close();
+			outgoingToken = new SignedObject(
+					UUID.randomUUID(),
+					getKeyPairsProvider().getTokenKey().getPrivate(), 
+					Signature.getInstance("DSA", "SC"));
+		} catch (GeneralSecurityException e) {
+			Log.wtf("touch-to-text", "Problem creating new token!");
+		} catch (IOException e) {
+			Log.wtf("touch-to-text", "Problem creating new token!");
 		}
+		if ( outgoingToken != null ) {
+			updateContactToken.put(CONTACT_TOKEN, Helpers.serialize(outgoingToken));
+			getReadableDatabase(passwordInstance.getPasswordString()).update(
+					CONTACTS_TABLE, updateContactToken,
+					CONTACTS_ID + "=" + id, null);
+		}
+		return outgoingToken;
 	}
 }
+
+

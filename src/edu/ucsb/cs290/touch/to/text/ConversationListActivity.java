@@ -86,8 +86,8 @@ public class ConversationListActivity extends KeyActivity implements
 			String name = data.getExtras().getString("name");
 			SealablePublicKey key = (SealablePublicKey) data
 					.getExtras().get("key");
-			SignedObject token = (SignedObject) data.getExtras().get("token");
-			
+			// SignedObject token = (SignedObject) data.getExtras().get("token");
+			SignedObject token = key.token();
 			Contact newContact = new Contact(name, key, token, NEW_CONTACT_ID);
 			getInstance().addContact(newContact);
 			return;

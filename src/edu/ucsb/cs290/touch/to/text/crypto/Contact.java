@@ -18,7 +18,6 @@ public class Contact implements Serializable {
 	private final PublicKey encryptingKey;
 	private final PublicKey tokenKey;
 	private final SignedObject tokenToSend;
-	private SignedObject myTokenForContact;
 
 	private final String name;
 	private final long id;
