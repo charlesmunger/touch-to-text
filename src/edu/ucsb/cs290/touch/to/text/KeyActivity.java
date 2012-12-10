@@ -16,13 +16,16 @@ import edu.ucsb.cs290.touch.to.text.KeyManagementService.KeyCachingBinder;
 import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
 
 public abstract class KeyActivity extends Activity {
-	KeyManagementService mService;
+	protected KeyManagementService mService;
 	boolean mBound = false;
 	private String password;
 	private final BroadcastReceiver exitReceiver = new BroadcastReceiver() {
 		
 		@Override
 		public void onReceive(Context context, Intent intent) {
+			if(mBound) {
+				unbindService(mConnection);
+			}
 			finish();
 		}
 	};
@@ -45,8 +48,6 @@ public abstract class KeyActivity extends Activity {
 		}
 		
 		LocalBroadcastManager.getInstance(this).registerReceiver(exitReceiver, new IntentFilter(KeyManagementService.EXIT));
-		LocalBroadcastManager.getInstance(this).registerReceiver(refreshReceiver, new IntentFilter(KeyManagementService.REFRESH_VIEWS));
-		bindService(intent, mConnection, Context.BIND_IMPORTANT);
 	}
 
 	protected void refresh() {
@@ -150,5 +151,12 @@ public abstract class KeyActivity extends Activity {
 		{
 			oc.requestOrbotStart(this);
 		}
+		LocalBroadcastManager.getInstance(this).registerReceiver(refreshReceiver, new IntentFilter(KeyManagementService.REFRESH_VIEWS));
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(refreshReceiver);
 	}
 }
