@@ -27,7 +27,7 @@ public final class MasterPassword {
 	 * Package level access to decrypt the database. {
 	 */
 
-	static MasterPassword getInstance(String password) {
+	public static MasterPassword getInstance(String password) {
 		if(instance == null || passphrase == null || passphrase.isDestroyed()) {
 			instance = new MasterPassword(password);
 		}

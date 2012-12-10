@@ -124,7 +124,7 @@ public class ConversationDetailFragment extends Fragment {
 				return null;
 			}
 			
-		}.execute(tm);
+		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,tm);
 	}
 
 	private class GetMessagesFromDBTask extends AsyncTask<Object, Void, Cursor> {

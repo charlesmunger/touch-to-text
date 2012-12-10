@@ -57,7 +57,7 @@ public class KeyManagementService extends Service {
 	public DatabaseHelper getInstance() {
 		if (dbHelperInstance == null) {
 			// Use global context for the app
-			dbHelperInstance = new DatabaseHelper(this);
+			dbHelperInstance = new DatabaseHelper(getApplicationContext());
 		}
 		return dbHelperInstance;
 	}
@@ -126,13 +126,12 @@ public class KeyManagementService extends Service {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (GeneralSecurityException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Log.wtf("touch-to-text", "can't post!",e);
 						}
 						return null;
 					}
 
-				}.execute(GCMRegistrar
+				}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,GCMRegistrar
 						.getRegistrationId(getApplicationContext()));
 				return START_REDELIVER_INTENT;
 			} else {
@@ -173,7 +172,9 @@ public class KeyManagementService extends Service {
 	}
 
 	private void clearKey() {
-		dbHelperInstance.forgetPassword();
+		if(dbHelperInstance != null) {
+			dbHelperInstance.forgetPassword();
+		}		
 		kp = null;
 		this.stopSelf();
 	}

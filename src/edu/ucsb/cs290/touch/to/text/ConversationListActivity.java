@@ -17,7 +17,7 @@ public class ConversationListActivity extends KeyActivity implements
 	private static final long NEW_CONTACT_ID = 0;
 	private boolean mTwoPane;
 	private boolean fragmentInit = false;
-
+	private static final String FRAG_TAG = "fragtag";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,7 +54,7 @@ public class ConversationListActivity extends KeyActivity implements
 			final ConversationDetailFragment fragment = new ConversationDetailFragment();
 			fragment.setArguments(arguments);
 			getFragmentManager().beginTransaction()
-					.replace(R.id.conversation_detail_container, fragment)
+					.replace(R.id.conversation_detail_container, fragment, FRAG_TAG)
 					.commit();
 			new Handler().post(new Runnable() {
 
@@ -108,8 +108,7 @@ public class ConversationListActivity extends KeyActivity implements
 	protected void refresh() {
 		getListFragment().refresh();
 		if (mTwoPane && fragmentInit) {
-			ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()
-					.findFragmentById(R.id.conversation_detail));
+			ConversationDetailFragment f = (ConversationDetailFragment) getFragmentManager().findFragmentByTag(FRAG_TAG);
 			f.refresh();
 		}
 	}
