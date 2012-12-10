@@ -1,7 +1,5 @@
 package edu.ucsb.cs290.touch.to.text;
 
-import java.util.Arrays;
-
 import info.guardianproject.onionkit.ui.OrbotHelper;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -15,7 +13,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import edu.ucsb.cs290.touch.to.text.KeyManagementService.KeyCachingBinder;
-import edu.ucsb.cs290.touch.to.text.crypto.DatabaseHelper;
 import edu.ucsb.cs290.touch.to.text.crypto.MasterPassword;
 
 public abstract class KeyActivity extends Activity {
