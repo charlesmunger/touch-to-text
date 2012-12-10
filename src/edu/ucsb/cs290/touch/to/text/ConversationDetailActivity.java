@@ -44,7 +44,7 @@ public class ConversationDetailActivity extends KeyActivity {
     }
 
 	@Override
-	public void onServiceConnected() {
+	protected void onServiceConnected() {
 		if(fragment == null) {
 			fragment = (ConversationDetailFragment) getFragmentManager().findFragmentByTag(FRAG_TAG);
 		}

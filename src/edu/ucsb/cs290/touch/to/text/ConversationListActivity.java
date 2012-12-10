@@ -19,7 +19,7 @@ public class ConversationListActivity extends KeyActivity implements
 	private boolean fragmentInit = false;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_conversation_list);
 
@@ -95,7 +95,7 @@ public class ConversationListActivity extends KeyActivity implements
 	}
 
 	@Override
-	public void onServiceConnected() {
+	protected void onServiceConnected() {
 		getListFragment().onServiceConnected();
 		if (mTwoPane && fragmentInit) {
 			ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()

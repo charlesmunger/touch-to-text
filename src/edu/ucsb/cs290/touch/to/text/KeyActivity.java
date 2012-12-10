@@ -73,7 +73,6 @@ public abstract class KeyActivity extends Activity {
 	}
 
 	/** Defines callbacks for service binding, passed to bindService() */
-	final KeyActivity k = this;
 	private final ServiceConnection mConnection = new ServiceConnection() {
 
 		@Override
@@ -94,7 +93,7 @@ public abstract class KeyActivity extends Activity {
 						AuthActivity.class), 100);
 				return;
 			}
-			k.onServiceConnected();
+			KeyActivity.this.onServiceConnected();
 
 		}
 
@@ -104,11 +103,11 @@ public abstract class KeyActivity extends Activity {
 		}
 	};
 
-	public DatabaseHelper getInstance() {
+	protected DatabaseHelper getInstance() {
 		return mService.getInstance();
 	}
 
-	public abstract void onServiceConnected();
+	protected abstract void onServiceConnected();
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
@@ -124,7 +123,7 @@ public abstract class KeyActivity extends Activity {
 						"edu.ucsb.cs290.touch.to.text.password");
 				mService.getInstance().initalizeInstance(derp);
 				mService.startNotification();
-				k.onServiceConnected();
+				KeyActivity.this.onServiceConnected();
 			} else {
 				Log.i("kmg", "Storing password until service starts");
 				password = data.getExtras().getString(
@@ -133,13 +132,13 @@ public abstract class KeyActivity extends Activity {
 		}
 	}
 	@Override
-	public void onDestroy() {
+	protected void onDestroy() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(exitReceiver);
 		super.onDestroy();
 	}
 	
 	@Override
-	public void onResume() {
+	protected void onResume() {
 		super.onResume();
 		OrbotHelper oc = new OrbotHelper(this);
 

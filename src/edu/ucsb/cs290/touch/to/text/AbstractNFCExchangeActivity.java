@@ -29,7 +29,7 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	private boolean received = false;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		parseIntent(getIntent());
 		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
@@ -63,7 +63,8 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		}
 	}
 
-	public void onNewIntent(Intent intent) {
+	@Override
+	protected void onNewIntent(Intent intent) {
 		Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 		NdefMessage m = Ndef.get(tagFromIntent).getCachedNdefMessage();
 		byte[] b = m.getRecords()[0].getPayload();
@@ -77,24 +78,26 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		checkDone();
 	}
 	
-	public void onPause() {
+	@Override
+	protected void onPause() {
 		super.onPause();
 		mAdapter.disableForegroundDispatch(this);
 	}
 	
-	public void onResume() {
+	@Override
+	protected void onResume() {
 		super.onResume(); 
 		mAdapter.enableForegroundDispatch(this, pendingIntent,
 				intentFiltersArray, mTechLists);
 	}
 
-	public void recieve(byte[] b) throws Exception{
+	protected void recieve(byte[] b) throws Exception{
 		recieveObject(Helpers.deserialize(b));
 	}
 
-	public abstract void done();
+	protected abstract void done();
 	
-	public byte[] send() {
+	protected byte[] send() {
 		try {
 			return Helpers.serialize(sendObject());
 		} catch (Exception e) {
@@ -103,13 +106,13 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		return null;
 	}
 	
-	public abstract Serializable sendObject() throws Exception;
+	protected abstract Serializable sendObject() throws Exception;
 	
-	public abstract void recieveObject(Object o) throws Exception;
+	protected abstract void recieveObject(Object o) throws Exception;
 	
-	public abstract void parseIntent(Intent i);
+	protected abstract void parseIntent(Intent i);
 	
-	public void onServiceConnected() {
+	protected void onServiceConnected() {
 		Log.i("nfc", "Callbacks and NDEF Push set");
 		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
 				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],

@@ -14,7 +14,7 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private SealablePublicKey p;
 
 	@Override
-	public void done() {
+	protected void done() {
 		Intent i = new Intent();
 		i.putExtra("key_package", p);
 		setResult(RESULT_OK, i);
@@ -22,12 +22,12 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	}
 
 	@Override
-	public void parseIntent(Intent i) {
+	protected void parseIntent(Intent i) {
 		aesKey = (SecretKey) getIntent().getSerializableExtra("AES key");
 	}
 
 	@Override
-	public Serializable sendObject() throws Exception {
+	protected Serializable sendObject() throws Exception {
 		SealablePublicKey p = mService.getInstance().getSealablePublicKey();
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, aesKey);
@@ -36,7 +36,7 @@ public class EndKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	}
 
 	@Override
-	public void recieveObject(Object sealed) throws Exception {
+	protected void recieveObject(Object sealed) throws Exception {
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.DECRYPT_MODE, aesKey);
 		SealedObject o = (SealedObject) sealed;

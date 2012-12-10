@@ -32,7 +32,7 @@ import edu.ucsb.cs290.touch.to.text.crypto.SealablePublicKey;
 
 public class NewContactActivity extends Activity {
 	private SealablePublicKey key;
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Inflate a "Done/Discard" custom action bar view.
         LayoutInflater inflater = (LayoutInflater) getActionBar().getThemedContext()
@@ -95,8 +95,9 @@ public class NewContactActivity extends Activity {
 			}
     	}.execute();
     }
+    
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     	super.onActivityResult(requestCode, resultCode, data);
     	if(resultCode == RESULT_CANCELED) {
     		return;

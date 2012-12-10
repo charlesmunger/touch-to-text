@@ -13,32 +13,34 @@ public class BeginKeyExchangeActivity extends AbstractNFCExchangeActivity {
 	private SecretKey encodedKey;
 
 	@Override
-	public void done() {
+	protected void done() {
 		Intent i = new Intent(this,EndKeyExchangeActivity.class);
 		i.putExtra("AES key", encodedKey);
 		startActivityForResult(i, 1);
 	}
 
 	@Override
-	public Serializable sendObject() {
+	protected Serializable sendObject() {
 		return keyExchange.getPublicKey();
 	}
 	
-	public void parseIntent(Intent i) {
+	@Override
+	protected void parseIntent(Intent i) {
 		keyExchange = (KeyExchange) getIntent().getSerializableExtra("keyExchange");
 	}
 	
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		switch(resultCode) {
-		case RESULT_CANCELED: return;
-		case RESULT_OK: setResult(RESULT_OK, data);
-		finish();
+			case RESULT_CANCELED: return;
+			case RESULT_OK: setResult(RESULT_OK, data);
+			finish();
 		}
 	}
 
 	@Override
-	public void recieveObject(Object o) throws Exception {
+	protected void recieveObject(Object o) throws Exception {
 		encodedKey = keyExchange.setOtherPublicKey((ECPublicKey) o, "AES");
 	}
 }

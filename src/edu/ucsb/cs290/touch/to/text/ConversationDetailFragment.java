@@ -155,12 +155,12 @@ public class ConversationDetailFragment extends Fragment {
 		}
 	}
 
-	public void onServiceConnected() {
+	protected void onServiceConnected() {
 		connectedService = true;
 		checkDone();
 	}
 
-	public void inflateContact() {
+	private void inflateContact() {
 		rootView.findViewById(R.id.send_message_button)
 				.setOnClickListener(new View.OnClickListener() {
 
