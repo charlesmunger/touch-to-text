@@ -82,21 +82,8 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 		mAdapter.disableForegroundDispatch(this);
 	}
 	
-	@Override
 	public void onResume() {
-		Log.i("nfc", "Callbacks and NDEF Push set");
-		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
-				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],
-				send())});
-		mAdapter.setNdefPushMessage(message, this);
-		mAdapter.setOnNdefPushCompleteCallback(new NfcAdapter.OnNdefPushCompleteCallback() {
-			
-			@Override
-			public void onNdefPushComplete(NfcEvent event) {
-				sent = true;
-				checkDone();				
-			}
-		}, this);
+		super.onResume(); 
 		mAdapter.enableForegroundDispatch(this, pendingIntent,
 				intentFiltersArray, mTechLists);
 	}
@@ -122,5 +109,19 @@ public abstract class AbstractNFCExchangeActivity extends KeyActivity {
 	
 	public abstract void parseIntent(Intent i);
 	
-	public void onServiceConnected() {}
+	public void onServiceConnected() {
+		Log.i("nfc", "Callbacks and NDEF Push set");
+		message = new NdefMessage(new NdefRecord[] { new NdefRecord(
+				NdefRecord.TNF_UNKNOWN, new byte[0], new byte[0],
+				send())});
+		mAdapter.setNdefPushMessage(message, this);
+		mAdapter.setOnNdefPushCompleteCallback(new NfcAdapter.OnNdefPushCompleteCallback() {
+			
+			@Override
+			public void onNdefPushComplete(NfcEvent event) {
+				sent = true;
+				checkDone();				
+			}
+		}, this);
+	}
 }
