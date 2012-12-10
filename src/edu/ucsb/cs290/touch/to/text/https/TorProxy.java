@@ -36,6 +36,7 @@ public class TorProxy {
 		Log.d("touch-to-text","Registering with server");
 		http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
 				new HttpHost("localhost", 8118));
+		http.getParams().setParameter("http.useragent", "No specific user agent info!");
 
 		HttpPost method = new HttpPost("https://"
 				+ c.getString(R.string.service_url) + "/" + name);
