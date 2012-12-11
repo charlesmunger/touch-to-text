@@ -34,7 +34,7 @@ public class SealablePublicKey implements Serializable {
 		try {
 			st = new SignedObject(UUID.randomUUID(), tokenKey.getPrivate(), Signature.getInstance("DSA", "SC"));
 		} catch (GeneralSecurityException e) {
-			Log.w("touch-to-text","Security error creating exchange object", e);
+			Log.wtf("touch-to-text","Security error creating exchange object", e);
 		} catch (IOException i) {
 			Log.w("touch-to-text", "Error serializing object", i);
 		}

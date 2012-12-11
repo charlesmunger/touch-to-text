@@ -38,8 +38,7 @@ public class KeyManagementService extends Service {
 	private DatabaseHelper dbHelperInstance;
 	private volatile KeyPairsProvider kp;
 	private Timer timer;
-	private static final String TAG = KeyManagementService.class
-			.getSimpleName();
+	private static final String TAG = KeyManagementService.class.getSimpleName();
 	private final IBinder binder = new KeyCachingBinder();
 	private static final int SERVICE_RUNNING_ID = 155296813;
 	private static final String CLEAR_MEMORY = "edu.ucsb.cs290.touch.to.text.ClearMemory";
@@ -47,7 +46,6 @@ public class KeyManagementService extends Service {
 	static final String UPDATE_REG = "edu.ucsb.cs290.touch.to.text.reg";
 	public static final String MESSAGE_RECEIVED = "edu.ucsb.cs290.touch.to.text.MESSAGE_RECEIVED";
 	public static final String REFRESH_VIEWS = "edu.ucsb.cs290.touch.to.text.REFRESH_VIEWS";
-	private static final DateFormat df = DateFormat.getDateTimeInstance();
 
 
 	public KeyPairsProvider getKeys() {
@@ -110,64 +108,71 @@ public class KeyManagementService extends Service {
 		if ((intent != null && UPDATE_REG.equals(intent.getAction()))
 				|| this.getSharedPreferences("touchToTextPreferences.xml",
 						MODE_PRIVATE).getBoolean("GCM ready", false)) {
-			if (getInstance().initialized()) {
-				Log.d("touch-to-text", "Sending server reg key");
-				this.getSharedPreferences("touchToTextPreferences.xml",
-						MODE_PRIVATE).edit().remove("GCM ready").commit();
-				new AsyncTask<String, Void, Void>() {
-
-					@Override
-					protected Void doInBackground(String... params) {
-						try {
-							TorProxy.postThroughTor(getApplicationContext(),
-									new RegisterUser(params[0], getInstance()
-											.getTokenKeyPair(), 1000));
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (GeneralSecurityException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						return null;
-					}
-
-				}.execute(GCMRegistrar
-						.getRegistrationId(getApplicationContext()));
-				return START_REDELIVER_INTENT;
-			} else {
-				this.getSharedPreferences("touchToTextPreferences.xml",
-						MODE_PRIVATE).edit().putBoolean("GCM ready", true)
-						.commit();
-				return START_NOT_STICKY;
-			}
+			return handleUpdateReg();
 		}
 		if (intent != null && intent.getAction() != null && MESSAGE_RECEIVED.equals(intent.getAction())) {
-			if (dbHelperInstance != null && dbHelperInstance.initialized()) {
-				try {
-					final String stringExtra = intent.getStringExtra("message");
-					final byte[] decode = Base64.decode(
-							stringExtra,
-							Base64.DEFAULT);
-					final ProtectedMessage deserialize = (ProtectedMessage) Helpers
-							.deserialize(decode);
-					dbHelperInstance
-							.addIncomingMessage(deserialize);
-					LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(REFRESH_VIEWS));
-				} catch (GeneralSecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-			} else {
-				IntentDatabaseHelper.getInstance(getApplicationContext()).addIntentToDB(intent);
-				stopSelf();
-			}
-			return START_REDELIVER_INTENT;
+			return handleMessageReceived(intent);
 		} else if(intent!= null &&  intent.getAction() != null && REFRESH_VIEWS.equals(intent.getAction())) {
 			setCustomNotification();
 		}
 
 		return START_STICKY;
+	}
+
+	private int handleUpdateReg() {
+		if (getInstance().initialized()) {
+			Log.d("touch-to-text", "Sending server reg key");
+			this.getSharedPreferences("touchToTextPreferences.xml",
+					MODE_PRIVATE).edit().remove("GCM ready").commit();
+			new AsyncTask<String, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(String... params) {
+					try {
+						TorProxy.postThroughTor(getApplicationContext(),
+								new RegisterUser(params[0], getInstance()
+										.getTokenKeyPair(), 1000));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (GeneralSecurityException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return null;
+				}
+
+			}.execute(GCMRegistrar
+					.getRegistrationId(getApplicationContext()));
+			return START_REDELIVER_INTENT;
+		} else {
+			this.getSharedPreferences("touchToTextPreferences.xml",
+					MODE_PRIVATE).edit().putBoolean("GCM ready", true)
+					.commit();
+			return START_NOT_STICKY;
+		}
+	}
+
+	private int handleMessageReceived(Intent intent) {
+		if (dbHelperInstance != null && dbHelperInstance.initialized()) {
+			try {
+				final String stringExtra = intent.getStringExtra("message");
+				final byte[] decode = Base64.decode(
+						stringExtra,
+						Base64.DEFAULT);
+				final ProtectedMessage deserialize = (ProtectedMessage) Helpers
+						.deserialize(decode);
+				dbHelperInstance
+						.addIncomingMessage(deserialize);
+				LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(REFRESH_VIEWS));
+			} catch (GeneralSecurityException e) {
+				Log.wtf(TAG, "Security problem!",e);
+			} 
+		} else {
+			IntentDatabaseHelper.getInstance(getApplicationContext()).addIntentToDB(intent);
+			stopSelf();
+		}
+		return START_REDELIVER_INTENT;
 	}
 
 	private void clearKey() {

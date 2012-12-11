@@ -39,8 +39,8 @@ public class KeyExchange implements Serializable {
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDH","SC");
 			keyGen.initialize(dhSpec);
 			keypair = keyGen.generateKeyPair();
-		} catch (Exception e) {
-			Log.d("touch-to-text","Exception in key exchange", e);
+		} catch (GeneralSecurityException e) {
+			Log.wtf("touch-to-text","Exception in key exchange", e);
 		}
 	}
 	

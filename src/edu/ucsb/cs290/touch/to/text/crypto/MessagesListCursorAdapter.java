@@ -52,8 +52,7 @@ public class MessagesListCursorAdapter extends CursorAdapter {
 				Log.wtf("touch-to-text", "Author not recognized!!");
 			}
 		} catch (GeneralSecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.wtf("touch-to-text", "Invalid message!",e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

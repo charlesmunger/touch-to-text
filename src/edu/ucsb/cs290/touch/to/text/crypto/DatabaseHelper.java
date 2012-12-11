@@ -351,7 +351,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					getKeyPairsProvider().getTokenKey().getPrivate(), 
 					Signature.getInstance("DSA", "SC"));
 		} catch (GeneralSecurityException e) {
-			Log.wtf("touch-to-text", "Problem creating new token!");
+			Log.wtf("touch-to-text", "Problem creating new token!",e);
 		} catch (IOException e) {
 			Log.wtf("touch-to-text", "Problem creating new token!");
 		}
@@ -510,7 +510,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 					getKeyPairsProvider().getTokenKey().getPrivate(), 
 					Signature.getInstance("DSA", "SC"));
 		} catch (GeneralSecurityException e) {
-			Log.wtf("touch-to-text", "Problem creating new token!");
+			Log.wtf("touch-to-text", "Problem creating new token!",e);
 		} catch (IOException e) {
 			Log.wtf("touch-to-text", "Problem creating new token!");
 		}

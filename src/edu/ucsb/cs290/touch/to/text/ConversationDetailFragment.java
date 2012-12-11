@@ -103,7 +103,7 @@ public class ConversationDetailFragment extends Fragment {
 			instance.addOutgoingMessage(signedMessage, mItem);
 
 		} catch (GeneralSecurityException e) {
-			Log.w("touch-to-text","Problem creating ProtectedMessage!", e);
+			Log.wtf("touch-to-text","Problem creating ProtectedMessage!", e);
 		} catch (IOException e) {
 			Log.d("touch-to-text","Problem creating ProtectedMessage!", e);
 		}
@@ -118,8 +118,7 @@ public class ConversationDetailFragment extends Fragment {
 				try {
 					TorProxy.postThroughTor(getActivity().getApplicationContext(), params[0]);
 				} catch (CertificateException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Log.wtf("touch-to-text", "Certificate error", e);
 				}
 				return null;
 			}
