@@ -89,6 +89,7 @@ public abstract class KeyActivity extends Activity {
 				password = null;
 				Log.i("kmg", "initializing db on service connected");
 				mService.startNotification();
+				mService.loggedIn();
 			} else if (!mService.getInstance().initialized()) {
 				startActivityForResult(new Intent(getApplicationContext(),
 						AuthActivity.class), 100);
@@ -124,6 +125,7 @@ public abstract class KeyActivity extends Activity {
 						"edu.ucsb.cs290.touch.to.text.password");
 				mService.getInstance().initalizeInstance(derp);
 				mService.startNotification();
+				mService.loggedIn();
 				KeyActivity.this.onServiceConnected();
 			} else {
 				Log.i("kmg", "Storing password until service starts");

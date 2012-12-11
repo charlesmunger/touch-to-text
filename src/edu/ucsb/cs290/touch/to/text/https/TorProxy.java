@@ -6,16 +6,15 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.cert.CertificateException;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.entity.ByteArrayEntity;
+import ch.boye.httpclientandroidlib.entity.ByteArrayEntity;
 
 import android.content.Context;
 import android.util.Log;
+import ch.boye.httpclientandroidlib.HttpHost;
+import ch.boye.httpclientandroidlib.HttpResponse;
+import ch.boye.httpclientandroidlib.client.ClientProtocolException;
+import ch.boye.httpclientandroidlib.client.methods.HttpPost;
+import ch.boye.httpclientandroidlib.conn.params.ConnRoutePNames;
 import edu.ucsb.cs290.touch.to.text.R;
 import edu.ucsb.cs290.touch.to.text.remote.Helpers;
 import edu.ucsb.cs290.touch.to.text.remote.messages.TokenAuthMessage;
@@ -32,7 +31,7 @@ public class TorProxy {
 	}
 
 	private static void executeHttpsPost(Context c, String name, Serializable value) throws CertificateException{
-		HttpClient http = new StrongHttpsClient(c);
+		StrongHttpsClient http = new StrongHttpsClient(c);
 		Log.d("touch-to-text","Registering with server");
 		http.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
 				new HttpHost("localhost", 8118));

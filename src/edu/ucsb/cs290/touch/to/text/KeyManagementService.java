@@ -2,8 +2,6 @@ package edu.ucsb.cs290.touch.to.text;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,10 +13,12 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Base64;
 import android.util.Log;
@@ -99,6 +99,7 @@ public class KeyManagementService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int i, int j) {
+		
 		Log.i("kmg", "On start command called");
 		if (intent != null && CLEAR_MEMORY.equals(intent.getAction())) {
 			clearKey();
@@ -154,6 +155,7 @@ public class KeyManagementService extends Service {
 	}
 
 	private int handleMessageReceived(Intent intent) {
+		setCustomNotification();
 		if (dbHelperInstance != null && dbHelperInstance.initialized()) {
 			try {
 				final String stringExtra = intent.getStringExtra("message");
@@ -216,11 +218,33 @@ public class KeyManagementService extends Service {
 				.setContentText("New Message(s)")
 				.setWhen(System.currentTimeMillis())
 				.setAutoCancel(true)
+				.setDefaults(Notification.DEFAULT_ALL)
+				.setOnlyAlertOnce(true)
+				.setContentIntent(showActivityIntent)
 				.setDeleteIntent(showActivityIntent);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			builder.setPriority(Notification.PRIORITY_HIGH);
 		}
 		Notification statusNotification = builder.build();
-		startForeground(SERVICE_RUNNING_ID+1, statusNotification);
+		((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(SERVICE_RUNNING_ID+1,statusNotification);
+	}
+
+	public void loggedIn() {
+		Cursor c = IntentDatabaseHelper
+				.getInstance(getApplicationContext())
+				.getIntentsCursor();
+		try {
+			for(c.moveToFirst(); !c.isAfterLast();c.moveToNext()) {
+				final byte[] blob = c.getBlob(c.getColumnIndex(IntentDatabaseHelper.INTENT_BODY));
+				final Parcel obtain = Parcel.obtain();
+				obtain.unmarshall(blob, 0,blob.length);
+				obtain.setDataPosition(0);
+				sendBroadcast((Intent) obtain.readValue(Intent.class.getClassLoader()));
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			c.close();
+		}
 	}
 }

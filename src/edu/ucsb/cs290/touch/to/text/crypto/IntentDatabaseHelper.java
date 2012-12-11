@@ -110,7 +110,7 @@ public class IntentDatabaseHelper extends SQLiteOpenHelper {
 		Parcel parcel = Parcel.obtain();
 		newIntent.writeToParcel(parcel, 0);
 		ContentValues values = new ContentValues();  
-		values.put(INTENT_BODY, parcel.createByteArray());  
+		values.put(INTENT_BODY, parcel.marshall());  
 		intentValues.put(DATE_TIME, System.currentTimeMillis());
 		getReadableDatabase()
 		.insert(INTENTS_TABLE, null, intentValues);

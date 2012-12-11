@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.SignedObject;
 
-import org.apache.http.annotation.Immutable;
-
 import android.database.Cursor;
 import edu.ucsb.cs290.touch.to.text.remote.Helpers;
-@Immutable
+
 public class Contact implements Serializable {
 	/**
 	 * Three public keys, a name, and a signedObject.

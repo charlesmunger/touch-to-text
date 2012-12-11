@@ -19,10 +19,18 @@
 #   public *;
 #}
 -dontskipnonpubliclibraryclasses
--dontobfuscate
 -forceprocessing
 -optimizationpasses 5
-
+-dontobfuscate
+-libraryjars <java.home>/lib/rt.jar
+-dontwarn sun.misc.Unsafe
+-dontwarn javax.annotation.**
+-keep public class net.sqlcipher.** {
+	*;
+}
+-keep public class org.spongycastle.** {
+	*;
+}
 -keep class * extends android.app.Activity
 -keep class * extends android.app.Service
 -keep class * extends android.app.Fragment
@@ -32,3 +40,7 @@
     public static *** w(...);
     public static *** e(...);
 }
+-keepclassmembers class * implements java.io.Serializable {
+	*;
+}
+

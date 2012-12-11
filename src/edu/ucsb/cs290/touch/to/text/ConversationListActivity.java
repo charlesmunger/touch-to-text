@@ -110,8 +110,8 @@ public class ConversationListActivity extends KeyActivity implements
 		getListFragment().refresh();
 		if (mTwoPane && fragmentInit) {
 			ConversationDetailFragment f = ((ConversationDetailFragment) getFragmentManager()
-					.findFragmentByTag(FRAG_TAG));
-			f.refresh();
+					.findFragmentById(R.id.conversation_detail_container));
+			if(f!=null) {f.refresh();}
 		}
 	}
 
