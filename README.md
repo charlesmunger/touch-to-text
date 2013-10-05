@@ -11,3 +11,7 @@ Privacy Policy
 =============
 We collect no data at all, except for the GCM IDs required to send encrypted messages. 
 At no point do we ever collect any personally identifiable data. 
+
+Draft Paper
+=============
+For a more complete explaination, you can download our paper at http://cs.ucsb.edu/~iland/TouchToText.pdf
